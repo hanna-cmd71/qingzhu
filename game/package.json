@@ -26,7 +26,8 @@
     "check:release": "node scripts/check-release.mjs",
     "test:player": "node scripts/player-package-browser.mjs",
     "build:intro": "node scripts/build-introduction.mjs",
-    "test:intro": "node scripts/introduction-browser.mjs"
+    "test:intro": "node scripts/introduction-browser.mjs",
+    "prepare:github": "node scripts/prepare-github-release.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

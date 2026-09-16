@@ -71,3 +71,9 @@ npm run check:release
 `check:release` 验证源码 ZIP 与公开清单逐字节一致、产物哈希、版本、内嵌帮助、依赖许可、链接和隐私扫描。`npm run test:player` 从实际玩家 ZIP 解压，在断网浏览器中核对两种入口。公开清单是 `scripts/release-files.mjs`，新增交付文件须同步它。
 
 WebP 与 PNG 的离线画面应在浏览器中核对；半透明预乘通道可能有取整差异，不宣称逐像素完全相同。CI 验证技术行为，不能代替手机真机体验。
+
+## 跨平台兼容回归与 GitHub 附件
+
+旧规则快照现在与 `scripts/fixtures/pre-balance4/` 中经哈希封存的独立旧引擎，在同一个 Node 运行时进行完整快照哈希对比。原 54 行归档与派生数值夹具保持；不靠跨 CPU／运行时的序列化哈希替代兼容性验证，不放宽数字容差或跳过用例。
+
+发布 GitHub 前运行 `npm run prepare:github`，在 release/1.0/github/ 生成逐字节相同的英文附件及对应校验清单，避免平台把中文文件名改成下划线。

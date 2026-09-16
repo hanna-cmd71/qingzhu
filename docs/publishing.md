@@ -21,21 +21,22 @@
 
 检查 GitHub Actions 完成后，为同一提交创建 `v1.0` 标签与正式 Release。标题和正文均可用 **1.0正式发布**。
 
-从项目 `release/1.0/` 上传同一次构建的附件：
+在 game 目录执行 `npm run build:release`、`npm run check:release` 后，再执行 `npm run prepare:github`。
 
-- 青竹剑阵_1.0_免安装版.zip（玩家优先下载，解压后双击「开始游戏.html」）
+GitHub 会规范化附件中的非英文字符，因此上传 `release/1.0/github/` 内的六个文件：
 
-- 凡人修仙传_青竹剑阵.html
-- 凡人修仙传_青竹剑阵_兼容PNG.html
-- 青竹剑阵_源码.zip
+- qingzhu-1.0.html
+- qingzhu-1.0-png.html
+- qingzhu-1.0-source.zip
+- qingzhu-1.0-player.zip
 - SHA256SUMS.txt
 - release-manifest.json
 
-源码附件必须与两份 HTML 对应，不用过期 beta 源码替代。`release-manifest.json` 记录公开源文件哈希，SHA256SUMS.txt 校验玩家包、两份 HTML 与源码包。
+英文附件与本地中文成品逐字节相同；目录内的 SHA256SUMS.txt 按英文下载文件名生成。upload-plan.json 是上传工具清单，无须作为附件发布。免安装包内部仍使用「开始游戏.html」等中文名称，并内含对应源码。
 
-先进入 `release/1.0/`，再在 macOS／Linux 使用 `shasum -a 256 -c SHA256SUMS.txt` 校验。Windows PowerShell 可用 `Get-FileHash -Algorithm SHA256`，逐项比较。
+源码附件必须与两份 HTML 对应，不用过期源码替代。建议先上传到 Draft Release，检查目标提交的 Actions 和全部附件 SHA-256，再公开发布。不要把工作目录的历史资料或个人存档上传。
 
-HTML／ZIP 不提交进源码历史，放在 Release 附件。仓库只保留必需源码、素材、测试和当前文档。GitHub 自动生成的 Source code ZIP 也保留，但玩家优先下载免安装玩家包，也可单独下载直接运行的 HTML。
+可在下载目录执行 `shasum -a 256 -c SHA256SUMS.txt`；Windows PowerShell 使用 `Get-FileHash -Algorithm SHA256` 比较。HTML／ZIP 留作 Release 附件，不重复提交到 Git 历史。
 
 ## 后续维护
 

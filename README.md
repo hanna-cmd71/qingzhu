@@ -12,18 +12,17 @@
 
 ## 下载与游玩
 
-**[前往 1.0 下载页](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)** · [源码仓库](https://github.com/jindx1020-crypto/qingzhu-sword-array)
+**[下载单文件游戏](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0.html)** · **[下载免安装完整包](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0-player.zip)** · [全部附件与源码](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)
 
-在 Release 的 Assets 中下载同一版本的文件：
+| 下载文件 | 用途 |
+|---|---|
+| `qingzhu-1.0.html` | 推荐，下载后用浏览器打开即可离线游玩 |
+| `qingzhu-1.0-player.zip` | 解压后双击「开始游戏.html」，附兼容版、简短说明和对应源码 |
+| `qingzhu-1.0-png.html` | 图片解码有问题时使用，玩法与存档格式相同 |
+| `qingzhu-1.0-source.zip` | 对应的可修改源码、素材、开发说明和构建脚本 |
+| `SHA256SUMS.txt` | GitHub 下载附件的 SHA-256 校验清单 |
 
-- **青竹剑阵_1.0_免安装版.zip**：面向玩家的完整下载包。解压后双击「开始游戏.html」，直接在浏览器游玩；附带 PNG 兼容版、简短说明及 GPL 对应源码。
-
-- **凡人修仙传_青竹剑阵.html**：推荐使用，图片已内嵌，浏览器直接打开即可离线玩。
-- **凡人修仙传_青竹剑阵_兼容PNG.html**：图片解码有问题时使用；玩法及存档格式相同。
-- **青竹剑阵_源码.zip**：该成品对应的可修改源码、素材、文档和构建脚本。
-- **SHA256SUMS.txt**：下载文件校验值。
-
-游玩无需安装 Node.js 或任何开发环境。源码 checkout 不包含重复的 HTML／ZIP；需要修改或自行构建时，再按下文准备开发环境。
+GitHub 附件使用英文文件名，游戏界面与说明为中文；本地构建仍保留原中文文件名。游玩无需安装 Node.js 或开发环境。源码 checkout 不包含重复的 HTML／ZIP，需要修改或自行构建时再准备下列开发环境。
 
 移动 WASD／方向键，空格闪避，E 神雷，Q 切剑式，1／2 使用物资。触屏使用摇杆和技能按钮，点战场瞄准，点解除恢复分守。首次建议选「初入仙途」并进行分步练习。
 
