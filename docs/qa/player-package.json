@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "archive": "青竹剑阵_1.0_免安装版.zip",
+  "method": "Extract actual player ZIP; launch file URLs in offline Chromium with fresh browser contexts, normal UI and no debug API.",
+  "checks": [
+    {
+      "entry": "开始游戏.html",
+      "width": 1440,
+      "height": 900,
+      "offline": true,
+      "normalLaunch": true,
+      "movementAndDash": true,
+      "pause": true,
+      "saveSurvivesReload": true
+    },
+    {
+      "entry": "兼容版/开始游戏_PNG.html",
+      "width": 390,
+      "height": 844,
+      "offline": true,
+      "normalLaunch": true,
+      "movementAndDash": true,
+      "pause": true,
+      "saveSurvivesReload": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}

@@ -1,0 +1,34 @@
+{
+  "generator": "built-in image_gen.imagegen",
+  "requests_per_asset": 1,
+  "retries_or_variants": 0,
+  "asset_pixels_modified_after_generation": false,
+  "assets": [
+    {
+      "id": "golden_beetle",
+      "path": "local-generation/golden-beetle.generated.png",
+      "original_generated_path": "local-generation/exec-a40eac39-8769-41e0-a0f3-00b9aea1f8a7.png",
+      "reference_path": "local-generation/enemy-atlas.png",
+      "prompt": "Use case: precise-object-edit\nAsset type: a single transparent pixel-art game creature sprite, intended to display at only 20–28 pixels high.\nInput image 1: edit/reference target, an existing 4 by 4 enemy sprite atlas. The ONLY relevant creature is the dark teal armored beetle at ROW 2 COLUMN 4, zero-based index 7, rightmost creature in the second row.\nPrimary request: isolate that same beetle into one square sprite image and recolor its shell unmistakably BRIGHT METALLIC GOLD for the friendly summoned 噬金虫. Preserve its existing beetle design, chunky oval armored shell, front-facing three-quarter view facing slightly left, curved forward mandibles/horn shapes, squat wide stance and visible segmented legs. Keep the same silhouette, pose, perspective and crisp low-resolution fantasy pixel style as the reference.\nColor palette: luminous yellow-gold carapace, rich amber and warm ochre shadows, small pale-gold specular highlight pixel clusters, dark brown outlines and dark brown legs. Shell and head must read primarily GOLD at tiny size. No dominant green, teal or blue anywhere on the beetle.\nComposition/framing: exactly ONE whole beetle centered in a square canvas with roomy transparent padding around all appendages. The beetle occupies roughly the central 65 percent of the canvas. No other atlas creatures or tiles.\nStyle/medium: authentic crisp game sprite pixel art, deliberately coarse readable pixel clusters and hard stepped edges, limited tonal ramps. No smoothing, no painterly texture, no photorealism.\nBackground: genuinely transparent PNG alpha, not a checkerboard drawing and not a solid black or white matte. Preserve transparent areas between legs. No visible ground, shadow oval or environmental backdrop.\nConstraints: retain the recognizable original armored beetle creature; friendly summon styling through warm golden color only. Do not invent a humanoid, alternate evolved form, later-novel form, wings, extra limbs, jewelry, or new props. No text, labels, UI, watermark, border or extra objects.",
+      "width": 1254,
+      "height": 1254,
+      "png_color_type": 2,
+      "has_alpha_channel": false,
+      "sha256": "beee41dd7d7b95449bc61b6c6fdaa7a3d8a51f0615037bdf3b7ae75b725014eb",
+      "inspection": "Bright metallic gold beetle preserves reference design and pose, but built-in generator returned opaque RGB with a visibly baked checkerboard background. Genuine transparent alpha requirement was NOT met. No retry or cleanup was performed."
+    },
+    {
+      "id": "menu_backdrop",
+      "path": "local-generation/menu-backdrop.generated.png",
+      "original_generated_path": "local-generation/exec-2094af61-ace4-46d7-96e0-a16d1c5856f9.png",
+      "reference_path": "local-generation/battlefield-atlas.png",
+      "prompt": "Use case: stylized-concept\nAsset type: a 16:9 wide pixel-art main-menu background for an offline Chinese cultivation fantasy game, matching the provided battlefield atlas.\nInput image 1: style and material reference only, an existing battlefield atlas with crisp dark pixel clusters, ancient tiled stone ruins, shadowed cave rock, deep teal sea and forest-green temple accents. Produce ONE continuous landscape, not a grid or atlas.\nPrimary request: an atmospheric coastal cave/cultivator's secluded abode in 乱星海 overlooking misty sea islands. The view opens from shadowed cave rock to a tranquil layered seascape. The right half contains a broad weathered ancient stone terrace, with a clear empty standing area around the lower-right-middle where a character can be overlaid later, sea and hazy islands receding behind it.\nComposition/framing: wide 16:9 landscape. LEFT 42 percent is deliberately quiet dark negative space for a large title and stacked buttons: mostly deep shadowed cave rock and restrained dark mist, low contrast, few details, no focal object there. RIGHT 58 percent is the atmospheric vista and stone terrace. Use depth through overlapping misty island silhouettes and the distant horizon. Keep the standing terrace visibly grounded and readable.\nStyle/medium: coherent crisp low-resolution fantasy pixel art like the reference, clean blocky pixel clusters, hard stepped edges, subtle limited-palette dithering and textured stone. No smooth digital painting, no photorealism, no blurred pixels.\nLighting/mood: secluded, contemplative, ancient, faint muted golden light from the open sea catching terrace edges, otherwise deep ink teal and forest green; far islands softened by atmospheric mist using pixel clusters.\nColor palette: very dark ink teal, deep forest green, desaturated turquoise distance, gray-green ancient stone, small muted gold light accents.\nConstraints: no people, no creatures, no swords, no weapons, no text, no lettering, no UI, no logo, no watermark, no border. Do not create gameplay tiles or an atlas. Output one finished opaque landscape background with the full composition intact.",
+      "width": 1672,
+      "height": 941,
+      "png_color_type": 2,
+      "has_alpha_channel": false,
+      "sha256": "7a7253c12ed3b8af4924703e57a059ac14730b297cd59ab92ed20760092a3f79",
+      "inspection": "Opaque continuous wide landscape, 1672x941 (approximately 16:9), deep quiet cave on left, island seascape and broad stone terrace on right, no character, weapons or text."
+    }
+  ]
+}

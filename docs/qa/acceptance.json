@@ -1,0 +1,347 @@
+{
+  "version": "1.0",
+  "date": "2026-09-15",
+  "automated": {
+    "tests": 539,
+    "passed": 539,
+    "failed": 0,
+    "skipped": 0
+  },
+  "lint": {
+    "newDiagnostics": 0,
+    "unchangedBaseline": 19
+  },
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "browser": [
+    {
+      "profile": "webp",
+      "suite": "batch1",
+      "checks": 13,
+      "viewRecords": 10,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "webp",
+      "suite": "batch2",
+      "checks": 4,
+      "viewRecords": 8,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "webp",
+      "suite": "batch3",
+      "checks": 11,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "webp",
+      "suite": "experience",
+      "checks": 24,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "webp",
+      "suite": "release",
+      "checks": 7,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "png",
+      "suite": "batch1",
+      "checks": 13,
+      "viewRecords": 10,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "png",
+      "suite": "batch2",
+      "checks": 4,
+      "viewRecords": 8,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "png",
+      "suite": "batch3",
+      "checks": 11,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "png",
+      "suite": "experience",
+      "checks": 24,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    },
+    {
+      "profile": "png",
+      "suite": "release",
+      "checks": 7,
+      "viewRecords": 0,
+      "pageErrors": 0,
+      "externalRequests": 0
+    }
+  ],
+  "browserChecks": 118,
+  "viewRecords": 36,
+  "simulations": [
+    {
+      "path": 0,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 156,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 679.7
+    },
+    {
+      "path": 1,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 156,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 928.3
+    },
+    {
+      "path": 2,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 803.5
+    },
+    {
+      "path": 3,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 156,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 737.5
+    },
+    {
+      "path": 4,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 158,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 857.5
+    },
+    {
+      "path": 5,
+      "difficulty": 0,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 983.3
+    },
+    {
+      "path": 0,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 159,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 714.7
+    },
+    {
+      "path": 1,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 936.1
+    },
+    {
+      "path": 2,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 158,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 833
+    },
+    {
+      "path": 3,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 776.3
+    },
+    {
+      "path": 4,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 158,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 890.1
+    },
+    {
+      "path": 5,
+      "difficulty": 1,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 1047.7
+    },
+    {
+      "path": 0,
+      "difficulty": 2,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 158,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 759.4
+    },
+    {
+      "path": 1,
+      "difficulty": 2,
+      "won": false,
+      "termination": "player-defeat",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 154,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 1077.4
+    },
+    {
+      "path": 2,
+      "difficulty": 2,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 156,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 861.9
+    },
+    {
+      "path": 3,
+      "difficulty": 2,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 159,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 775.3
+    },
+    {
+      "path": 4,
+      "difficulty": 2,
+      "won": false,
+      "termination": "player-defeat",
+      "chapterNumber": 6,
+      "nodeNumber": 1,
+      "snapshotChecks": 141,
+      "seed": "release-v1.0",
+      "level": 81,
+      "time": 847.6
+    },
+    {
+      "path": 5,
+      "difficulty": 2,
+      "won": true,
+      "termination": "victory",
+      "chapterNumber": 6,
+      "nodeNumber": 4,
+      "snapshotChecks": 157,
+      "seed": "release-v1.0",
+      "level": 84,
+      "time": 1195.9
+    }
+  ],
+  "totalSnapshotChecks": 2811,
+  "cleanVerification": {
+    "npmCi": true,
+    "check": true,
+    "webBuild": true,
+    "offlineBuilds": true,
+    "archiveCheck": true,
+    "fullBrowserSuiteBeforeFinalTextFix": true,
+    "finalTextAndStorageBrowserBothProfiles": true,
+    "identicalHTML": true,
+    "identicalSourceArchiveBeforeReportUpdate": true
+  },
+  "nodeVersions": [
+    "22.13.1",
+    "24.15.0"
+  ],
+  "boundaries": [
+    "No physical phone validation",
+    "No human win-rate claim",
+    "Nine canon wording groups remain for author verification",
+    "Original reference-image rights remain for author verification",
+    "GitHub Actions configured but not run remotely"
+  ]
+}

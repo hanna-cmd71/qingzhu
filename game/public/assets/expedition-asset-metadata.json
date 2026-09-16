@@ -1,0 +1,68 @@
+[
+  {
+    "path": "local-generation/expedition-portraits-atlas.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "grid": [
+      3,
+      2
+    ],
+    "cell_size": [
+      512.0,
+      512.0
+    ],
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "fully_transparent_fraction": 0.366512934366862,
+    "partially_transparent_fraction": 0.6334870656331381
+  },
+  {
+    "path": "local-generation/expedition-icons-atlas.png",
+    "size": [
+      1774,
+      887
+    ],
+    "mode": "RGBA",
+    "grid": [
+      6,
+      3
+    ],
+    "cell_size": [
+      295.6666666666667,
+      295.6666666666667
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "fully_transparent_fraction": 0.4510478933460774,
+    "partially_transparent_fraction": 0.5488567800714059
+  },
+  {
+    "path": "local-generation/expedition-props-atlas.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "grid": [
+      3,
+      3
+    ],
+    "cell_size": [
+      418.0,
+      418.0
+    ],
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "fully_transparent_fraction": 0.6469072492744112,
+    "partially_transparent_fraction": 0.3529674737808709
+  }
+]

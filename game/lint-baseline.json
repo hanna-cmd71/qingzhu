@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "scope": "Unmodified bundled UI wrappers and use-mobile hook only. No gameplay, app, test or script diagnostics are accepted.",
+  "review": "Native-role preferences cannot determine the final consumer semantics of generic slot wrappers. The inherited hook and carousel use conventional effect-driven state without React Compiler. Chart template inference is inherited. Preserve these upstream files; review this baseline whenever any listed source hash or diagnostic changes.",
+  "files": {
+    "components/ui/button-group.tsx": "79ad8fb6644a775cc49131c1aa737ca26cae6a563beec0fa52ef6e8d85202fab",
+    "components/ui/pagination.tsx": "1f3c1713e8824cca7c3c0edacf9da7b0114bfda58640771b8fe0bc6179b370ce",
+    "components/ui/input-group.tsx": "2e65ddecb4401220be374cc6cfc42344538266cafeb2e590b3c760c7ed6b490a",
+    "components/ui/input-otp.tsx": "867f568259caac95f682d128d72e681b3fe7c31701a396eacc9284401d917a6a",
+    "components/ui/breadcrumb.tsx": "b28b76d6f8d0feafbbeff2220cf83f9a6b03d8c81f0145b3af4c7d19933ab2c0",
+    "components/ui/spinner.tsx": "8ddbb330e5564a1f53026da36c2322ed4b027687e91a88f63348ab10f26ae0cb",
+    "components/ui/carousel.tsx": "7444126492d4e0b85b1270f0d83a0955350fa95b3d3fb7b88edc2a5c2b4e5d14",
+    "components/ui/label.tsx": "e4a6fb662c44a44c468d16d79d02b3a3e5bf7b77bd50aef1e586c4d9613df0f6",
+    "components/ui/field.tsx": "79023ca89aae39f9cffa83a9483c9c672099b4547cc821486283db61c6ae9327",
+    "components/ui/item.tsx": "9c5e45e6c4aae5b9c4c1304e1f1208d32681ab616a6e0de9de6e0d6b22690592",
+    "hooks/use-mobile.ts": "82bff42ff087bd5dc90a5d17609cc428b8688de92d1333073a839af5ad3c9cbd",
+    "components/ui/chart.tsx": "56ab0e0b41f0cc7902414e046ea4f710bdbf0b756028672ea8c7e5137a278f2b"
+  },
+  "diagnostics": [
+    {
+      "filename": "components/ui/breadcrumb.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `a, area` over `role` attribute `link`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/button-group.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `address, details, fieldset, hgroup, optgroup` over `role` attribute `group`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/carousel.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `address, details, fieldset, hgroup, optgroup` over `role` attribute `group`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/carousel.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `section` over `role` attribute `region`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/carousel.tsx",
+      "code": "react(react-compiler)",
+      "message": "EffectSetState: Calling setState synchronously within an effect can trigger cascading renders",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/chart.tsx",
+      "code": "typescript(restrict-template-expressions)",
+      "message": "Invalid type used in template literal expression.",
+      "count": 3
+    },
+    {
+      "filename": "components/ui/field.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `address, details, fieldset, hgroup, optgroup` over `role` attribute `group`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/input-group.tsx",
+      "code": "jsx-a11y(click-events-have-key-events)",
+      "message": "Enforce a clickable non-interactive element has at least one keyboard event listener.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/input-group.tsx",
+      "code": "jsx-a11y(no-noninteractive-element-interactions)",
+      "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/input-group.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `address, details, fieldset, hgroup, optgroup` over `role` attribute `group`.",
+      "count": 2
+    },
+    {
+      "filename": "components/ui/input-otp.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `hr` over `role` attribute `separator`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/item.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `menu, ol, ul` over `role` attribute `list`.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/label.tsx",
+      "code": "jsx-a11y(label-has-associated-control)",
+      "message": "A form label must be associated with a control.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/pagination.tsx",
+      "code": "jsx-a11y(anchor-has-content)",
+      "message": "Missing accessible content when using `a` elements.",
+      "count": 1
+    },
+    {
+      "filename": "components/ui/spinner.tsx",
+      "code": "jsx-a11y(prefer-tag-over-role)",
+      "message": "Prefer `output` over `role` attribute `status`.",
+      "count": 1
+    },
+    {
+      "filename": "hooks/use-mobile.ts",
+      "code": "react(react-compiler)",
+      "message": "EffectSetState: Calling setState synchronously within an effect can trigger cascading renders",
+      "count": 1
+    }
+  ]
+}

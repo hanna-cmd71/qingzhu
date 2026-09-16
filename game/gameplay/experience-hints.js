@@ -1,0 +1,20 @@
+/* SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (C) 2026 bilibili@卡布奇诺ultra
+ */
+import {TRAITS,COMBOS,PATHS} from './data.js';
+import {traitDescription,modText} from './descriptions.js';
+// Read-only: uses targets chosen by the real update, never calls the targeting engine.
+export function insectOrderHint(b){
+ if(!b.insects.length)return '';
+ const targets=[...new Set(b.insectPursuits||[])].map(id=>b.enemies.find(e=>e.id===id&&e.hp>0)).filter(Boolean);
+ const state=targets.length?'当前追击：'+targets.slice(0,2).map(e=>e.name).join('、'):'当前等待可接战目标';
+ const policy=b.hasCore?.('K07')?'K07 双群巡猎 · 两群分攻并保留指令缓存':b.hasCore?.('K08')?'K08 凝群穿甲 · 精英优先并保留指令缓存':'虫旁先寻近敌，韩立旁后备；靠近准心目标可接战';
+ return state+'。'+policy;
+}
+export function choiceChain(b){
+ const t=TRAITS.find(t=>t.id===b.lastChoice?.id),remaining=b.queuedChoices||0;
+ const links=COMBOS.map(c=>({...c,paths:[c.a,c.b].map(id=>PATHS.findIndex(p=>p.id===id))})).filter(c=>c.paths.includes(b.path)).map(c=>{const gaps=c.paths.map(p=>Math.max(0,3-(b.pathCounts[p]||0))),prior=c.paths.map((p,i)=>gaps[i]+(t?.path===p&&b.lastChoice.rank===1&&(b.pathCounts[p]||0)<=3?1:0));return c.name+'：'+c.paths.map((p,i)=>PATHS[p].name+'还差 '+gaps[i]+' 种'+(prior[i]!==gaps[i]?'（上次 '+prior[i]+'）':'')).join(' / ');});
+ const gain=t?Object.entries(t.mods).filter(([key])=>['damage','haste','range','puppetDamage','insectDamage','thunderDamage','burnDamage','speed','crit','pierce','puppetPierce','thunderSave'].includes(key)).map(([key,value])=>modText({[key]:(b.stats[key]||0)-value})+' → '+modText({[key]:b.stats[key]||0})).join('；'):'';
+ return {gain,remaining,last:t?t.name+' · '+traitDescription(t,b):'本页之前的选择未记录',links};
+}
+export function validateLastChoice(ex,b){const q=ex.lastChoice;if(q===undefined)return;if(!q||!TRAITS.some(t=>t.id===q.id)||!Number.isInteger(q.rank)||q.rank<1||q.rank!==(b.traits[q.id]||0))throw Error('上次悟道记录无效，原记录未被修改');}

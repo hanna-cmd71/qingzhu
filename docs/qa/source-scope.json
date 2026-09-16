@@ -1,0 +1,15 @@
+{
+  "method": "Compare pre-1.0 gameplay sources, ignoring only added license headers.",
+  "changed": [
+    "CultivationPanel.jsx",
+    "Game.jsx",
+    "HelpReader.jsx",
+    "RunStats.jsx",
+    "core-description.js",
+    "cultivation.js",
+    "help-document.js",
+    "save-store.js",
+    "version.js"
+  ],
+  "numericRuleTablesUnchanged": true
+}

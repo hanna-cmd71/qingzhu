@@ -1,0 +1,982 @@
+{
+ "source": "stepA accepted snapshot (baseline/source-after-stepA.tar.gz)",
+ "generated": "2026-09-14",
+ "drive": [
+  15,
+  10
+ ],
+ "rows": [
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "7602b4b81b196461c2dc7b76",
+   "first": "73ae440a0092c2b86bc59cbd",
+   "second": "2867ae37e1120467421286b8"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "64cf76816c82017445ef1ca7",
+   "first": "f23c133bf08ccb74f9cfae97",
+   "second": "f180c4aadac463a023ab0de1"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "8d402059c8f0036ea13644cc",
+   "first": "fe653e089cbf4b9dcf7e01b7",
+   "second": "f73a6156322893f950a2fe30"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "81821759e895cb30b1435928",
+   "first": "9d5b4c3b82790ad123b3ec4f",
+   "second": "9b4759c62adf9eb1ef38b183"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "e7f70c4bd18b2930c7a1abda",
+   "first": "49a7c70179576f15489b41d4",
+   "second": "175ccdf3a79460f5d7e707fc"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 1,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "abf4962113b9c4fec042837c",
+   "first": "780d6341831ae98f1687f6fc",
+   "second": "a5f7a2ef123a0e7e7382250b"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "b1153d17b22869b868cdd119",
+   "first": "7e5bdd0fde7b0b0515fbea7f",
+   "second": "d4a84031fa1fac9fc156d8e4"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "eff4a7c4c1c801349d7a71f2",
+   "first": "6ba4791bf3d9e467dd8c457f",
+   "second": "63b9e83bdb6320e6a0b09477"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "9d8890551e39b738e0a02bae",
+   "first": "49017c4030607b10491e618a",
+   "second": "e37d335d621b9c6dd976920d"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "aa8b896d9f80ba17e97ec9d5",
+   "first": "c084b2e044837d6587aab37e",
+   "second": "d12e9fa2b039aee4cb3fb583"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "f6b64d1c65e6024c033484c0",
+   "first": "10d6b73d7f09b991b6f58f2a",
+   "second": "d596b8451e4246cbb43e5df2"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 3,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "2a9e45d00c1049435ce95ecc",
+   "first": "b3abb114354e2f0c914706a6",
+   "second": "4f045f5dab8286558868dabe"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "7aca50e2afdc5b1dce3e32d6",
+   "first": "ee849d023f98aca175c4286b",
+   "second": "2d5e4f19768ba72fd10b7393"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "43de44a8033801b41927834d",
+   "first": "4ec65fa114dc4ef6a830e31b",
+   "second": "33819efe64d76a7dd0d6970f"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "789cacdab4f3012eeb75eb01",
+   "first": "283ef0bc0911fcc350b77e11",
+   "second": "90f27be1373a8c4e7ffe6ce9"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "9285968ac1faf7d02cb59643",
+   "first": "3780493065bf7bf2317704f3",
+   "second": "5bede235fd2c3ae3feccadba"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "48eeeaf3c25c07ab7535f595",
+   "first": "f85f526adbfc195242aa89b6",
+   "second": "2c5414d4ace6cc38044cc8bd"
+  },
+  {
+   "combo": {
+    "balanceVersion": 1,
+    "growthVersion": 4,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "1b294e108b18e9ead79da3f2",
+   "first": "a8b5e396f20e6cec7e837980",
+   "second": "1a9a992ba6c84372fe6d2c9f"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "e530e7059d278dc7d79dd0bf",
+   "first": "511d56fa92447bc8b8042866",
+   "second": "f2902aee8bdabc94ffe1fdae"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "2d28eba6bbbbd0afd093d3c2",
+   "first": "bb7a01a3be3464f2f8b27057",
+   "second": "2076c67d936fbf5577db7c3b"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "1d294f7c84e616572d603974",
+   "first": "fed82c199ec6c378a45dd105",
+   "second": "6f60d9b7f834cac25a323078"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "217d16af928c1176f5c70055",
+   "first": "01cf5c299ba2787feebb5987",
+   "second": "aa1071433dd8492c86a2ae17"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "0b87de543a9afcbdae30b9ac",
+   "first": "8ebee7d30eb40357bf907b62",
+   "second": "56114ff458ffcc0995dc1a6c"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 1,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "e2ef89e68fe11b85958e078c",
+   "first": "27a96800e80d65e3c2aa0837",
+   "second": "26a625dae9bad0d22bccfb77"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "3733544c9683caaf2f3c5e56",
+   "first": "599d8adb6b09f55f2183492f",
+   "second": "09a74391c39060bbc8448767"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "d39a7f7ed6581fcead62cb4a",
+   "first": "3edd1e7f85c3a870e3016639",
+   "second": "97c66f75586adc208085b03a"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "18da0a67701d53c7c6dbf92c",
+   "first": "5039f36b69ae95dbb5fc0ef8",
+   "second": "8e29f41bcc62b90715bc0b01"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "26cf151d29c3bf02af6108c4",
+   "first": "1afa9974157acd6519ca0afb",
+   "second": "7c9811984c36eafc640b5f72"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "458c657dcdaf1d9bcd7474e5",
+   "first": "0e9bf3cbc16c4d492bf16433",
+   "second": "3427cc12164362f6e9b292e7"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 3,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "92ff3105cc62f7836c292e97",
+   "first": "00db4940ead96f1940eafc0f",
+   "second": "7ac61f840863170523a56199"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "0e437a52c2731a4d7c4eaf34",
+   "first": "a38d3481bc544909767424fa",
+   "second": "60e452a6b920eb30d38d96ce"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "cd673e3913e85cce55b9c197",
+   "first": "1e0fde053fb6b8f4c6c67243",
+   "second": "60e08680d0e67fadf24ac90a"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "50729cb7ba88674a104e6ce9",
+   "first": "bc473ded4c86d7bc8265ff30",
+   "second": "f8baf85963f75cd981850dfd"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "caa2221a095fb55b0728085c",
+   "first": "c42da7faecb56f05b9e32fe2",
+   "second": "5fbdfc4a52cc1ec12a832a58"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "bdf4942f78fcd8bb274e9a23",
+   "first": "3f55f4bd71a78b64bea45dde",
+   "second": "4ff09054ff0cb890a7e397ea"
+  },
+  {
+   "combo": {
+    "balanceVersion": 2,
+    "growthVersion": 4,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "8840980f442107f46b46389c",
+   "first": "d774c4e4bca55ba60c10b4eb",
+   "second": "5a37e0470d087ce2ec441f59"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "c7c9b76d1bc26e9e4d023627",
+   "first": "ac34362b6b38b7ee9f96b1f2",
+   "second": "2ac42d39835b3eb8ac2e23f5"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "3d7e3629a97fd700c40fc862",
+   "first": "c535b0f2908043e1d4794211",
+   "second": "9d4fcb765a83c26d28fa16ea"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "fa364611150809f2cce2819f",
+   "first": "bd20a33fb8d0c6c6b164b98f",
+   "second": "1dc55b5fec51292099c6f39b"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "49348cc328d0caaa4f2fd06f",
+   "first": "371df27ab628490af7ef5855",
+   "second": "2380f2487900e1591ffef6d5"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "b00fae4b89dd0ea21ff4059f",
+   "first": "a72264580177045520673a5a",
+   "second": "4bc5ec0c441f339d05603b4c"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 1,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "2680c6a680ba510f50928a26",
+   "first": "029da8cc749047dac8903070",
+   "second": "6ef5a1336684ab7ceb7a565a"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "8e5e98635a9cfc75dc36d75d",
+   "first": "059ad787f38c5e0a2e9c0cd1",
+   "second": "4ad33d8a8dec330a7c31f042"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "15bbaf091307dfb75a5c7797",
+   "first": "7caca5d31b9f26117f6afa9c",
+   "second": "a4cf71ca8dd0f2663be58035"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "a9c271214cd2a548905cce5f",
+   "first": "06620cf94108e379afb0e4e1",
+   "second": "6c3862ed3b6742e17768c479"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "bf9457a3e816ae5b13101132",
+   "first": "bd9949b9d90fb96e1ad55d8c",
+   "second": "f16f47e0e0c8dffbe754f618"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "3773dc8979c71bc52b8a4ef4",
+   "first": "6ecc8e6777539e85d69a975c",
+   "second": "10ba8bb1582bea6af0c04677"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 3,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "3685e6e1606ef53f98a96af6",
+   "first": "6e670c6189a423cdd27d9ec6",
+   "second": "e117297828e72e95e115cdc9"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 1
+   },
+   "path": 0,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "dcc6d561732ddd56cf69268b",
+   "first": "278454f5d25faebaef2bc9a8",
+   "second": "3dbf9a1e8decb07521a40bdd"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 3
+   },
+   "path": 1,
+   "station": [
+    4,
+    1
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "749cfa1428b5c229bdfaa431",
+   "first": "e29160533aafbec987eac637",
+   "second": "4339c1575bc162d053c55711"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 5
+   },
+   "path": 2,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "7e274ad678e73f08263e0b7b",
+   "first": "9580c8f80a071cd13eb66917",
+   "second": "c9b17869a3e81e40a541d51b"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 6
+   },
+   "path": 3,
+   "station": [
+    3,
+    0
+   ],
+   "difficulty": 0,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "92ed01bf9b3fc82aaf7e6f72",
+   "first": "ee45373955e8755bbc1e00c8",
+   "second": "789be2be63e8457e45b7ca62"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 7
+   },
+   "path": 4,
+   "station": [
+    5,
+    0
+   ],
+   "difficulty": 1,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "b6943f8cc3dd6791bae3ffca",
+   "first": "cd39a977a636dbb8a22af977",
+   "second": "6b1edf52d8eebd37a32d4fd3"
+  },
+  {
+   "combo": {
+    "balanceVersion": 3,
+    "growthVersion": 4,
+    "encounterVersion": 8
+   },
+   "path": 5,
+   "station": [
+    1,
+    1
+   ],
+   "difficulty": 2,
+   "mode": "seed",
+   "challengeVersion": 0,
+   "derived": "44c77240a7242a40299aa572",
+   "first": "7dc69b760114a966424207a4",
+   "second": "a23add173a231cca374be7f4"
+  }
+ ]
+}
