@@ -7,6 +7,10 @@
 export const DEFAULT_SKIN='default';
 export const SKINS=[
  {id:DEFAULT_SKIN,name:'初始装束',desc:'出发时的常服。',atlas:'hero',unlock:null},
+ {id:'frost',name:'霜青',desc:'偏冷的青碧长袍，金饰不改。',atlas:'heroFrost',unlock:{wins:1}},
+ {id:'night',name:'夜行',desc:'深紫夜行衣，便于在殿内潜行。',atlas:'heroNight',unlock:{wins:3}},
+ {id:'crimson',name:'赤霞',desc:'赤色礼服，取鼎之行的正装。',atlas:'heroCrimson',unlock:{wins:5}},
+ {id:'snow',name:'素雪',desc:'素白常服，收敛锋芒。',atlas:'heroSnow',unlock:{wins:10}},
 ];
 export const skinIds=SKINS.map(s=>s.id);
 export const skinById=id=>SKINS.find(s=>s.id===id)||SKINS.find(s=>s.id===DEFAULT_SKIN);
@@ -30,6 +34,8 @@ export function grantedSkins(save,registry=SKINS){
 // Kept pure and registry-parameterised so the contract stays covered while only one costume ships.
 export function normalizeSkinState(input,registry=SKINS){
  const ids=registry.map(s=>s.id),fallback=ids.includes(DEFAULT_SKIN)?DEFAULT_SKIN:ids[0];
- const skins=[...new Set([fallback,...(Array.isArray(input?.skins)?input.skins:[]).filter(id=>ids.includes(id))])];
+ // Stored grants are kept, and a costume whose condition the account already meets is granted on
+ // sight, so a fully played profile picks up a new costume without replaying anything.
+ const skins=[...new Set([fallback,...(Array.isArray(input?.skins)?input.skins:[]).filter(id=>ids.includes(id)),...grantedSkins(input,registry)])];
  return {skins,skin:skins.includes(input?.skin)?input.skin:fallback};
 }

@@ -120,3 +120,13 @@ Style: atmospheric handcrafted 16-bit pixel art, crisply visible square pixels, 
 - 裁切只搬运像素，不改色、不缩放。运行时背景提取与紧致裁切因此得到与原实现完全相同的结果：同一固定战斗画面在改动前后渲染出的画布哈希一致。
 - 该图集为 RGBA。第 0 格沿用原图的浅色棋盘格背景，仍由运行时提取，与其他图集的处理方式一致。
 - 编码为无损 WebP（`encoded/weapon-atlas.webp`），RGB 与 alpha 均与源图逐像素相同，哈希登记在 `encoded/manifest.json`。
+
+
+## 时装图集 · 2026-09-21
+
+四套时装图集（`hero-frost-atlas.png` 霜青、`hero-night-atlas.png` 夜行、`hero-crimson-atlas.png` 赤霞、`hero-snow-atlas.png` 素雪）由 `hanli-sword-atlas.png` 派生：原图统计显示服装织物集中在色相 195–210、高饱和、明度 0.3–0.4 的青碧色带，只对该色带做色相旋转与明度调整，皮肤、头发、描边与金色纹饰原样保留，所以同一张脸与同一套金饰在四套服装中都成立。
+
+- 布局与韩立图集一致（4 列 × 2 行、格 384×512、七帧姿态），第八格为空，运行时裁切规则不变。
+- 背景沿用原图的浅色棋盘格，仍由运行时提取，与其他人物图集一致。
+- 四张均编码为无损 WebP，RGB 与 alpha 与源图逐像素相同。
+- 这是配色派生而非重新绘制，风格线条与原版共享；若后续需要真正的差异化服装，替换同名源图并重新编码即可，代码与注册表无需改动。

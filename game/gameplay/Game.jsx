@@ -38,7 +38,7 @@ import {needsCultivationUpgrade,cultivationStatus} from './cultivation';
 import {planMetaRefund,planGardenRefund,planCultivationUpgrade} from './respec';
 import {CORES,defaultGarden,EXPEDITIONS} from './expedition-data';
 import {BossIdentity,ExpeditionPanel,Cinematic,Garden,SupplyChooser,RouteStrip,AtlasSprite,StoryReplay} from './ExpeditionPanel';
-import {loadArt,Renderer,sprite} from './art';
+import {loadArt,Renderer,applySkin,sprite} from './art';
 import {Sound} from './audio';
 import {PATHS,TRAITS,COMBOS,RELICS,CONSUMABLES,ENEMIES,CHAPTERS,EVENTS,DIFFICULTIES,LORE_URLS,initialSave,modText} from './data';
 import {JOURNAL,STORY_ITEMS} from './journal';
@@ -203,7 +203,7 @@ export default function Game(){
  }
  useEffect(()=>{
   try{vaultRef.current=new SaveVault(localStorage);const value=vaultRef.current.load();setSaved(value);refreshRecovery();if(value.keymap)setKeymap({...DEFAULT_KEYS,...value.keymap});}catch(error){refreshRecovery();saveFault(error);}
-  let alive=true;loadArt().then(a=>{if(!alive)return;setArt(a);artRef.current=a;const r=new Renderer(canvasRef.current,a);rendererRef.current=r;setReady(true);}).catch(e=>setError(e.message));
+ let alive=true;loadArt().then(a=>applySkin(a,saveRef.current.skin)).then(a=>{if(!alive)return;setArt(a);artRef.current=a;const r=new Renderer(canvasRef.current,a);rendererRef.current=r;setReady(true);}).catch(e=>setError(e.message));
   soundRef.current=new Sound();const keys=new Set();heldKeysRef.current=keys;
   const down=e=>{
    setInputDevice('keyboard');
@@ -242,7 +242,9 @@ export default function Game(){
   };handle=requestAnimationFrame(frame);
   if(new URLSearchParams(location.search).has('test'))window.__FANREN__={loadArt,get sceneInput(){return sceneInput.current;},get sound(){return soundRef.current;},get camera(){return rendererRef.current?.camera;},get bossDirection(){return rendererRef.current?.bossDirection;},get battle(){return battleRef.current;},get save(){return saveRef.current;},get art(){return artRef.current;},get risk(){return riskRef.current;},get runtimeFault(){return runtimeFaultRef.current;},start:(o)=>startRef.current(o),home,step:n=>{for(let i=0;i<n;i++)battleRef.current?.update(1/60);redraw(v=>v+1);},render:()=>rendererRef.current?.draw(battleRef.current,battleRef.current?.time||0,saveRef.current.settings)};
   return()=>{for(const [name,handler]of Object.entries(listeners))window.removeEventListener(name,handler,true);canvasObserver?.disconnect();window.removeEventListener('beforeunload',beforeLeave);window.removeEventListener('storage',onStorage);alive=false;cancelAnimationFrame(handle);clearTimeout(sceneTimer.current);clearTimeout(toastTimer.current);soundRef.current?.close();window.removeEventListener('keydown',down,true);window.removeEventListener('keyup',up,true);window.removeEventListener('blur',blur);window.removeEventListener('resize',resize);document.removeEventListener('visibilitychange',visibility);delete window.__FANREN__;};
- },[]);
+  },[]);
+  // Costume changes only swap the sliced pose set; nothing in the battle state is touched.
+  useEffect(()=>{const art=artRef.current;if(!art||art.skin===save.skin)return;let alive=true;applySkin(art,save.skin).then(()=>{if(alive)redraw(v=>v+1);}).catch(e=>{if(alive)setError(e.message);});return()=>{alive=false;};},[save.skin]);
  function downloadText(raw,name){const blob=new Blob([raw||''],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  function exportSave(){let raw;if(vaultRef.current?.corrupt)raw=vaultRef.current.expectedRaw;else raw=JSON.stringify(pendingSaveRef.current?.next||saveRef.current,null,2);downloadText(raw,vaultRef.current?.corrupt?'青竹剑阵_原始存档.json':'青竹剑阵_存档.json');message('已发起备份下载，请确认文件已保存');}
  async function importSave(e){

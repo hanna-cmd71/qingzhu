@@ -67,3 +67,13 @@ void test('a run snapshot carries no costume state',()=>{
  assert.equal(snapshot.options.skin,undefined);
  assert.equal(snapshot.options.skins,undefined);
 });
+
+void test('a costume is granted as soon as the account meets its condition',()=>{
+ const earned=normalizeSave({version:1,meta:[],history:[],wins:5});
+ assert.deepEqual(earned.skins,[DEFAULT_SKIN,'frost','night','crimson']);
+ assert.equal(earned.skin,DEFAULT_SKIN);
+ const veteran=normalizeSave({version:1,meta:[],history:[],wins:10});
+ assert.ok(veteran.skins.includes('snow'));
+ const equipped=normalizeSave({version:1,meta:[],history:[],wins:3,skin:'night'});
+ assert.equal(equipped.skin,'night');
+});

@@ -14,6 +14,7 @@
 |---|---|---|
 | hanli-sword-atlas.png | 韩立战斗小人（七帧姿态） | AI 生成，参考作者提供的人物与飞剑图 |
 | weapon-atlas.png | 御剑法门外观，飞剑独立图集 | 由 hanli-sword-atlas.png 原飞剑格逐像素裁切，四格布局，其余三格留空待新增法门 |
+| hero-frost / night / crimson / snow-atlas.png | 四套时装外观图集 | 由 hanli-sword-atlas.png 的服装织物色带换色派生；皮肤、头发、描边、金饰与背景原样保留 |
 | enemy-atlas.png | 敌方图集 | AI 生成的战术敌人原型 |
 | battlefield-atlas.png | 六种环境底图 | AI 生成 |
 | golden-beetle.png | 友方金色噬金虫 | AI 参考敌方图集甲虫生成金色版本 |

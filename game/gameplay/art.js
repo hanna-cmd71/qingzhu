@@ -7,6 +7,7 @@ import {gnawTargets} from './targeting.js';
 import {afterThunderWindow} from './balance.js';
 import {ENEMY_ROLES} from './content-rules.js';
 import ASSETS from './assets.generated.js';
+import {DEFAULT_SKIN,skinById} from './skins.js';
 import {drawHealthBar,healthFraction} from './meters.js';
 import {sigilFuse} from './sigil-metrics.js';
 import {WORLD} from './engine.js';
@@ -37,14 +38,26 @@ function crop(image,x,y,w,h,key=false){
 // used to be its eighth cell lives in its own sheet, so a costume cannot change the weapon and a
 // weapon cannot change the character.
 const HERO_COLUMNS=4,HERO_ROWS=2,HERO_POSES=7,WEAPON_COLUMNS=4;
+// Every costume sheet is embedded, but only the equipped one is sliced at startup, so a run that
+// never changes costume decodes exactly what it did before costumes existed.
+const heroPoses=image=>Array.from({length:HERO_POSES},(_,i)=>crop(image,(i%HERO_COLUMNS)*image.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*image.height/HERO_ROWS,image.width/HERO_COLUMNS,image.height/HERO_ROWS,true));
+export async function applySkin(art,skinId,sources=ASSETS){
+ const skin=skinById(skinId);
+ if(art.skin===skin.id&&art.heroes===art.skinPoses[skin.id])return art;
+ if(!art.skinPoses[skin.id])art.skinPoses[skin.id]=heroPoses(skin.id===DEFAULT_SKIN?art.skinSheets[DEFAULT_SKIN]:await load(sources[skin.atlas]));
+ art.heroes=art.skinPoses[skin.id];art.skin=skin.id;
+ return art;
+}
 export async function loadArt(sources=ASSETS){
  const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait,weaponSheet]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait),load(sources.weapons)]);
- const heroes=Array.from({length:HERO_POSES},(_,i)=>crop(hero,(i%HERO_COLUMNS)*hero.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*hero.height/HERO_ROWS,hero.width/HERO_COLUMNS,hero.height/HERO_ROWS,true));
+ const heroes=heroPoses(hero);
  const weapons=Array.from({length:WEAPON_COLUMNS},(_,i)=>crop(weaponSheet,i*weaponSheet.width/WEAPON_COLUMNS,0,weaponSheet.width/WEAPON_COLUMNS,weaponSheet.height,true));
  const foes=Array.from({length:16},(_,i)=>crop(enemies,(i%4)*enemies.width/4,Math.floor(i/4)*enemies.height/4,enemies.width/4,enemies.height/4));
  const grounds=Array.from({length:6},(_,i)=>crop(maps,(i%3)*maps.width/3,Math.floor(i/3)*maps.height/2,maps.width/3,maps.height/2));
  const grid=(img,cols,rows)=>Array.from({length:cols*rows},(_,i)=>crop(img,i%cols*img.width/cols,Math.floor(i/cols)*img.height/rows,img.width/cols,img.height/rows));
- return {heroes,weapons,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ const art={heroes,weapons,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ art.skin=DEFAULT_SKIN;art.skinSheets={[DEFAULT_SKIN]:hero};art.skinPoses={[DEFAULT_SKIN]:heroes};
+ return art;
 }
 export function sprite(ctx,img,x,y,height,alpha=1,flip=false){
  if(!img)return;const w=height*img.width/img.height;ctx.save();ctx.globalAlpha*=alpha;ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-height,w,height);ctx.restore();

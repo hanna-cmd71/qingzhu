@@ -130,9 +130,61 @@
       "bytes": 99604,
       "rgbaExact": true,
       "alphaExact": true
+    },
+    "heroFrost": {
+      "source": "hero-frost-atlas.png",
+      "file": "encoded/hero-frost-atlas.webp",
+      "mime": "image/webp",
+      "width": 1536,
+      "height": 1024,
+      "encoding": "lossless",
+      "sourceSHA256": "2a797fe5fe84a27dc7753e25bef044c4060d2a9cb6ad8f2ac20cb3636147df18",
+      "sha256": "66626d25e36d79b9d6d01193921a814adaab10c65a80179c8362dec848cdda27",
+      "bytes": 995486,
+      "rgbaExact": true,
+      "alphaExact": true
+    },
+    "heroNight": {
+      "source": "hero-night-atlas.png",
+      "file": "encoded/hero-night-atlas.webp",
+      "mime": "image/webp",
+      "width": 1536,
+      "height": 1024,
+      "encoding": "lossless",
+      "sourceSHA256": "da436252e7541812d3e8c9fe5d81d19936ef53f011dc29a92325c899c33c5076",
+      "sha256": "fd2eb529e98d93993dfa239928f40c9f937effcef3de255115e259890a6d7dc4",
+      "bytes": 994618,
+      "rgbaExact": true,
+      "alphaExact": true
+    },
+    "heroCrimson": {
+      "source": "hero-crimson-atlas.png",
+      "file": "encoded/hero-crimson-atlas.webp",
+      "mime": "image/webp",
+      "width": 1536,
+      "height": 1024,
+      "encoding": "lossless",
+      "sourceSHA256": "7ce369b82c0fd101d391e48b736a767b7904d5037dcbd0348083467e31e970db",
+      "sha256": "08e06b124f5a32eb3e67158af9485e45eff2cdab43632b67bba364ab3a13ae88",
+      "bytes": 1003938,
+      "rgbaExact": true,
+      "alphaExact": true
+    },
+    "heroSnow": {
+      "source": "hero-snow-atlas.png",
+      "file": "encoded/hero-snow-atlas.webp",
+      "mime": "image/webp",
+      "width": 1536,
+      "height": 1024,
+      "encoding": "lossless",
+      "sourceSHA256": "9156f8ffe29fb8f2da56c0930726c20e34369722aae27c93828335b51da5351a",
+      "sha256": "7898a136947c599471fb86de7a5035747a30b5ddcc1c62c7b8f4393fd690b0c5",
+      "bytes": 975238,
+      "rgbaExact": true,
+      "alphaExact": true
     }
   },
-  "sourceBytes": 18426020,
-  "encodedBytes": 9687418,
-  "decodedRGBABytes": 59767912
+  "sourceBytes": 23708308,
+  "encodedBytes": 13656698,
+  "decodedRGBABytes": 84933736
 }
