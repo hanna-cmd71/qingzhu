@@ -82,7 +82,10 @@ export class Battle {
  addXP(value){
   const previousLevel=this.level;this.xp+=value;this.totalXP+=value;let gained=0;
   while(this.xp>=xpCostFor(this,this.level)&&this.level<160){this.xp-=xpCostFor(this,this.level);this.level++;gained++;if(this.level%4===0)this.queuedChoices++;}
-  if(gained){this.syncSwords();this.pulse(this.player.x,this.player.y,'#b7f2c4',40);this.emit({type:'sound',name:'level'});if(previousLevel<72&&this.level>=72){this.toast('七十二剑齐出 · 调度已成');this.cue('formation-ready','七十二剑齐出 · 调度已成','#d7eeb4',2.4);this.emit({type:'formation-ready'});}}
+  // The seventy-two sword moment is a claim about the array, so it only plays when the array really
+  // holds seventy-two: a weapon method that thins the array never assembles them, and the message
+  // would otherwise contradict what the player sees.
+  if(gained){this.syncSwords();this.pulse(this.player.x,this.player.y,'#b7f2c4',40);this.emit({type:'sound',name:'level'});if(previousLevel<72&&this.level>=72&&this.swords.length>=72){this.toast('七十二剑齐出 · 调度已成');this.cue('formation-ready','七十二剑齐出 · 调度已成','#d7eeb4',2.4);this.emit({type:'formation-ready'});}}
  }
  chooseTrait(id){
   const t=TRAITS.find(x=>x.id===id);if(!t||this.modeState!=='choice'||!this.choices?.some(x=>x.id===id)||(this.traits[id]||0)>=t.max)return;

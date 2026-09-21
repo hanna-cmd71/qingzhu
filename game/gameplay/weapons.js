@@ -21,3 +21,12 @@ export const weaponDeclared=(options={})=>(options.weaponVersion??0)>=1;
 // never grants more swords than the level curve has already earned.
 export const weaponSwordCap=options=>weaponDeclared(options)?weaponById(options.weapon).swordCap:null;
 export const weaponMods=options=>weaponDeclared(options)?weaponById(options.weapon).mods:{};
+// Item text is derived from the same modifiers the engine reads, so the panel can never drift from
+// the numbers that actually apply.
+export function weaponEffectText(weapon=weaponById(DEFAULT_WEAPON)){
+ const parts=[];
+ if(weapon.swordCap)parts.push('剑数上限 '+weapon.swordCap);
+ for(const [key,label] of [['damage','剑伤'],['haste','攻速'],['swordSpeed','剑速'],['range','索敌']])if(weapon.mods[key])parts.push(label+' '+(weapon.mods[key]>0?'+':'')+Math.round(weapon.mods[key]*100)+'%');
+ if(weapon.mods.pierce)parts.push('穿透 +'+weapon.mods.pierce);
+ return parts.join(' · ')||'维持现有调度';
+}

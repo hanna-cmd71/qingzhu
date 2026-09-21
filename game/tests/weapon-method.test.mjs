@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Expedition} from '../gameplay/expedition.js';
 import {MAX_SWORDS} from '../gameplay/balance.js';
-import {WEAPON_VERSION,DEFAULT_WEAPON,WEAPONS,weaponById,weaponIds,weaponMods,weaponSwordCap} from '../gameplay/weapons.js';
+import {WEAPON_VERSION,DEFAULT_WEAPON,WEAPONS,weaponById,weaponIds,weaponMods,weaponSwordCap,weaponEffectText} from '../gameplay/weapons.js';
 
 const copy=x=>JSON.parse(JSON.stringify(x));
 const close=(a,b)=>Math.abs(a-b)<1e-9;
@@ -85,4 +85,52 @@ void test('an unknown method or an illegal version is refused before it can repl
  const orphan=copy(declare().serialize());
  delete orphan.options.weaponVersion;
  assert.throws(()=>Expedition.restore(orphan),/御剑法门版本/);
+});
+
+const rest=b=>{b.start();if(b.cinematic)b.advanceCinematic(true);b.completeNode();return b;};
+
+void test('a run without the marker is offered nothing and carries no weapon field',()=>{
+ const b=rest(new Expedition({seed:'wp5-plain',path:0}));
+ assert.equal('weaponOffers' in b.rest,false);
+ assert.deepEqual(b.makeWeaponOffers(),[]);
+ assert.deepEqual(Object.keys(b.serialize().expedition.rest).filter(k=>k.startsWith('weapon')),[]);
+});
+
+void test('a rest offers every other method, never the current one',()=>{
+ const b=rest(new Expedition({seed:'wp5-offers',path:0,weaponVersion:1,weapon:DEFAULT_WEAPON}));
+ assert.deepEqual(b.rest.weaponOffers,weaponIds.filter(id=>id!==DEFAULT_WEAPON));
+ assert.equal(b.selectWeapon('heavy'),true);
+ assert.equal(b.options.weapon,'heavy');
+ assert.deepEqual(b.rest.weaponOffers,weaponIds.filter(id=>id!=='heavy'),'the new current method drops out of the offers');
+ assert.equal(b.selectWeapon('heavy'),false,'re-selecting the current method is a no-op');
+});
+
+void test('equipping a method applies at once and the run keeps playing',()=>{
+ const b=rest(new Expedition({seed:'wp5-equip',path:0,weaponVersion:1,weapon:DEFAULT_WEAPON}));
+ b.level=72;b.syncSwords();
+ assert.equal(b.swords.length,72);
+ const damage=b.stats.damage;
+ assert.equal(b.selectWeapon('heavy'),true);
+ assert.ok(b.stats.damage>damage,'the method reaches the live stats');
+ assert.equal(b.swords.length,36,'and thins the array');
+ const restored=Expedition.restore(copy(b.serialize()));
+ assert.equal(restored.options.weapon,'heavy');
+ assert.equal(restored.swords.length,36);
+});
+
+void test('a rest that claims weapon offers without the marker is refused',()=>{
+ const b=rest(new Expedition({seed:'wp5-tamper',path:0}));
+ const d=copy(b.serialize());
+ d.expedition.rest.weaponOffers=['heavy'];
+ assert.throws(()=>Expedition.restore(d),/御剑法门择选无效/);
+ const declared=copy(rest(new Expedition({seed:'wp5-tamper2',path:0,weaponVersion:1,weapon:DEFAULT_WEAPON})).serialize());
+ declared.expedition.rest.weaponOffers=['ghost'];
+ assert.throws(()=>Expedition.restore(declared),/御剑法门择选无效/);
+});
+
+void test('method text is derived from the modifiers the engine applies',()=>{
+ assert.equal(weaponEffectText(weaponById(DEFAULT_WEAPON)),'维持现有调度');
+ const heavy=weaponEffectText(weaponById('heavy'));
+ assert.match(heavy,/剑数上限 36/);assert.match(heavy,/剑伤 \+35%/);assert.match(heavy,/攻速 -10%/);
+ assert.match(weaponEffectText(weaponById('pierce')),/穿透 \+1/);
 });

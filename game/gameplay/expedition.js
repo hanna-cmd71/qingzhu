@@ -20,6 +20,7 @@ import {INPUT_VERSION} from './battle-input.js';
 import {beginPracticeStep,updatePractice} from './practice.js';
 import {sigilFuse} from './sigil-metrics.js';
 import {BALANCE_VERSION,reserveRestoration,phase3Balance,puppetReady,sigilPairFuse,enemyDamageScale} from './balance.js';
+import {WEAPON_VERSION,DEFAULT_WEAPON,weaponIds,weaponById,weaponDeclared} from './weapons.js';
 import {shieldReward,restoreFeedback,recordHit} from './combat-feedback.js';
 import {validateCommonSnapshot,validateWorldSnapshot} from './snapshot-validation.js';
 import {validateEncounterState} from './encounter-validation.js';
@@ -159,6 +160,7 @@ export class Expedition extends Battle{
   if(last){if(this.chapter!==3&&['story','seed'].includes(this.mode))this.research+=this.chapter===5?2:1;this.emit({type:'chapter',chapter:this.chapter});if(this.chapter===3){this.grantStoryItems();this.storyInventory=[...new Set([...(this.storyInventory||[]),'five-rings','cape'])];}}
   const ending=endingCleanup(this);if(ending)this.gold+=cashReserve;
   this.rest={selectionMode:'draft',...(ending?{ending:true}:{}),eventApplied:ending,coreApplied:false,coreSelection:null,node:n.id,last,event:ending?null:this.makeEvent(),eventDone:ending,cashReserve,...(cashOptionsFor(this,cashReserve)?{cashOptions:cashOptionsFor(this,cashReserve)}:{}),bonus,riskGold,xp:n.xp,coreOffers:last&&[0,2].includes(this.chapter)?this.makeCoreOffers():[],coreDone:!last||![0,2].includes(this.chapter),shop:(!last&&this.wave===1&&this.chapter!==3),routeDone:last||this.routes[this.chapter][this.wave+1].selected!==null};
+  if(weaponDeclared(this.options))this.rest.weaponOffers=this.makeWeaponOffers();
   if(nodeGrowth(this))this.rest.growthReward={base:n.xp,performance:growthPerformance(this.growth.ledger),contract:bonus,total:n.xp+growthPerformance(this.growth.ledger)+bonus};
   this.rest.reserveGain=reserveGain;this.shopRolls=0;this.purchased=[];if(this.rest.shop)this.makeShop();this.showScene('intermission');
   if(last&&this.chapter===0&&!this.cinematicSeen.includes('ruins'))this.playCinematic('ruins');
@@ -235,6 +237,11 @@ export class Expedition extends Battle{
  buySupply(type,quote){if(!quote||quote.type!==type||quote.price!==supplyState(this,type).price||quote.snapshot!==JSON.stringify(this.serialize())){this.toast('补养报价已变化 · 请重新查看本次恢复与机缘');this.emit({type:'update'});return false;}return buySupply(this,type,quote.price);}
 
  makeCoreOffers(){if(revisedEconomy(this))return variedCoreOffers(this);const eligible=CORES.filter(c=>coreEligible(c,this)&&!this.relics.includes(c.id));const preferred=eligible.filter(c=>c.path===this.path),rest=eligible.filter(c=>c.path!==this.path);const result=preferred.slice(0,2);while(result.length<3&&rest.length)result.push(rest.splice(Math.floor(this.contentRng()*rest.length),1)[0]);return result.map(c=>c.id);}
+ // Weapon methods are an optional slot beside the carry slots. A run that never declared the system
+ // gets no offers at all, and every method stays reachable from every other one, so a rest is where
+ // the choice is made and remade. Equipping applies at once, like the shop and the late supply.
+ makeWeaponOffers(){if(!weaponDeclared(this.options))return [];const current=this.options.weapon??DEFAULT_WEAPON;return weaponIds.filter(id=>id!==current);}
+ selectWeapon(id){const r=this.rest;if(this.scene!=='intermission'||!r||!Array.isArray(r.weaponOffers)||!r.weaponOffers.includes(id))return false;if(id===(this.options.weapon??DEFAULT_WEAPON))return false;this.options.weaponVersion=WEAPON_VERSION;this.options.weapon=id;this.recalc();this.syncSwords();r.weaponOffers=this.makeWeaponOffers();this.toast('御剑法门 · '+weaponById(id).name);this.checkpoint();return true;}
  equipCore(id,replace=-1){if(this.rest?.selectionMode==='draft'&&!this.rest.coreApplied)return this.selectCore(id,replace);const c=CORES.find(c=>c.id===id);if(this.scene!=='intermission'||!this.rest?.coreOffers.includes(id)||this.rest.coreDone||!coreEligible(c,this))return false;const existing=this.relics.findIndex(id=>CORES.some(x=>x.id===id&&x.path===c.path));if(existing>=0)replace=existing;const count=this.relics.filter(id=>CORES.some(c=>c.id===id)).length;
   if(count>=2&&(replace<0||!CORES.some(c=>c.id===this.relics[replace])))return 'coreSlots';if(this.relics.length>=6&&replace<0)return 'replace';if(replace>=this.relics.length||replace< -1)return false;
   const hp=this.player.hp/this.player.maxHp,shield=this.player.shield;if(replace>=0){delete this.paidPrices[this.relics[replace]];this.relics.splice(replace,1);}this.relics.push(id);this.recalc();this.player.hp=this.player.maxHp*hp;this.player.shield=shield;this.rest.coreDone=true;this.checkpoint();return true;
@@ -313,7 +320,8 @@ export class Expedition extends Battle{
   if(!['intro','battle','choice','rest','pause'].includes(data.modeState)||!['intro','intermission','cinematic','choice','pause',null].includes(data.scene))throw Error('节点状态无效');
   if(ex.rest&&((!ex.receipts.includes(ex.rest.node)&&!(ex.rest.preparation&&ex.rest.node==='3:prep'&&data.chapter===3&&data.wave===0))||!Array.isArray(ex.rest.coreOffers)||ex.rest.coreOffers.some(id=>!CORES.some(c=>c.id===id))||(!ex.rest.preparation&&!ex.rest.ending&&(!ex.rest.event||!['single','chain'].includes(ex.rest.event.type)))))throw Error('结算记录无效');
   if(ex.rest?.ending!==undefined&&(ex.rest.ending!==true||!endingCleanup(b,data.chapter,data.wave)||ex.rest.node!=='5:3'||!ex.rest.last||ex.rest.event!==null||!ex.rest.eventDone||!ex.rest.eventApplied||ex.rest.shop||!ex.rest.routeDone))throw Error('结局整理记录无效');
-  if(ex.rest?.selectionMode!==undefined&&!['draft','committed','applying'].includes(ex.rest.selectionMode))throw Error('整备选择状态无效');
+ if(ex.rest?.selectionMode!==undefined&&!['draft','committed','applying'].includes(ex.rest.selectionMode))throw Error('整备选择状态无效');
+ if(ex.rest?.weaponOffers!==undefined&&(!Array.isArray(ex.rest.weaponOffers)||ex.rest.weaponOffers.length>8||ex.rest.weaponOffers.some(id=>!weaponIds.includes(id))||!weaponDeclared(data.options)))throw Error('御剑法门择选无效');
   if(ex.rest?.selectionMode==='draft'){
    const r=ex.rest,c=r.coreSelection;if(typeof r.eventApplied!=='boolean'||typeof r.coreApplied!=='boolean')throw Error('整备结算标记无效');
    if(r.eventDone&&r.event){const max=r.event.type==='single'?3:r.event.stage==='start'?3:2;if(!Number.isInteger(r.event.choice)||r.event.choice<0||r.event.choice>=max)throw Error('机缘暂选无效');}

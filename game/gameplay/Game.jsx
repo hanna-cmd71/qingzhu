@@ -50,6 +50,7 @@ import {STARTERS,starterStatus,starterDetails} from './starters';
 import {capturePointer} from './pointer-input';
 import CombatButton from './CombatButton';
 import {CostumePanel} from './CostumePanel';
+import {WEAPON_VERSION,DEFAULT_WEAPON} from './weapons';
 import {practiceFocusRelease,practiceFocusCleared} from './practice';
 import StarterPreview from './StarterPreview';
 import CombatStatus from './CombatStatus';
@@ -187,7 +188,9 @@ export default function Game(){
   if(needsCultivationUpgrade(saveRef.current)&&options.metaRulesVersion===undefined&&!(options.rulesVersion<=2)){upgradeCultivation(()=>start(options));return;}
   const chosenMode=options.mode||mode;if(chosenMode==='endless'&&saveRef.current.wins<=0){message('完成一次主篇或完整定种胜局后开放无尽新局；已有无尽可继续');return;}const day=new Date().toISOString().slice(0,10);
   const chosen={path,difficulty,mode:chosenMode,seed:chosenMode==='seed'?seed.trim()||day:day+'-'+Math.floor(Math.random()*9999),chapter:chosenMode==='replay'?chapter:0,meta:saveRef.current.meta,settings:saveRef.current.settings,rulesVersion:3,metaRulesVersion:3,supply:(saveRef.current.garden||defaultGarden()).selected,...options};
-  delete chosen.skipPractice;
+ delete chosen.skipPractice;
+  // New runs opt into the weapon-method slot; a restored run that never declared it keeps none.
+  chosen.weaponVersion=WEAPON_VERSION;chosen.weapon=DEFAULT_WEAPON;
   if(chosen.mode!=='training'&&!options.skipPractice&&!practiceAcknowledged.current&&!(saveRef.current.guidesSeen||[]).includes('practice-v1')&&!vaultRef.current?.recoveryIssue&&!vaultRef.current?.corrupt){battleRef.current?.pause();clearAim();setPracticeOffer(chosen);return;}
   const launch=()=>{soundRef.current?.start();const b=createRun(chosen,e=>eventRef.current?.(e));b.accountCleared=saveRef.current.wins>0;b.showGuide=!(saveRef.current.guidesSeen||[]).includes(chosen.path);
    const activate=()=>{if(chosen.studyVersion===1&&battleRef.current&&!studyRun(battleRef.current))studyReturnRef.current=battleRef.current;clearTimeout(sceneTimer.current);bossVisualUntil.current=0;rendererRef.current?.clearBossDefeat();clearTimeout(toastTimer.current);setToast('');runtimeFaultRef.current=null;setRuntimeFault(null);battleRef.current=b;setPage('play');setScene('intro');setReplace(null);};
