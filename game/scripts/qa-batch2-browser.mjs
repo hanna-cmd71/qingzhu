@@ -3,13 +3,13 @@
  */
 // Historical synthetic recovery fixtures omit later chapter-split/challenge data; live UI starts still use current defaults.
 /* oxlint-disable typescript/unbound-method -- QA fault injection restores Storage.prototype with its original receiver. */
-import {launchBrowser,qaOutput,offlineURL} from './browser-runtime.mjs';
+import {launchBrowser,qaOutput,qaFile,offlineURL} from './browser-runtime.mjs';
 import fs from 'node:fs';import assert from 'node:assert/strict';import {Expedition} from '../gameplay/expedition.js';import {initialSave} from '../gameplay/data.js';import {META} from '../gameplay/cultivation.js';import {settleRunResult} from '../gameplay/records.js';
 const out=qaOutput('batch2'),report={method:'Isolated actual Chrome with controlled QA fixtures and WebAudio/MediaRecorder; synthetic completion is not player speedrun evidence; no human listening or phone hardware',checks:[],views:[],errors:[],external:[]};
 const browser=await launchBrowser();
 async function open(w=1440,h=1000,save=initialSave(),png=false){const context=await browser.newContext({viewport:{width:w,height:h},hasTouch:true}),page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))report.external.push(r.url());});await page.addInitScript(s=>{if(!sessionStorage.seeded){localStorage.setItem('fanren-qingzhu-v1',JSON.stringify(s));sessionStorage.seeded='1';}},{...save,guidesSeen:['practice-v1']});await page.goto(offlineURL(png));await page.waitForFunction(()=>window.__FANREN__?.art);return {page,context};}
 async function view(page,selector){await page.waitForTimeout(350);return page.locator(selector).first().evaluate(e=>{const r=e.getBoundingClientRect(),hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,visible:r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1&&(hit===e||e.contains(hit))};});}
-async function shot(page,name){await page.waitForTimeout(300);await page.screenshot({path:new URL(name+'.png',out).pathname});}
+async function shot(page,name){await page.waitForTimeout(300);await page.screenshot({path:qaFile(out,name+'.png')});}
 function prior(){const b=new Expedition({segmentVersion:0,challengeVersion:0,runId:'browser-prior',seed:'browser-prior'});b.receipts=b.routes.flat().map(n=>n.id);b.time=120.125;b.won=true;return settleRunResult(initialSave(),b.summary());}
 async function finish(page,options={}){await page.evaluate(options=>{window.__FANREN__.start({mode:'story',segmentVersion:0,challengeVersion:0,skipPractice:true,seed:'b2-ui-result',...options});const b=window.__FANREN__.battle;b.time=100.125;b.receipts=b.routes.flat().map(n=>n.id);b.finish(true);},options);await page.waitForSelector('.result-record,.risk-dialog');}
 try{

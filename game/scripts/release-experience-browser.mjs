@@ -6,11 +6,11 @@
 // ≤420 隐藏保存图标／≤360 省头像仍在、悟道卡整卡可点；C-3 卡面「当前→修持后」与阶级；C-4 试剑台入场标题与按钮不重叠；
 // C-5 结算页固定计时下限；C-8 过场居中与账号级跳过开关。三视口截图：390×844、844×390、1440×900。
 // 用法：node browser-batchC.mjs <html 路径> <变体名 webp|png>
-import {launchBrowser,qaOutput,htmlPath,variant} from './browser-runtime.mjs';
+import {launchBrowser,qaOutput,qaFile,htmlPath,variant} from './browser-runtime.mjs';
 import {GAME_VERSION} from '../gameplay/version.js';
 import fs from 'node:fs';import {pathToFileURL} from 'node:url';
 const html=htmlPath;
-const OUT=qaOutput('experience').pathname;fs.mkdirSync(OUT,{recursive:true});
+const OUT=qaFile(qaOutput('experience'),'.');fs.mkdirSync(OUT,{recursive:true});
 const report={variant,html,checks:[],errors:[],measurements:{}};
 const ok=(name,pass,detail)=>{report.checks.push({name,pass:!!pass,detail});console.log((pass?'PASS ':'FAIL ')+name+(detail?' · '+JSON.stringify(detail).slice(0,420):''));};
 const browser=await launchBrowser();

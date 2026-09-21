@@ -4,7 +4,7 @@
 // Real browser inputs plus explicitly synthetic save fixtures; no personal profile is opened.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-import {launchBrowser,qaOutput,offlineURL,variant} from './browser-runtime.mjs';
+import {launchBrowser,qaOutput,qaFile,offlineURL,variant} from './browser-runtime.mjs';
 import {GAME_VERSION} from '../gameplay/version.js';
 import {initialSave} from '../gameplay/data.js';
 import {SAVE_KEY,BACKUP_KEY,JOURNAL_KEY,RAW_BACKUP_KEY,appendRawRecord} from '../gameplay/save-store.js';
@@ -22,10 +22,10 @@ try{
  for(const [width,height]of [[1440,900],[360,640],[390,844],[420,900],[844,390]]){
   const {page,context}=await open(width,height,null,false);assert.equal(await page.evaluate(()=>typeof window.__FANREN__),'undefined');assert.ok((await page.title()).endsWith(GAME_VERSION));
   await page.getByText('制作人：bilibili@卡布奇诺ultra',{exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByText('制作人：bilibili@卡布奇诺ultra',{exact:true}).isVisible());
-  if(width===1440)await page.screenshot({path:new URL('home.png',out).pathname});
+  if(width===1440)await page.screenshot({path:qaFile(out,'home.png')});
   const before=await snapshot(page);await page.getByRole('button',{name:/开源许可与源码/}).click();const body=page.getByLabel('开源许可正文');assert.match(await body.innerText(),/GPL-3.0-only/);assert.match(await body.innerText(),/GNU GENERAL PUBLIC LICENSE/);assert.match(await body.innerText(),/青竹剑阵_源码.zip/);
   await page.getByRole('button',{name:'关闭说明',exact:true}).click();assert.deepEqual(await snapshot(page),before);
-  await page.getByRole('button',{name:/游玩说明/}).click();await page.getByLabel('搜索说明关键词').fill('隔离原文');assert.match(await page.getByLabel('游玩说明正文').innerText(),/满额时停止本次覆盖/);await page.getByRole('button',{name:'下一个匹配段落',exact:true}).click();await page.screenshot({path:new URL('help-'+width+'x'+height+'.png',out).pathname});
+  await page.getByRole('button',{name:/游玩说明/}).click();await page.getByLabel('搜索说明关键词').fill('隔离原文');assert.match(await page.getByLabel('游玩说明正文').innerText(),/满额时停止本次覆盖/);await page.getByRole('button',{name:'下一个匹配段落',exact:true}).click();await page.screenshot({path:qaFile(out,'help-'+width+'x'+height+'.png')});
   await page.getByRole('button',{name:'关闭说明',exact:true}).click();await page.getByRole('button',{name:/更新日志/}).click();assert.equal((await page.getByLabel('更新日志正文').innerText()).trim(),'1.0正式发布');
   if(width===1440){
    await page.getByRole('button',{name:'关闭说明',exact:true}).click();await page.getByRole('button',{name:/藏经图鉴/}).click();
@@ -46,8 +46,8 @@ try{
  const importFile=async()=>{await page.locator('.import-label input').setInputFiles(file);await page.locator('.recovery-panel').filter({hasText:'导入资料 · 只读预览'}).getByRole('button',{name:'查看并恢复'}).click();};
  await importFile();assert.deepEqual(await snapshot(page),before);await page.locator('.risk-confirm').click();await page.getByText(/隔离原文已满 12 份/).waitFor();assert.deepEqual(await snapshot(page),before);
  await page.getByRole('button',{name:'清理隔离原文 · 12 份',exact:true}).click();await cancel(page);assert.deepEqual(await snapshot(page),before);
- await page.getByRole('button',{name:'清理隔离原文 · 12 份',exact:true}).click();const download=page.waitForEvent('download');await page.locator('.risk-dialog').getByRole('button',{name:'导出原文',exact:true}).click();const exported=await download,exportPath=new URL('recovery-export.json',out).pathname;await exported.saveAs(exportPath);const bundle=JSON.parse(fs.readFileSync(exportPath,'utf8'));assert.equal(bundle.records.length,12);assert.equal(bundle.primary,slots[SAVE_KEY]);assert.deepEqual(await snapshot(page),before);
- await page.screenshot({path:new URL('cleanup-confirm.png',out).pathname});
+ await page.getByRole('button',{name:'清理隔离原文 · 12 份',exact:true}).click();const download=page.waitForEvent('download');await page.locator('.risk-dialog').getByRole('button',{name:'导出原文',exact:true}).click();const exported=await download,exportPath=qaFile(out,'recovery-export.json');await exported.saveAs(exportPath);const bundle=JSON.parse(fs.readFileSync(exportPath,'utf8'));assert.equal(bundle.records.length,12);assert.equal(bundle.primary,slots[SAVE_KEY]);assert.deepEqual(await snapshot(page),before);
+ await page.screenshot({path:qaFile(out,'cleanup-confirm.png')});
  // A foreign change after the dialog opens must invalidate confirmation.
  await page.evaluate(key=>localStorage.setItem(key,'foreign backup'),BACKUP_KEY);await page.locator('.risk-confirm').click();assert.equal((await snapshot(page))[RAW_BACKUP_KEY],before[RAW_BACKUP_KEY]);
  await page.getByRole('button',{name:'清理隔离原文 · 12 份',exact:true}).click();await page.locator('.risk-confirm').click();assert.equal((await snapshot(page))[RAW_BACKUP_KEY],null);assert.equal((await snapshot(page))[JOURNAL_KEY],before[JOURNAL_KEY]);

@@ -11,4 +11,7 @@ export const variant=process.env.QINGZHU_ASSET_PROFILE==='png'?'png':'webp';
 export const htmlPath=path.resolve(process.env.QINGZHU_HTML||path.join(projectRoot,variant==='png'?'凡人修仙传_青竹剑阵_兼容PNG.html':'凡人修仙传_青竹剑阵.html'));
 export const offlineURL=(png=false)=>pathToFileURL(png&&!process.env.QINGZHU_HTML?path.join(projectRoot,'凡人修仙传_青竹剑阵_兼容PNG.html'):htmlPath).href+'?test=1';
 export function qaOutput(name){const url=pathToFileURL(path.join(projectRoot,'game/qa/release',variant,name)+path.sep);fs.mkdirSync(url,{recursive:true});return url;}
+// URL.pathname is not a filesystem path: on Windows it keeps a leading slash before the drive
+// ('/E:/...'), which resolves relative to the current drive and breaks screenshot/download targets.
+export const qaFile=(out,name)=>fileURLToPath(new URL(name,out));
 export const launchBrowser=()=>chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});
