@@ -26,6 +26,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Chromium writes these into the working directory during browser-based verification.
+/debug.log
+/chrome_debug.log
+
 # local environment
 .env*
 
