@@ -3,6 +3,7 @@
  */
 import {chapterName} from './chapter-names.js';
 import {modText} from './descriptions.js';
+import {DEFAULT_SKIN} from './skins.js';
 export {modText,STAT_NAMES} from './descriptions.js';
 // Save-format version; independent from the player-facing GAME_VERSION.
 export const VERSION=1;
@@ -133,6 +134,6 @@ export const DIFFICULTIES=[{name:'初入仙途',desc:'敌人生命 −15%、伤�
 export function xpCost(l){return Math.round(8+2.4*l+.035*l*l);}
 export function hashSeed(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
 export function seeded(seed){let a=seed>>>0;const f=()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};f.state=()=>a>>>0;f.set=n=>a=n>>>0;return f;}
-export function initialSave(){return {version:VERSION,metaRulesVersion:3,unlocked:0,insight:0,meta:[],seen:[],relicSeen:[],wins:0,runs:0,kills:0,best:0,achievements:[],history:[],records:{schema:1,entries:[],receipts:[]},checkpoint:null,settings:{music:.15,sfx:.4,shake:true,flash:false,numbers:false,quality:1,joystickSide:'left',joystickSize:'standard',skillSide:'right',touchLock:false,skipSeenCinematics:false,endlessSkipSeen:true,skipSeenAfterWin:false}};}
+export function initialSave(){return {version:VERSION,metaRulesVersion:3,unlocked:0,insight:0,meta:[],seen:[],relicSeen:[],wins:0,runs:0,kills:0,best:0,achievements:[],skins:[DEFAULT_SKIN],skin:DEFAULT_SKIN,history:[],records:{schema:1,entries:[],receipts:[]},checkpoint:null,settings:{music:.15,sfx:.4,shake:true,flash:false,numbers:false,quality:1,joystickSide:'left',joystickSize:'standard',skillSide:'right',touchLock:false,skipSeenCinematics:false,endlessSkipSeen:true,skipSeenAfterWin:false}};}
 
 export function relicDescription(item){return modText(RELICS.find(r=>r.id===item?.id)?.mods||item?.mods||{});}

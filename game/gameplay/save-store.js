@@ -6,6 +6,7 @@ import {normalizeRecords,recoverRecords} from './records.js';
 import {touchSettings} from './touch-controls.js';
 import {copyAllies} from './snapshot-fields.js';
 import {initialSave,META} from './data.js';
+import {normalizeSkinState} from './skins.js';
 import {restoreRun} from './run-factory.js';
 import {normalizeGarden} from './expedition-data.js';
 export const MAX_SAVE_IMPORT_BYTES=8*1024*1024;
@@ -31,11 +32,12 @@ export function readableSaveError(error){
 }
 export function normalizeSave(x){
  if(!x||x.version!==1||!Array.isArray(x.meta)||!Array.isArray(x.history))throw new SaveError('invalid','存档格式无法识别');
- const base=initialSave(),allowed=['version','unlocked','insight','meta','metaRulesVersion','seen','relicSeen','wins','runs','kills','best','achievements','history','records','checkpoint','settings','keymap','garden','completed','guidesSeen','savedAt','revision'],known=Object.fromEntries(allowed.filter(k=>k in x).map(k=>[k,x[k]])),out={...base,...known,settings:{...base.settings,...x.settings}};out.metaRulesVersion=x.metaRulesVersion??(x.meta.length?1:3);if(![1,2,3].includes(out.metaRulesVersion))throw new SaveError('invalid','洞府规则版本无法识别');
+ const base=initialSave(),allowed=['version','unlocked','insight','meta','metaRulesVersion','seen','relicSeen','wins','runs','kills','best','achievements','skins','skin','history','records','checkpoint','settings','keymap','garden','completed','guidesSeen','savedAt','revision'],known=Object.fromEntries(allowed.filter(k=>k in x).map(k=>[k,x[k]])),out={...base,...known,settings:{...base.settings,...x.settings}};out.metaRulesVersion=x.metaRulesVersion??(x.meta.length?1:3);if(![1,2,3].includes(out.metaRulesVersion))throw new SaveError('invalid','洞府规则版本无法识别');
  for(const key of ['insight','unlocked','wins','runs','kills','best'])if(!Number.isSafeInteger(out[key])||out[key]<0||out[key]>1e12)throw new SaveError('invalid','存档数值无效');
  if(!Number.isInteger(out.unlocked)||out.unlocked>5||out.best>72)throw new SaveError('invalid','存档章节无效');
  out.meta=[...new Set(x.meta.filter(id=>META.some(m=>m.id===id)))];out.history=keptHistory(x.history);for(const h of out.history)validateHistoryExperience(h);
  for(const key of ['seen','relicSeen','achievements','completed','guidesSeen'])out[key]=Array.isArray(x[key])?x[key].filter(v=>typeof v==='string'||Number.isFinite(v)):[];
+ Object.assign(out,normalizeSkinState(out));
  for(const key of ['music','sfx'])out.settings[key]=Number.isFinite(out.settings[key])?Math.max(0,Math.min(1,out.settings[key])):base.settings[key];
  for(const key of ['shake','flash','numbers','skipSeenCinematics','endlessSkipSeen','skipSeenAfterWin'])out.settings[key]=typeof out.settings[key]==='boolean'?out.settings[key]:base.settings[key];out.settings.quality=out.settings.quality===0?0:1;Object.assign(out.settings,touchSettings(out.settings));
  for(const k of ['revision','savedAt'])if(out[k]!==undefined&&(!Number.isSafeInteger(out[k])||out[k]<0||out[k]>1e15))throw new SaveError('invalid','存档时间或修订记录无效');
