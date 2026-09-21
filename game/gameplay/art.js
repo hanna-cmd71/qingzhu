@@ -33,13 +33,18 @@ function crop(image,x,y,w,h,key=false){
  if(right<=left||bottom<=top)return c;
  const out=canvas(right-left+3,bottom-top+3);out.getContext('2d').drawImage(c,left,top,right-left+1,bottom-top+1,1,1,right-left+1,bottom-top+1);return out;
 }
+// Atlas layouts. The hero sheet is 4x2 and now carries character poses only: the flying sword that
+// used to be its eighth cell lives in its own sheet, so a costume cannot change the weapon and a
+// weapon cannot change the character.
+const HERO_COLUMNS=4,HERO_ROWS=2,HERO_POSES=7,WEAPON_COLUMNS=4;
 export async function loadArt(sources=ASSETS){
- const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait)]);
- const heroes=Array.from({length:8},(_,i)=>crop(hero,(i%4)*hero.width/4,Math.floor(i/4)*hero.height/2,hero.width/4,hero.height/2,true));
+ const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait,weaponSheet]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait),load(sources.weapons)]);
+ const heroes=Array.from({length:HERO_POSES},(_,i)=>crop(hero,(i%HERO_COLUMNS)*hero.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*hero.height/HERO_ROWS,hero.width/HERO_COLUMNS,hero.height/HERO_ROWS,true));
+ const weapons=Array.from({length:WEAPON_COLUMNS},(_,i)=>crop(weaponSheet,i*weaponSheet.width/WEAPON_COLUMNS,0,weaponSheet.width/WEAPON_COLUMNS,weaponSheet.height,true));
  const foes=Array.from({length:16},(_,i)=>crop(enemies,(i%4)*enemies.width/4,Math.floor(i/4)*enemies.height/4,enemies.width/4,enemies.height/4));
  const grounds=Array.from({length:6},(_,i)=>crop(maps,(i%3)*maps.width/3,Math.floor(i/3)*maps.height/2,maps.width/3,maps.height/2));
  const grid=(img,cols,rows)=>Array.from({length:cols*rows},(_,i)=>crop(img,i%cols*img.width/cols,Math.floor(i/cols)*img.height/rows,img.width/cols,img.height/rows));
- return {heroes,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ return {heroes,weapons,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
 }
 export function sprite(ctx,img,x,y,height,alpha=1,flip=false){
  if(!img)return;const w=height*img.width/img.height;ctx.save();ctx.globalAlpha*=alpha;ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-height,w,height);ctx.restore();
@@ -124,9 +129,9 @@ export class Renderer{
   sprite(ctx,this.art.heroes[frame],p.x,p.y+9+(p.moving?Math.sin(seconds*15)*1.8:0),b?60:175,p.invuln>0&&Math.floor(seconds*15)%2===0?.55:1);
   ctx.restore();
   ctx.strokeStyle='#c8e5cd70';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y+9,14,4,0,0,TAU);ctx.stroke();
-  const swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
+  const weaponArt=this.art.weapons[0],swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
   for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){ctx.strokeStyle=b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
-   ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=this.art.heroes[7],height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
+    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=weaponArt,height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
   }
   if(b?.input.focus&&b.input.aim){const a=b.input.aim,r=16/scale,arm=22/scale;ctx.strokeStyle='#f1e5b5';ctx.lineWidth=2/scale;ctx.beginPath();ctx.arc(a.x,a.y,r,0,TAU);ctx.stroke();ctx.beginPath();ctx.moveTo(a.x-arm,a.y);ctx.lineTo(a.x+arm,a.y);ctx.moveTo(a.x,a.y-arm);ctx.lineTo(a.x,a.y+arm);ctx.stroke();}
   if(b)for(const f of b.fx){

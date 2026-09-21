@@ -11,7 +11,7 @@ import {emptyFire,shieldReward,consumableState,restoreFeedback,recordHit,cue,FIR
 import {applySlow,tickSlow} from './slow.js';
 import {directFocus} from './targeting.js';
 import {expandedContent} from './content-rules.js';
-import {revisedBalance,phase3Balance,dashCooldown,thunderCost,sigilGrowth,sigilArming,sigilTargets,sigilWarn,sigilCooldown,stationaryActive,puppetReady,starterExtras,reserveFor,traitMods,afterThunderWindow,levelHpBonus,allyBaseScale,insectLeash,insectFocusFirst,guardCounterScale,swordPuppetInherit,fireGuardShield} from './balance.js';
+import {revisedBalance,phase3Balance,dashCooldown,thunderCost,sigilGrowth,sigilArming,sigilTargets,sigilWarn,sigilCooldown,stationaryActive,puppetReady,starterExtras,reserveFor,traitMods,afterThunderWindow,levelHpBonus,allyBaseScale,insectLeash,insectFocusFirst,guardCounterScale,swordPuppetInherit,fireGuardShield,swordCountFor} from './balance.js';
 import {xpCostFor} from './growth-rules.js';
 import {cultivationMods} from './cultivation.js';
 import {DAMAGE_SOURCES,WORLD} from './combat-values.js';
@@ -69,7 +69,7 @@ export class Battle {
  }
  // Level-derived state has one sync hook: the sword count and, under balance 4, the max-HP bonus (+4 per 8 levels). A level change
  // that has not been recalculated yet is reconciled here; the gained maximum is also added to current HP once.
- syncSwords(){if(this.player&&this.stats&&levelHpBonus(this)!==(this.levelHpApplied||0)){const before=this.player.maxHp;this.recalc();this.player.hp=Math.min(this.player.maxHp,this.player.hp+Math.max(0,this.player.maxHp-before));}const n=Math.min(72,this.level);while(this.swords.length<n)this.swords.push({x:this.player.x,y:this.player.y,px:this.player.x,py:this.player.y,a:0,cool:this.swords.length*.012,target:null,hits:[],life:0});}
+ syncSwords(){if(this.player&&this.stats&&levelHpBonus(this)!==(this.levelHpApplied||0)){const before=this.player.maxHp;this.recalc();this.player.hp=Math.min(this.player.maxHp,this.player.hp+Math.max(0,this.player.maxHp-before));}const n=swordCountFor(this.level,this.options);while(this.swords.length<n)this.swords.push({x:this.player.x,y:this.player.y,px:this.player.x,py:this.player.y,a:0,cool:this.swords.length*.012,target:null,hits:[],life:0});if(this.swords.length>n)this.swords.length=n;}
  start(){this.scene=null;this.modeState='battle';this.waveTime=0;if(this.wave===3&&!this.boss)this.spawnBoss();this.emit({type:'scene',scene:null});if(this.time===0){this.spawn(4,{x:790,y:430});this.spawn(4,{x:440,y:400});this.spawn(5,{x:640,y:210});}this.toast(CHAPTERS[this.chapter].name+' · 第 '+(this.wave+1)+' 波');}
  pause(){clearDashInput(this);clearTouchLock(this,true);if(this.modeState==='battle'){this.modeState='pause';this.scene='pause';this.emit({type:'scene',scene:'pause'});}}
  requestDash(){return requestDash(this);}

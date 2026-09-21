@@ -58,6 +58,11 @@ export const traitText=(b,trait)=>phase4Balance(b)&&BALANCE4.traitText[trait.id]
 export const afterThunderWindow=b=>phase4Balance(b)?BALANCE4.afterThunderWindow:5;
 export const enemyDamageScale=b=>1+b.chapter*(phase4Balance(b)?BALANCE4.enemyDamagePerChapter:.13);
 export const levelHpBonus=b=>phase4Balance(b)&&BALANCE4.hpPerEightLevels?Math.floor(b.level/8)*BALANCE4.hpPerEightLevels:0;
+// Sword count is configuration driven with a level fallback: a weapon method may declare
+// options.swordCount, while a run without that declaration keeps the original min(72, level)
+// relation, so restored 1.0 runs are unaffected. Level-derived damage still reads the level.
+export const MAX_SWORDS=72;
+export const swordCountFor=(level,options)=>Number.isFinite(options?.swordCount)?Math.max(1,Math.min(MAX_SWORDS,Math.round(options.swordCount))):Math.min(MAX_SWORDS,level);
 export const allyBaseScale=(b,kind)=>b.rulesVersion>=2&&b.path===(kind==='puppet'?2:3)?(phase4Balance(b)?BALANCE4.allyBase[kind]:kind==='puppet'?.72:.68)*(1+Math.floor(Math.min(72,b.level)/12)*.2):1;
 export const insectLeash=b=>phase4Balance(b)&&BALANCE4.insectLeash!==null?BALANCE4.insectLeash:Infinity;
 export const insectFocusFirst=b=>phase4Balance(b)&&BALANCE4.insectFocusFirst===true;
