@@ -111,3 +111,12 @@ Style: atmospheric handcrafted 16-bit pixel art, crisply visible square pixels, 
 - `expedition-props-atlas.png`：1254×1254，3×3，阵眼、关闭／开启石门、三阶段草株、绿瓶、香炉与物资袋。
 
 三张为 RGBA，具有真实透明像素，头像 alpha 上限为 254，另两张上限 255；保留原始透明通道。人物与物件的取样、裁切用于精灵渲染，未把透明背景替换为假棋盘格。
+
+
+## 飞剑独立图集 · 2026-09-21
+
+`weapon-atlas.png`（1536×512，4 列 × 1 行，格 384×512）由 `hanli-sword-atlas.png` 的第 7 格（第 2 行第 4 列）逐像素裁切得到，写入第 0 格；其余三格为全透明，留给后续新增的御剑法门。
+
+- 裁切只搬运像素，不改色、不缩放。运行时背景提取与紧致裁切因此得到与原实现完全相同的结果：同一固定战斗画面在改动前后渲染出的画布哈希一致。
+- 该图集为 RGBA。第 0 格沿用原图的浅色棋盘格背景，仍由运行时提取，与其他图集的处理方式一致。
+- 编码为无损 WebP（`encoded/weapon-atlas.webp`），RGB 与 alpha 均与源图逐像素相同，哈希登记在 `encoded/manifest.json`。

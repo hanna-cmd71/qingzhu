@@ -117,9 +117,22 @@
       "bytes": 981046,
       "rgbaExact": true,
       "alphaExact": true
+    },
+    "weapons": {
+      "source": "weapon-atlas.png",
+      "file": "encoded/weapon-atlas.webp",
+      "mime": "image/webp",
+      "width": 1536,
+      "height": 512,
+      "encoding": "lossless",
+      "sourceSHA256": "a6d07fcad6e8aa326ec0bf8f51c5b7dfb7d9c476406ad15ac533604533bd337f",
+      "sha256": "86028f9fe8317043fea9c916530887bff689577c53d14dc65b82ac7a67d48136",
+      "bytes": 99604,
+      "rgbaExact": true,
+      "alphaExact": true
     }
   },
-  "sourceBytes": 18260256,
-  "encodedBytes": 9587814,
-  "decodedRGBABytes": 56622184
+  "sourceBytes": 18426020,
+  "encodedBytes": 9687418,
+  "decodedRGBABytes": 59767912
 }
