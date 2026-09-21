@@ -41,12 +41,21 @@ const HERO_COLUMNS=4,HERO_ROWS=2,HERO_POSES=7,WEAPON_COLUMNS=4;
 // Every costume sheet is embedded, but only the equipped one is sliced at startup, so a run that
 // never changes costume decodes exactly what it did before costumes existed.
 const heroPoses=image=>Array.from({length:HERO_POSES},(_,i)=>crop(image,(i%HERO_COLUMNS)*image.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*image.height/HERO_ROWS,image.width/HERO_COLUMNS,image.height/HERO_ROWS,true));
-export async function applySkin(art,skinId,sources=ASSETS){
+async function ensureSkin(art,skinId,sources){
  const skin=skinById(skinId);
- if(art.skin===skin.id&&art.heroes===art.skinPoses[skin.id])return art;
  if(!art.skinPoses[skin.id])art.skinPoses[skin.id]=heroPoses(skin.id===DEFAULT_SKIN?art.skinSheets[DEFAULT_SKIN]:await load(sources[skin.atlas]));
+ return skin;
+}
+export async function applySkin(art,skinId,sources=ASSETS){
+ const skin=await ensureSkin(art,skinId,sources);
  art.heroes=art.skinPoses[skin.id];art.skin=skin.id;
  return art;
+}
+// Preview reads a pose without touching art.heroes, so browsing costumes never changes what is worn.
+export async function skinPose(art,skinId,index=0,sources=ASSETS){
+ const skin=await ensureSkin(art,skinId,sources);
+ const poses=art.skinPoses[skin.id];
+ return poses[index]||poses[0];
 }
 export async function loadArt(sources=ASSETS){
  const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait,weaponSheet]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait),load(sources.weapons)]);
