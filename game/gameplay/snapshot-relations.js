@@ -4,6 +4,7 @@
 import {CONSUMABLES} from './data.js';
 import {WORLD} from './combat-values.js';
 import {swordCountFor} from './balance.js';
+import {weaponSwordCap} from './weapons.js';
 const EPS=1e-6;
 const fail=label=>{throw Error(label+'不一致，原记录未被修改');};
 const bounds=(value,min,max,label)=>{if(!Number.isFinite(value)||value<min-EPS||value>max+EPS)fail(label);};
@@ -16,7 +17,7 @@ const maxInvuln=Math.max(3,...CONSUMABLES.filter(c=>c.effect==='invincible').map
 export function validateSnapshotRelations(data,battle){
  const p=data.player,ex=data.expedition,time=data.time;
  // Structural level relation first: under balance 4 the max HP also derives from the level, so a tampered level is reported as a sword/level mismatch.
- if(ex.swords.length!==swordCountFor(data.level,battle.options))fail('飞剑数量与等级');
+ if(ex.swords.length!==swordCountFor(data.level,weaponSwordCap(battle.options)))fail('飞剑数量与等级');
  for(const [key,name] of [['maxHp','生命上限'],['maxShield','常驻护盾上限'],['maxReserve','雷源上限']]){
   if(Math.abs(p[key]-battle.player[key])>EPS)fail(name+'与出发配置');
  }

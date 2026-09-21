@@ -4,6 +4,7 @@
 import {validateFeedback,validateOrigin,FIRE_KINDS} from './combat-feedback.js';
 import {ENEMIES,META} from './data.js';
 import {SLOW_SOURCES} from './slow.js';
+import {weaponIds} from './weapons.js';
 import {DAMAGE_SOURCES,PROJECTILE_SOURCES,MAX_PLAYER_RESOURCE,ZONE_KINDS} from './combat-values.js';
 import {BALANCE4} from './balance.js';
 const TIME=1e8,COUNT=1e12,POWER=1e200;
@@ -26,6 +27,9 @@ export function validateCommonSnapshot(d){
  if(d.options.inputVersion!==undefined&&![1,2].includes(d.options.inputVersion))fail('输入规则版本');
  if(d.options.contentVersion!==undefined&&![1,2,3].includes(d.options.contentVersion))fail('敌人与物资内容版本');
  if(d.options.balanceVersion!==undefined&&![1,2,3,4].includes(d.options.balanceVersion))fail('战斗平衡版本');
+ if(d.options.weaponVersion!==undefined&&d.options.weaponVersion!==1)fail('御剑法门版本');
+ if(d.options.weaponVersion===1&&!weaponIds.includes(d.options.weapon))fail('御剑法门');
+ if(d.options.weapon!==undefined&&d.options.weaponVersion!==1)fail('御剑法门版本');
  if(d.options.mode!==undefined&&!['story','seed','replay','endless','training'].includes(d.options.mode))fail('历练模式');if(d.seed!==undefined&&(typeof d.seed!=='string'||d.seed.length>256))fail('历练种子');if(d.formation!==undefined)number(d.formation,'御剑方式',0,2,true);
  number(d.level,'进阶等级',1,160,true);number(d.time,'历练时间',0,TIME);for(const k of ['xp','totalXP','gold','kills','thunders','hitCount','rerolls','queuedChoices'])number(d[k],'历练数值',0,COUNT,k!=='xp'&&k!=='totalXP');
  if(d.endlessLoop!==undefined)number(d.endlessLoop,'无尽轮次',0,1000,true);

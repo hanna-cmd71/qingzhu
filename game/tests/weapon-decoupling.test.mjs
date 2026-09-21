@@ -13,29 +13,32 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const manifest=JSON.parse(read('public/assets/encoded/manifest.json'));
 
-void test('sword count keeps the level relation unless a weapon method declares one',()=>{
- for(const level of [1,12,36,71,72,100,160])assert.equal(swordCountFor(level,{}),Math.min(MAX_SWORDS,level));
- assert.equal(swordCountFor(72,undefined),72);
- for(const options of [{},{swordCount:undefined},{swordCount:null},{swordCount:NaN},{swordCount:'72'}])assert.equal(swordCountFor(72,options),72);
-});
-
-void test('a declared sword count wins and is clamped to the legal range',()=>{
+void test('sword count follows the level curve and is only thinned by a cap',()=>{
  assert.equal(MAX_SWORDS,72);
- for(const [declared,expected] of [[50,50],[1,1],[0,1],[-5,1],[72,72],[999,72],[36.4,36]])assert.equal(swordCountFor(1,{swordCount:declared}),expected);
- assert.equal(swordCountFor(100,{swordCount:12}),12);
+ for(const level of [1,12,36,71,72,100,160])assert.equal(swordCountFor(level,null),Math.min(MAX_SWORDS,level));
+ for(const cap of [undefined,null,NaN,72,999])for(const level of [1,40,72])assert.equal(swordCountFor(level,cap),Math.min(MAX_SWORDS,level));
+ // A cap thins the array but can never exceed the level curve or the canonical seventy-two.
+ assert.equal(swordCountFor(72,36),36);
+ assert.equal(swordCountFor(10,36),10);
+ assert.equal(swordCountFor(72,36.4),36);
+ assert.equal(swordCountFor(72,0),1);
 });
 
 void test('a declared count reaches the live battle and survives a snapshot roundtrip',()=>{
- const b=new Expedition({seed:'wp0-count',path:0,swordCount:50});
- assert.equal(b.swords.length,50);
+ const b=new Expedition({seed:'wp0-count',path:0,weaponVersion:1,weapon:'heavy'});
+ b.level=72;b.syncSwords();
+ assert.equal(b.swords.length,36);
  const restored=Expedition.restore(copy(b.serialize()));
- assert.equal(restored.options.swordCount,50);
- assert.equal(restored.swords.length,50);
+ assert.equal(restored.options.weapon,'heavy');
+ assert.equal(restored.options.weaponVersion,1);
+ assert.equal(restored.swords.length,36);
 });
 
 void test('a tampered sword array is still refused under a declared count',()=>{
- for(const count of [0,49,51,72]){
-  const d=copy(new Expedition({seed:'wp0-tamper',path:0,swordCount:50}).serialize());
+ for(const count of [0,1,35,37,72]){
+  const b=new Expedition({seed:'wp0-tamper',path:0,weaponVersion:1,weapon:'heavy'});
+  b.level=72;b.syncSwords();
+  const d=copy(b.serialize());
   d.expedition.swords=Array.from({length:count},()=>copy(d.expedition.swords[0]));
   assert.throws(()=>Expedition.restore(d),/飞剑数量与等级/,count+' swords should be refused');
  }
