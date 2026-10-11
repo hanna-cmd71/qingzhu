@@ -13,7 +13,7 @@
 | 图片 | 用途 | 生成／参考记录 |
 |---|---|---|
 | hanli-sword-atlas.png | 韩立战斗小人（七帧姿态） | AI 生成，参考作者提供的人物与飞剑图 |
-| weapon-atlas.png | 御剑法门外观，飞剑独立图集 | 由 hanli-sword-atlas.png 原飞剑格逐像素裁切，四格布局，其余三格留空待新增法门 |
+| weapon-atlas.png | 御剑法门外观，飞剑独立图集 | 四格布局，格 0 为 hanli-sword-atlas.png 原飞剑格逐像素裁切（细直双刃剑）。格 1／2／3 按法门语义用原剑作图生图参考重生：重锋阔刃重剑、流刃曲刃软剑、贯脉细长刺剑；处理后抠底、统一剑高 396 像素写入。三条 AI 生成记录见 `game/qa/costume-gen/` |
 | hero-frost / night / crimson / snow-atlas.png | 四套时装外观图集 | 由 hanli-sword-atlas.png 的服装织物色带换色派生；皮肤、头发、描边、金饰与背景原样保留 |
 | enemy-atlas.png | 敌方图集 | AI 生成的战术敌人原型 |
 | battlefield-atlas.png | 六种环境底图 | AI 生成 |

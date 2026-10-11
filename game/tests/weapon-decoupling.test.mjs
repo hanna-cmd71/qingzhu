@@ -60,5 +60,7 @@ void test('the weapon atlas is a separate lossless sheet sized for four methods'
 void test('rendering reads the weapon sheet instead of a character frame',()=>{
  const art=read('gameplay/art.js');
  assert.doesNotMatch(art,/heroes\[7\]/,'the sword must not come from the character sheet');
- assert.match(art,/const weaponArt=this\.art\.weapons\[0\]/);
+ // The drawn column now follows the equipped method (or an account-level sword look) via weaponCellFor.
+ assert.match(art,/const weaponArt=this\.art\.weapons\[weaponCellFor\(/);
+ assert.match(art,/import \{weaponCellFor\} from '\.\/weapons\.js'/);
 });

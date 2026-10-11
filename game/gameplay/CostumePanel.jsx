@@ -3,13 +3,14 @@
  */
 import React,{useEffect,useRef,useState} from 'react';
 import {SKINS,skinUnlocked} from './skins';
+import {WEAPON_SKINS} from './weapons';
 import {skinPose,sprite} from './art';
 import {Button} from '../components/ui/button';
 
 const Chip=({children})=><span className="chip">{children}</span>;
 
-// Costumes are account level: the list is readable at any time, and equipping one only swaps the
-// pose set the renderer draws. Nothing here touches the running battle or its snapshot.
+// Costumes and flying-sword looks are account level: the list is readable at any time, and choosing
+// one only swaps what the renderer draws. Nothing here touches the running battle or its snapshot.
 function PosePreview({image,height=76,locked=false}){
  const ref=useRef(null);
  useEffect(()=>{const c=ref.current;if(!c)return;const ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.imageSmoothingEnabled=false;if(image)sprite(ctx,image,c.width/2,c.height-4,height);},[image,height]);
@@ -24,7 +25,7 @@ export function unlockText(skin){
  return '条件未标明';
 }
 
-export function CostumePanel({save,art,onChange}){
+export function CostumePanel({save,art,onChange,onWeaponChange}){
  const [poses,setPoses]=useState({});
  useEffect(()=>{
   if(!art)return;let alive=true;
@@ -32,8 +33,10 @@ export function CostumePanel({save,art,onChange}){
   return()=>{alive=false;};
  },[art]);
  const equipped=save.skin;
- return <section className="costume-panel" aria-label="时装">
-  <p className="muted">时装只改变外观，不影响战斗数值、结算与成绩。解锁后可在洞府随时更换，不进入本局快照。</p>
+ const weaponChoice=save.weaponSkin??null; // null = follow the equipped method
+ const weaponArt=art?.weapons||[];
+ return <section className="costume-panel" aria-label="外观">
+  <p className="muted">时装与飞剑外观只改变外观，不影响战斗数值、结算与成绩。解锁后可在洞府随时更换，不进入本局快照。</p>
   <div className="codex-grid">{SKINS.map(skin=>{
    const granted=skinUnlocked(save,skin)||(save.skins||[]).includes(skin.id),current=equipped===skin.id;
    return <article className={'codex-card costume-card'+(current?' selected':'')} key={skin.id}>
@@ -45,5 +48,26 @@ export function CostumePanel({save,art,onChange}){
     <Button className="fr-btn" disabled={!granted||current} aria-pressed={current} onClick={()=>{if(granted&&!current)onChange(skin.id);}}>{current?'当前装束':'装备'}</Button>
    </article>;
   })}</div>
+  <h3 className="weapon-skin-title">飞剑外观</h3>
+  <p className="muted">默认按当前御剑法门自动切换剑身；也可在此固定一把飞剑外观，只改表现，不改法门数值。</p>
+  <div className="codex-grid">
+   <article className={'codex-card costume-card'+(weaponChoice===null?' selected':'')}>
+    <PosePreview image={weaponArt[0]} height={88}/>
+    <Chip>{weaponChoice===null?'已装备':''}</Chip>
+    <h3>跟随法门</h3>
+    <p>剑身随御剑法门变化。</p>
+    <Button className="fr-btn" disabled={weaponChoice===null} onClick={()=>onWeaponChange(null)}>{weaponChoice===null?'当前':'选择'}</Button>
+   </article>
+   {WEAPON_SKINS.map(w=>{
+    const current=weaponChoice===w.id;
+    return <article className={'codex-card costume-card'+(current?' selected':'')} key={w.id}>
+     <PosePreview image={weaponArt[w.cell]} height={88}/>
+     <Chip>{current?'已装备':'可装备'}</Chip>
+     <h3>{w.name}</h3>
+     <p>{w.desc}</p>
+     <Button className="fr-btn" disabled={current} onClick={()=>onWeaponChange(w.id)}>{current?'当前':'选择'}</Button>
+    </article>;
+   })}
+  </div>
  </section>;
 }
