@@ -11,6 +11,10 @@ export const SKINS=[
  {id:'night',name:'夜行',desc:'深紫夜行衣，便于在殿内潜行。',atlas:'heroNight',unlock:{wins:3}},
  {id:'crimson',name:'赤霞',desc:'赤色礼服，取鼎之行的正装。',atlas:'heroCrimson',unlock:{wins:5}},
  {id:'snow',name:'素雪',desc:'素白常服，收敛锋芒。',atlas:'heroSnow',unlock:{wins:10}},
+ {id:'xuanmo',name:'玄墨',desc:'墨黑道袍，翠玉内衬，银云暗纹。',atlas:'heroXuanmo',unlock:{wins:15}},
+ {id:'liujin',name:'鎏金',desc:'赤金锦袍，绛红内衬，金龙云纹。',atlas:'heroLiujin',unlock:{wins:20}},
+ {id:'bixiao',name:'碧霄',desc:'碧绿道袍，银白内衬，银竹暗纹。',atlas:'heroBixiao',unlock:{wins:25}},
+ {id:'yinshuang',name:'银霜',desc:'银白素袍，玄蓝内衬，蓝云暗纹。',atlas:'heroYinshuang',unlock:{wins:30}},
 ];
 export const skinIds=SKINS.map(s=>s.id);
 export const skinById=id=>SKINS.find(s=>s.id===id)||SKINS.find(s=>s.id===DEFAULT_SKIN);
