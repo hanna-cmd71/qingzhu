@@ -18,6 +18,7 @@ import {DAMAGE_SOURCES,WORLD} from './combat-values.js';
 import {clearDashInput,requestDash,tickDashInput} from './battle-input.js';
 import {feedbackSound} from './presentation-feedback.js';
 import {weaponMods,weaponSwordCap} from './weapons.js';
+import {skillDeclared,skillForPath,skillBlocked,skillReadiness as readSkill,skillPool,skillResourceLabel,SKILL_EMPOWER_WINDOW,SKILL_ALLY_HASTE,SKILL_GUARD_WINDOW,SKILL_GUARD_BONUS,SKILL_GUARD_SHIELD} from './skills.js';
 import {arrayDeclared,normalizeArrayPreset,arrayPresetById,nextArrayPreset,roleFor,ROLE_PARAMS,STROKE,strokeLength,strokeValid,strokePointAt,strokeDamage,INTENT,intentReady,intentLabel,FUSION,fusionDamage,CARVE,carveDamage,carveBlastRadius} from './array.js';
 export {WORLD} from './combat-values.js';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -47,6 +48,9 @@ export class Battle {
   // 剑阵 2.0 is opt-in: without the marker the array preset, 剑意, 笔画, 合体 and 刻痕 fields stay
   // undefined and every branch below reads exactly what the frozen engine reads.
   if(arrayDeclared(this.options)){this.arrayPreset=normalizeArrayPreset(this.arrayPreset);this.swordIntent=0;}
+  // 流派技能 is opt-in on the same rule: without the marker no cast counter, no receipt list and no
+  // skill hook is ever written, so a run that never declared it stays byte-identical.
+  if(skillDeclared(this.options)){this.skillCasts=0;this.skillReceipts=[];}
  }
  toastLimited(key,text){this.messageLimits??={};const old=this.messageLimits[key];if(old?.text===text&&old.until>this.time)return;this.messageLimits[key]={text,until:this.time+2.5};this.toast(text);}
  toast(text){this.toastText=text;this.toastUntil=this.time+3;this.emit({type:'toast',text});}
@@ -204,20 +208,75 @@ export class Battle {
   const p=this.player,s=this.stats;if(this.modeState!=='battle'||p.dashCD>0)return false;
   let x=this.input.x,y=this.input.y;if(Math.hypot(x,y)<.1){x=p.dx;y=p.dy;}
   const d=Math.hypot(x,y)||1;p.dx=x/d;p.dy=y/d;p.dash=.2;p.dashCD=dashCooldown(this);p.invuln=Math.max(p.invuln,.24+(s.iframes||0));p.lastDash=this.time;
-  if(this.rulesVersion>=2&&this.path===4&&this.time-this.lastSigil>=sigilCooldown(this)){this.lastSigil=this.time;this.cue('sigil-place','闪避起点 · 留符','#ffbd78');const r=(s.dashFire?100:85)*(1+(s.metaSigilRadius||0)),modern=revisedBalance(this),fuse=sigilWarn(this);const zone={x:modern?clamp(p.x,r,WORLD.w-r):p.x,y:modern?clamp(p.y,r,WORLD.h-r):p.y,r,ttl:modern?fuse+.35:1.15,warn:modern?fuse:s.dashFire?.55:.8,fuseDuration:modern?fuse:s.dashFire?.55:.8,...(modern?{arming:sigilArming(this)}:{}),kind:'sigil',friendly:true,sigil:true,damage:(55+this.level*1.2)*(s.dashFire?1.35:1)*(1+(s.burnDamage||0))*sigilGrowth(this)};
-   // Targets inside the circle at placement; if swords clear them before arming ends, the burst is 'cleared', not a pure miss.
-   if(modern){zone.armedTargets=this.sigilLiveTargets(zone).length;zone.killsAtArming=this.kills;}this.zones.push(zone);}
+  if(this.rulesVersion>=2&&this.path===4&&this.time-this.lastSigil>=sigilCooldown(this)){this.lastSigil=this.time;this.cue('sigil-place','闪避起点 · 留符','#ffbd78');this.placeSigil(p.x,p.y);}
   if(s.dashFire&&!(this.rulesVersion>=2&&this.path===4))this.zones.push({x:p.x,y:p.y,r:75,ttl:2.5,warn:.35,kind:'fire',friendly:true,damage:25*(1+(s.burnDamage||0))});
   if(phase3Balance(this)&&this.path===5){delete this.cueTimers['guard-window'];this.cue('guard-window','化解窗口 · 待挡招','#9bddfa',.24+(s.iframes||0));}
   this.emit({type:'sound',name:'dash'});return true;
  }
+ // 符阵 leaves the same zone whether the starter dashed into it or the 引符 skill placed it, so the
+ // trigger, arming and damage rules cannot drift between the two entry points.
+ placeSigil(x,y){
+  const s=this.stats,r=(s.dashFire?100:85)*(1+(s.metaSigilRadius||0)),modern=revisedBalance(this),fuse=sigilWarn(this);
+  const zone={x:modern?clamp(x,r,WORLD.w-r):x,y:modern?clamp(y,r,WORLD.h-r):y,r,ttl:modern?fuse+.35:1.15,warn:modern?fuse:s.dashFire?.55:.8,fuseDuration:modern?fuse:s.dashFire?.55:.8,...(modern?{arming:sigilArming(this)}:{}),kind:'sigil',friendly:true,sigil:true,damage:(55+this.level*1.2)*(s.dashFire?1.35:1)*(1+(s.burnDamage||0))*sigilGrowth(this)};
+  // Targets inside the circle at placement; if swords clear them before arming ends, the burst is 'cleared', not a pure miss.
+  if(modern){zone.armedTargets=this.sigilLiveTargets(zone).length;zone.killsAtArming=this.kills;}
+  this.zones.push(zone);return zone;
+ }
+ // --- 流派技能 -----------------------------------------------------------------------------
+ // One active release per starter. Each one spends an existing resource and drives the mechanic its
+ // own starter already has, so it extends that kit instead of running beside it.
+ skillReadiness(){return readSkill(this);}
+ // 虫噬号令 needs somewhere to send the swarm: the focused point when the player is aiming, otherwise
+ // whatever is closest to Han Li.
+ insectOrderTarget(){
+  const p=this.player;
+  return this.input.focus&&this.input.aim?this.nearest(this.input.aim.x,this.input.aim.y,600):this.nearest(p.x,p.y,600);
+ }
+ skillEffects(){
+  const p=this.player;
+  return {
+   focusLead:()=>{p.buffs.skillEmpower=this.time+SKILL_EMPOWER_WINDOW;this.cue('skill-focus','聚锋引 · 下一击必聚锋','#d8ffe9',1.6);},
+   callThunder:()=>{p.mana=100;this.applyThunder('以雷源引动');},
+   volley:()=>{p.buffs.skillPuppetHaste=this.time+SKILL_ALLY_HASTE;for(const a of this.puppets)a.cool=0;this.cue('skill-volley','弩机齐射 · 傀儡攻速翻倍','#a8c5fa',1.6);},
+   swarmOrder:()=>{p.buffs.skillInsectHaste=this.time+SKILL_ALLY_HASTE;const target=this.insectOrderTarget();if(target)for(let i=0;i<this.insects.length;i++){const bug=this.insects[i];bug.cool=0;bug.x=clamp(target.x+Math.cos(i*2.4)*14,20,WORLD.w-20);bug.y=clamp(target.y+Math.sin(i*2.4)*12,20,WORLD.h-20);}this.cue('skill-swarm',target?'虫噬号令 · 虫群扑向 '+target.name:'虫噬号令 · 虫群加速','#dab4ff',1.6);},
+   sigilLead:()=>{this.lastSigil=this.time;this.placeSigil(p.x,p.y);this.cue('skill-sigil','引符 · 身位布符','#ffbd78',1.6);},
+   wardUp:()=>{p.buffs.skillGuard=this.time+SKILL_ALLY_HASTE;p.shield=Math.min(p.maxShield+SKILL_GUARD_SHIELD,p.shield+SKILL_GUARD_SHIELD);this.cue('skill-guard','守元 · 化解窗口扩大','#9bddfa',1.6);},
+  };
+ }
+ useSkill(){
+  const skill=skillForPath(this.path);
+  if(!skillDeclared(this.options)||!skill)return false;
+  if(this.modeState!=='battle')return false;
+  const p=this.player,cost=skill.cost,effects=this.skillEffects();
+  if(!effects[skill.id])return false;
+  const blocked=skillBlocked(this,skill);
+  if(blocked){this.toastLimited('skill-blocked',skill.name+' · '+blocked);return false;}
+  if(skillPool(this,skill)<cost-1e-6){this.toastLimited('skill-short',skillResourceLabel(skill)+'不足 · '+skill.name+' 需 '+cost);return false;}
+  if(skill.resource==='reserve')p.reserve-=cost;else p.mana-=cost;
+  // One release, one receipt. The sequence is monotonic for the whole run, so a settlement can never
+  // count the same release twice and a restored run cannot re-issue an id it already spent.
+  this.skillCasts=(this.skillCasts||0)+1;
+  (this.skillReceipts??=[]).push(this.path+'-'+this.skillCasts);
+  effects[skill.id]();
+  this.emit({type:'sound',name:'choose'});this.emit({type:'update'});
+  return true;
+ }
+ // 守元 widens the 化解 window only; the dash's own invulnerability is untouched.
+ counterWindow(){return .24+(this.stats.iframes||0)+(this.player.buffs.skillGuard>this.time?SKILL_GUARD_WINDOW:0);}
  thunderReadiness(){const cost=thunderCost(this),p=this.player;return {cost,ready:p.mana>=99.9&&p.reserve>=cost,label:p.reserve<cost?'雷源不足':p.mana>=99.9?'可以施放':'灵力 '+Math.floor(p.mana)+' / 100'};}
  thunder(){
-  const p=this.player,s=this.stats,{cost}=this.thunderReadiness();
+  const p=this.player,{cost}=this.thunderReadiness();
   if(this.modeState!=='battle')return false;
   if(p.mana<99.9){this.toastLimited('mana-short','灵力尚未蓄满');return false;}
   if(p.reserve<cost){this.toastLimited('reserve-short','雷源不足 · 回灵无法补充雷源');return false;}
-  p.mana=0;p.reserve-=cost;this.thunders++;this.thunderTime=this.time;this.cue('thunder-cast','辟邪神雷 · 已施放，耗用 '+cost+' 雷源','#fff0aa',1.5);
+  p.mana=0;p.reserve-=cost;
+  this.applyThunder('耗用 '+cost+' 雷源');
+  return true;
+ }
+ // The release itself is shared with 引雷, which buys the same thunder with 雷源 instead of 灵力.
+ applyThunder(costLabel){
+  const p=this.player,s=this.stats;
+  this.thunders++;this.thunderTime=this.time;this.cue('thunder-cast','辟邪神雷 · 已施放，'+costLabel,'#fff0aa',1.5);
   this.shots=this.shots.filter(b=>b.friendly);p.shield=Math.max(p.shield,Math.min(p.maxShield+25,p.shield+(s.thunderShield||0)));
   if(this.comboSet.has('thunderInsect'))p.hp=Math.min(p.maxHp,p.hp+this.insects.length*.8);
   if(s.metaThunderVeil){p.invuln=Math.max(p.invuln,1);this.cue('veil','金雷护窍 · 已触发','#fff0aa',1);}
@@ -230,7 +289,7 @@ export class Battle {
    if(e.burn>0)d*=1+(s.burnThunder||0);if(e.mark)d*=1+Math.min(.6,e.mark*.06);
    this.hit(e,d*(this.thunderMultiplier?.(e)??1),'thunder',false);if(this.modeState!=='battle')break;e.stun=e.boss?.35:1.1;this.fx.push({kind:'bolt',x:e.x,y:e.y,ttl:.45,max:.45,color:'#ffeaae',seed:this.rng()});
   }
-  this.fx.push({kind:'thunder',x:p.x,y:p.y,ttl:.8,max:.8});this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:10});return true;
+  this.fx.push({kind:'thunder',x:p.x,y:p.y,ttl:.8,max:.8});this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:10});
  }
  itemReadiness(index){return consumableState(this,index);}
  cue(key,text,color,duration){cue(this,key,text,color,duration);}
@@ -256,7 +315,7 @@ export class Battle {
  }
  addConsumable(id){const same=this.consumables.find(x=>x.id===id);if(same)same.count++;else if(this.consumables.length<2)this.consumables.push({id,count:1});else{const empty=this.consumables.findIndex(x=>x.count<=0);if(empty>=0)this.consumables[empty]={id,count:1};else return false;}return true;}
  hitPlayer(amount,hazard=false,origin=null){
-  const p=this.player,s=this.stats;if(this.finished)return;if(!phase3Balance(this)&&this.rulesVersion>=2&&this.path===5&&p.invuln>0&&this.time-p.lastDash<.24+(s.iframes||0)&&this.time-this.lastCounter<4&&this.lastCounter<p.lastDash&&this.guardNoticeDash!==p.lastDash){this.guardNoticeDash=p.lastDash;this.cue('counter-wait','已化解 · 反击还需 '+(4-this.time+this.lastCounter).toFixed(1)+' 秒','#b6c0ba',.8);}if(this.rulesVersion>=2&&this.path===5&&p.invuln>0&&this.time-p.lastDash<.24+(s.iframes||0)&&(phase3Balance(this)?this.lastCounter<p.lastDash:this.time-this.lastCounter>=4)){this.lastCounter=this.time;this.combatCues=this.combatCues.filter(c=>c.key!=='guard-window');delete this.cueTimers.counter;if(s.metaGuardCounter)p.buffs.metaGuardSwift=this.time+1.5;const gain=shieldReward(p,phase3Balance(this)?3:6,12);p.shield+=gain;this.explode(p.x,p.y,110,(32+this.level*.9)*guardCounterScale(this),'guard');this.cue('counter',(s.metaGuardCounter?'已化解 · 反击与疾行 +12%':'已化解 · 守元反击')+(gain>0?' · 回盾 +'+Number(gain.toFixed(1)):' · 额外护盾保留'),'#9bddfa',s.metaGuardCounter?1.5:1.2);}if(this.mode==='training'||p.invuln>0)return;
+  const p=this.player,s=this.stats;if(this.finished)return;const guard=this.counterWindow();if(!phase3Balance(this)&&this.rulesVersion>=2&&this.path===5&&p.invuln>0&&this.time-p.lastDash<guard&&this.time-this.lastCounter<4&&this.lastCounter<p.lastDash&&this.guardNoticeDash!==p.lastDash){this.guardNoticeDash=p.lastDash;this.cue('counter-wait','已化解 · 反击还需 '+(4-this.time+this.lastCounter).toFixed(1)+' 秒','#b6c0ba',.8);}if(this.rulesVersion>=2&&this.path===5&&p.invuln>0&&this.time-p.lastDash<guard&&(phase3Balance(this)?this.lastCounter<p.lastDash:this.time-this.lastCounter>=4)){this.lastCounter=this.time;this.combatCues=this.combatCues.filter(c=>c.key!=='guard-window');delete this.cueTimers.counter;if(s.metaGuardCounter)p.buffs.metaGuardSwift=this.time+1.5;const gain=shieldReward(p,phase3Balance(this)?3:6,12);p.shield+=gain;this.explode(p.x,p.y,110,(32+this.level*.9)*guardCounterScale(this)*(p.buffs.skillGuard>this.time?1+SKILL_GUARD_BONUS:1),'guard');this.cue('counter',(s.metaGuardCounter?'已化解 · 反击与疾行 +12%':'已化解 · 守元反击')+(gain>0?' · 回盾 +'+Number(gain.toFixed(1)):' · 额外护盾保留'),'#9bddfa',s.metaGuardCounter?1.5:1.2);}if(this.mode==='training'||p.invuln>0)return;
   const armor=(s.armor||0)+(p.buffs.armor>this.time?40:0);let d=amount*100/(100+armor*3);
   if(this.time-p.lastDash<2)d*=1-Math.min(.65,s.dashGuard||0);
   if(this.puppets.some(a=>dist(a,p)<110))d*=1-Math.min(.3,s.puppetGuard||0);
@@ -270,7 +329,7 @@ export class Battle {
   if(s.thorns)this.explode(p.x,p.y,95,25+this.level*1.4,'fire');
  }
  finish(won,reason='历练未完成'){if(this.finished)return;clearTouchLock(this,true);this.finished=true;this.modeState='result';this.scene='result';this.won=won;this.failureReason=won?null:reason;this.emit({type:'finish',won,summary:this.summary()});}
- summary(){return {studyVersion:this.options.studyVersion||0,won:!!this.won,failureReason:this.failureReason||null,chapter:this.chapter,level:this.level,kills:this.kills,time:this.time,thunders:this.thunders,gold:this.gold,path:this.path,seed:this.seed,mode:this.mode,damageSources:this.damageSources,fireBreakdown:this.fireBreakdown,sigilStats:this.sigilStats,recentHits:this.recentHits,traits:this.traits,combos:this.combos.map(c=>c.name),hitCount:this.hitCount,maxEnemies:this.maxEnemies,insight:this.options.studyVersion===1?0:Math.floor(this.kills/30)+this.chapter*8+(this.won?40:8)};}
+ summary(){return {studyVersion:this.options.studyVersion||0,won:!!this.won,failureReason:this.failureReason||null,chapter:this.chapter,level:this.level,kills:this.kills,time:this.time,thunders:this.thunders,gold:this.gold,path:this.path,seed:this.seed,mode:this.mode,damageSources:this.damageSources,fireBreakdown:this.fireBreakdown,sigilStats:this.sigilStats,recentHits:this.recentHits,traits:this.traits,combos:this.combos.map(c=>c.name),hitCount:this.hitCount,maxEnemies:this.maxEnemies,...(skillDeclared(this.options)?{skills:{casts:this.skillCasts||0,receipts:(this.skillReceipts||[]).length}}:{}),insight:this.options.studyVersion===1?0:Math.floor(this.kills/30)+this.chapter*8+(this.won?40:8)};}
  rebuildHash(){this.hash.clear();for(const e of this.enemies)if(e.hp>0&&!e.untargetable){const k=(e.x/96|0)+','+(e.y/96|0);if(!this.hash.has(k))this.hash.set(k,[]);this.hash.get(k).push(e);}}
  near(x,y,r){const result=[];for(let a=Math.floor((x-r)/96);a<=Math.floor((x+r)/96);a++)for(let b=Math.floor((y-r)/96);b<=Math.floor((y+r)/96);b++){const bucket=this.hash.get(a+','+b);if(bucket)for(const e of bucket)if(e.hp>0&&(e.x-x)**2+(e.y-y)**2<r*r)result.push(e);}return result;}
  nearest(x,y,r,exclude=[]){let best=null,score=Infinity;for(const e of this.near(x,y,r)){if(exclude.includes(e.id))continue;const d=(e.x-x)**2+(e.y-y)**2;if(d<score){score=d;best=e;}}return best;}
@@ -307,6 +366,9 @@ export class Battle {
   if(e.gnawUntil>this.time)d*=1+(e.gnaw||0);
   if(source==='sword'){
    if(this.rulesVersion>=2&&this.path===0){e.focusHits=e.focusUntil>=this.time?(e.focusHits||0)+1:1;e.focusUntil=this.time+2+(s.metaFocusWindow||0);if(e.focusHits>=4){e.focusHits=0;d*=1.4;empowered=true;if(s.metaSwordMomentum)p.buffs.metaSwordTempo=this.time+3;this.fx.push({kind:'line',x:p.x,y:p.y,tx:e.x,ty:e.y,color:'#d8ffe9',ttl:.22,max:.22});}}
+   // 聚锋引 banks one guaranteed empowered strike. A hit that already empowered itself through 四击
+   // 聚锋 consumes the window without stacking the bonus a second time.
+   if(p.buffs.skillEmpower>this.time){p.buffs.skillEmpower=0;if(!empowered){d*=1.4;empowered=true;}this.fx.push({kind:'line',x:p.x,y:p.y,tx:e.x,ty:e.y,color:'#d8ffe9',ttl:.22,max:.22});}
    if(s.burn){e.burn=3+(s.burnTime||0);e.burnDamage=6*s.burn*(1+(s.burnDamage||0));}
    if(s.slow){applySlow(e,'sword',s.slow,1.2);}
    if(s.armorBreak)e.break=Math.min(.24,(e.break||0)+s.armorBreak);
@@ -478,14 +540,14 @@ export class Battle {
   while(this.puppets.length<wanted)this.puppets.push({x:p.x,y:p.y,cool:this.rng()});
   this.puppets.length=wanted;
   for(let i=0;i<wanted;i++){const a=this.puppets[i],ang=i*TAU/wanted+this.time*.15;a.x+=(p.x+Math.cos(ang)*90-a.x)*Math.min(1,dt*3*(1+(s.metaPuppetFollow||0)));a.y+=(p.y+Math.sin(ang)*70-a.y)*Math.min(1,dt*3*(1+(s.metaPuppetFollow||0)));a.cool-=dt;
-   if(a.cool<=0){const e=this.allyTarget(a.x,a.y,420*(1+(s.puppetRange||0)),{kind:'puppet',index:i});if(e){let dmg=(20+this.level*.4)*allyBaseScale(this,'puppet')*(1+(s.puppetDamage||0)+(stationaryActive(this)?(s.stationary||0):0));if(this.comboSet.has('swordPuppet'))dmg*=1+swordPuppetInherit(this,s.damage);if(e.mark)dmg*=1+(s.puppetMark||0);a.metaShots=(a.metaShots||0)+1;dmg*=this.puppetDamageMultiplier?.()??1;this.shoot(a.x,a.y,Math.atan2(e.y-a.y,e.x-a.x),dmg,520,true,{pierce:Math.floor(s.puppetPierce||0),color:s.metaPuppetPin&&a.metaShots%6===0?'#e7d398':'#a8c5fa',metaPin:!!s.metaPuppetPin&&a.metaShots%6===0});this.onPuppetShot?.(a,e,dmg,i);a.cool=.7/(1+(s.puppetHaste||0)+(this.puppetHasteBonus?.()??(this.rulesVersion>=2&&this.path===2&&puppetReady(this)?.25:0))+(this.comboSet.has('thunderPuppet')&&this.time-this.thunderTime<6?.65:0));}}
+   if(a.cool<=0){const e=this.allyTarget(a.x,a.y,420*(1+(s.puppetRange||0)),{kind:'puppet',index:i});if(e){let dmg=(20+this.level*.4)*allyBaseScale(this,'puppet')*(1+(s.puppetDamage||0)+(stationaryActive(this)?(s.stationary||0):0));if(this.comboSet.has('swordPuppet'))dmg*=1+swordPuppetInherit(this,s.damage);if(e.mark)dmg*=1+(s.puppetMark||0);a.metaShots=(a.metaShots||0)+1;dmg*=this.puppetDamageMultiplier?.()??1;this.shoot(a.x,a.y,Math.atan2(e.y-a.y,e.x-a.x),dmg,520,true,{pierce:Math.floor(s.puppetPierce||0),color:s.metaPuppetPin&&a.metaShots%6===0?'#e7d398':'#a8c5fa',metaPin:!!s.metaPuppetPin&&a.metaShots%6===0});this.onPuppetShot?.(a,e,dmg,i);a.cool=.7/(1+(s.puppetHaste||0)+(p.buffs.skillPuppetHaste>this.time?1:0)+(this.puppetHasteBonus?.()??(this.rulesVersion>=2&&this.path===2&&puppetReady(this)?.25:0))+(this.comboSet.has('thunderPuppet')&&this.time-this.thunderTime<6?.65:0));}}
   }
   const bugs=Math.min(30,(s.insects||0)+(s.breed?Math.min(6,Math.floor(this.kills/25)):0)+(p.buffs.insect>this.time?4:0));
   while(this.insects.length<bugs)this.insects.push({x:p.x,y:p.y,cool:this.rng()});this.insects.length=bugs;
   // Balance 4: a bug farther than the leash from Han Li drops its own 250 search and looks around him; while he is explicitly focusing, the search around him (nearest to the aim) is tried first and the local search only fills in when nothing is within 350 of him. K07/K08 keep their own rule inside allyTarget; nothing widens the 250/350 radii.
   const leash=insectLeash(this);this.insectPursuits=[];for(let i=0;i<bugs;i++){const b=this.insects[i];b.cool-=dt;const local=()=>this.allyTarget(b.x,b.y,250*(1+(s.metaInsectRange||0)),{kind:'insect',index:i}),around=()=>this.allyTarget(p.x,p.y,350*(1+(s.metaInsectRange||0)),{kind:'insect',index:i});let e;if(dist(b,p)>leash)e=around();else if(insectFocusFirst(this)&&this.input.focus&&this.input.aim)e=around()||local();else e=local()||around();let tx=p.x+Math.cos(i*2.4+this.time)*55,ty=p.y+Math.sin(i*2.4+this.time)*55;if(e){this.insectPursuits.push(e.id);tx=e.x+Math.cos(i*2.4)*12;ty=e.y+Math.sin(i*2.4)*10;}
    const d=Math.hypot(tx-b.x,ty-b.y)||1,v=Math.min(d,220*(1+(s.insectSpeed||0))*dt);b.x+=(tx-b.x)/d*v;b.y+=(ty-b.y)/d*v;
-   if(e&&d<e.r+12&&b.cool<=0){let dmg=(8+this.level*.18)*allyBaseScale(this,'insect')*(1+(s.insectDamage||0));if(e.boss||e.elite)dmg*=1+(s.insectBoss||0);if(e.mark)dmg*=1+(s.insectMark||0);if(this.comboSet.has('swordInsect')&&this.rng()<.2)dmg*=1.8;const hp=e.hp;this.hit(e,dmg,'insect');if(this.modeState!==phase||this.finished)return;if(e.hp<hp){if(this.rulesVersion>=2&&this.path===3){e.gnaw=Math.min(.12,(e.gnawUntil>this.time?e.gnaw||0:0)+.02);e.gnawUntil=this.time+3+(s.metaGnawDuration||0);if(e.gnaw>=.12&&!(this.cueTimers['gnaw:'+e.id]>this.time)){this.cueTimers['gnaw:'+e.id]=this.time+30;this.cue('gnaw','噬甲已满 · 受伤 +12%','#dab4ff');}}e.break=Math.min(.5,e.break+(s.insectBreak||0));if(s.insectMana&&this.rng()<s.insectMana)p.mana=Math.min(100,p.mana+1);}b.cool=.65/(1+(s.insectHaste||0));}
+   if(e&&d<e.r+12&&b.cool<=0){let dmg=(8+this.level*.18)*allyBaseScale(this,'insect')*(1+(s.insectDamage||0));if(e.boss||e.elite)dmg*=1+(s.insectBoss||0);if(e.mark)dmg*=1+(s.insectMark||0);if(this.comboSet.has('swordInsect')&&this.rng()<.2)dmg*=1.8;const hp=e.hp;this.hit(e,dmg,'insect');if(this.modeState!==phase||this.finished)return;if(e.hp<hp){if(this.rulesVersion>=2&&this.path===3){e.gnaw=Math.min(.12,(e.gnawUntil>this.time?e.gnaw||0:0)+.02);e.gnawUntil=this.time+3+(s.metaGnawDuration||0);if(e.gnaw>=.12&&!(this.cueTimers['gnaw:'+e.id]>this.time)){this.cueTimers['gnaw:'+e.id]=this.time+30;this.cue('gnaw','噬甲已满 · 受伤 +12%','#dab4ff');}}e.break=Math.min(.5,e.break+(s.insectBreak||0));if(s.insectMana&&this.rng()<s.insectMana)p.mana=Math.min(100,p.mana+1);}b.cool=.65/(1+(s.insectHaste||0)+(p.buffs.skillInsectHaste>this.time?1:0));}
   }
  }
  update(dt){
@@ -612,7 +674,7 @@ export class Battle {
   if(effect==='riskRelic'){p.hp=Math.max(1,p.hp*.8);const candidates=RELICS.filter(r=>!r.story&&!this.relics.includes(r.id));if(this.relics.length<6&&candidates.length){this.relics.push(candidates[Math.floor(this.rng()*candidates.length)].id);this.recalc();}else this.gold+=70;}
   this.continueRest();
  }
- serialize(){return {notices:[...this.notices],lastSigil:this.lastSigil,lastCounter:this.lastCounter,risk:!!this.risk,layoutOffset:this.layoutOffset,formation:this.formation||0,locked:this.locked,version:1,...(arrayDeclared(this.options)?{arrayPreset:normalizeArrayPreset(this.arrayPreset),swordIntent:this.swordIntent||0}:{}),options:this.options,seed:this.seed,rng:this.rng.state(),chapter:this.chapter,wave:this.wave,time:this.time,level:this.level,xp:this.xp,totalXP:this.totalXP,gold:this.gold,kills:this.kills,thunders:this.thunders,hitCount:this.hitCount,traits:{...this.traits},relics:[...this.relics],consumables:this.consumables.map(c=>({...c})),player:{...this.player,buffs:{...this.player.buffs}},rerolls:this.rerolls,queuedChoices:this.queuedChoices,scene:this.scene,modeState:this.modeState,damageSources:{...this.damageSources},fireBreakdown:{...this.fireBreakdown},sigilStats:structuredClone(this.sigilStats),recentHits:this.recentHits.map(h=>({...h})),storyInventory:[...(this.storyInventory||[])],endlessLoop:this.endlessLoop||0};}
+ serialize(){return {notices:[...this.notices],lastSigil:this.lastSigil,lastCounter:this.lastCounter,risk:!!this.risk,layoutOffset:this.layoutOffset,formation:this.formation||0,locked:this.locked,version:1,...(arrayDeclared(this.options)?{arrayPreset:normalizeArrayPreset(this.arrayPreset),swordIntent:this.swordIntent||0}:{}),...(skillDeclared(this.options)?{skillCasts:this.skillCasts||0,skillReceipts:[...(this.skillReceipts||[])]}:{}),options:this.options,seed:this.seed,rng:this.rng.state(),chapter:this.chapter,wave:this.wave,time:this.time,level:this.level,xp:this.xp,totalXP:this.totalXP,gold:this.gold,kills:this.kills,thunders:this.thunders,hitCount:this.hitCount,traits:{...this.traits},relics:[...this.relics],consumables:this.consumables.map(c=>({...c})),player:{...this.player,buffs:{...this.player.buffs}},rerolls:this.rerolls,queuedChoices:this.queuedChoices,scene:this.scene,modeState:this.modeState,damageSources:{...this.damageSources},fireBreakdown:{...this.fireBreakdown},sigilStats:structuredClone(this.sigilStats),recentHits:this.recentHits.map(h=>({...h})),storyInventory:[...(this.storyInventory||[])],endlessLoop:this.endlessLoop||0};}
  static restore(data,emit){
   validateCommonSnapshot(data);
   if(data?.version!==1||!Number.isFinite(data.level)||data.level<1||data.level>160||!Number.isInteger(data.chapter)||data.chapter<0||data.chapter>5)throw Error('存档格式不兼容');
@@ -627,7 +689,7 @@ export class Battle {
   if(data.damageSources!==undefined&&(!data.damageSources||typeof data.damageSources!=='object'||Array.isArray(data.damageSources)||Object.values(data.damageSources).some(n=>!Number.isFinite(n)||n<0)))throw Error('存档统计无效');
   if(data.storyInventory!==undefined&&(!Array.isArray(data.storyInventory)||data.storyInventory.some(id=>!RELICS.some(r=>r.id===id))))throw Error('剧情物品记录无效');
   if(data.locked!==undefined&&(!Array.isArray(data.locked)||data.locked.length>2||data.locked.some(r=>!r||!RELICS.some(x=>x.id===r.id)||!Number.isFinite(r.price)||r.price<0)))throw Error('整备锁定记录无效');
-  const b=new Battle({...data.options,chapter:0,rulesVersion:data.options.rulesVersion??1},emit);restoreFeedback(b,data);for(const k of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter','arrayPreset','swordIntent'])if(data[k]!==undefined)b[k]=structuredClone(data[k]);
+  const b=new Battle({...data.options,chapter:0,rulesVersion:data.options.rulesVersion??1},emit);restoreFeedback(b,data);for(const k of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter','arrayPreset','swordIntent','skillCasts','skillReceipts'])if(data[k]!==undefined)b[k]=structuredClone(data[k]);
   if(b.endlessLoop)b.difficulty={...b.difficulty,hp:b.difficulty.hp*1.4**b.endlessLoop,damage:b.difficulty.damage*1.12**b.endlessLoop};b.stats={};b.recalc();b.player={...b.player,...data.player,x:WORLD.w/2,y:WORLD.h/2,invuln:1,dash:0,dashCD:0,buffs:{}};b.recalc();b.rng.set(data.rng);b.syncSwords();
   b.locked=(b.locked||[]).map(r=>({...RELICS.find(v=>v.id===r.id),kind:'relic',price:r.price}));b.notices=new Set(data.notices||[]);b.modeState='intro';b.scene='intro';b.resuming=true;return b;
  }

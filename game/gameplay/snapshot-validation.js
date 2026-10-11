@@ -6,9 +6,10 @@ import {ENEMIES,META} from './data.js';
 import {SLOW_SOURCES} from './slow.js';
 import {weaponIds} from './weapons.js';
 import {ARRAY_VERSION,arrayDeclared,arrayPresetIds,INTENT} from './array.js';
+import {SKILL_VERSION,skillDeclared,skillForPath} from './skills.js';
 import {DAMAGE_SOURCES,PROJECTILE_SOURCES,MAX_PLAYER_RESOURCE,ZONE_KINDS} from './combat-values.js';
 import {BALANCE4} from './balance.js';
-const TIME=1e8,COUNT=1e12,POWER=1e200;
+const TIME=1e8,COUNT=1e12,POWER=1e200,MAX_SKILL_RECEIPTS=4000;
 const fail=label=>{throw Error(label+'无效，原记录未被修改');};
 const object=(x,label)=>{if(!x||typeof x!=='object'||Array.isArray(x))fail(label);};
 const number=(v,label,min=-TIME,max=TIME,integer=false)=>{if(!Number.isFinite(v)||v<min||v>max||(integer&&!Number.isSafeInteger(v)))fail(label);};
@@ -38,6 +39,25 @@ export function validateCommonSnapshot(d){
  if(d.arrayPreset!==undefined&&(!arrayPresetIds.includes(d.arrayPreset)||!arrayDeclared(d.options)))fail('剑阵阵图');
  if(d.swordIntent!==undefined&&!arrayDeclared(d.options))fail('剑意');
  if(d.swordIntent!==undefined)number(d.swordIntent,'剑意',0,INTENT.max);
+ // 流派技能 follows the same opt-in rule. A cast counter or a receipt without the marker is a
+ // mistake rather than a silent fallback; a version below 1 is the engine's own "not declared" code.
+ if(d.options.skillVersion!==undefined&&(d.options.skillVersion??0)>=1&&d.options.skillVersion!==SKILL_VERSION)fail('流派技能版本');
+ if(d.skillCasts!==undefined&&!skillDeclared(d.options))fail('流派技能结算');
+ if(d.skillCasts!==undefined)number(d.skillCasts,'流派技能释放次数',0,COUNT,true);
+ if(d.skillReceipts!==undefined){
+  list(d.skillReceipts,'流派技能凭据',MAX_SKILL_RECEIPTS);
+  const path=d.options.path??0,prefix=path+'-';
+  // The engine issues `path-n` for the n-th release of the run, so the list must be exactly that
+  // sequence. Checking the position as well as the prefix rejects a dropped, reordered or
+  // pre-issued receipt that a plain uniqueness test would let through.
+  if(!skillForPath(path))fail('流派技能凭据');
+  d.skillReceipts.forEach((id,index)=>{
+   if(typeof id!=='string'||id!==prefix+(index+1))fail('流派技能凭据');
+  });
+  // Every release keeps exactly one receipt: a shorter list means a receipt was dropped, a longer one
+  // means a release settled twice.
+  if(d.skillCasts===undefined||d.skillReceipts.length!==d.skillCasts)fail('流派技能凭据');
+ }
  if(d.options.mode!==undefined&&!['story','seed','replay','endless','training'].includes(d.options.mode))fail('历练模式');if(d.seed!==undefined&&(typeof d.seed!=='string'||d.seed.length>256))fail('历练种子');if(d.formation!==undefined)number(d.formation,'御剑方式',0,2,true);
  number(d.level,'进阶等级',1,160,true);number(d.time,'历练时间',0,TIME);for(const k of ['xp','totalXP','gold','kills','thunders','hitCount','rerolls','queuedChoices'])number(d[k],'历练数值',0,COUNT,k!=='xp'&&k!=='totalXP');
  if(d.endlessLoop!==undefined)number(d.endlessLoop,'无尽轮次',0,1000,true);
