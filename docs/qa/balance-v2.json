@@ -1,0 +1,4440 @@
+{
+  "version": 1,
+  "generatedBy": "game/scripts/balance-matrix.mjs",
+  "matrix": {
+    "paths": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "difficulties": [
+      0,
+      1,
+      2
+    ],
+    "weapons": [
+      "none",
+      "array",
+      "heavy",
+      "flow",
+      "pierce"
+    ],
+    "skills": [
+      false,
+      true
+    ],
+    "cells": 30,
+    "runs": 180
+  },
+  "seedPrefix": "wp8-v2",
+  "seedMode": "per-path shared across cells",
+  "pilot": "baseline",
+  "pilotVersion": "2026-09-13-measured-v1",
+  "rules": {
+    "recordVersion": 1,
+    "storyVersion": 3,
+    "metaRulesVersion": 3,
+    "economyVersion": 4,
+    "growthVersion": 5,
+    "encounterVersion": 8,
+    "focusVersion": 3,
+    "contentVersion": 3,
+    "balanceVersion": 4,
+    "pilotVersion": "2026-09-13-measured-v1"
+  },
+  "starters": {
+    "0": {
+      "skill": "focusLead"
+    },
+    "1": {
+      "skill": "callThunder"
+    },
+    "2": {
+      "skill": "volley"
+    },
+    "3": {
+      "skill": "swarmOrder"
+    },
+    "4": {
+      "skill": "sigilLead"
+    },
+    "5": {
+      "skill": "wardUp"
+    }
+  },
+  "cells": [
+    {
+      "difficulty": 0,
+      "weapon": "none",
+      "skills": false,
+      "weaponVersion": 0,
+      "skillVersion": 0,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 882.3,
+      "meanWinTime": 882.3,
+      "meanLevel": 84,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 840.3,
+          "level": 84,
+          "kills": 1556,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 917.8,
+          "level": 84,
+          "kills": 1752,
+          "thunders": 40,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 849.2,
+          "level": 84,
+          "kills": 1660,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 745.8,
+          "level": 84,
+          "kills": 1542,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 892.6,
+          "level": 84,
+          "kills": 1572,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1048.2,
+          "level": 84,
+          "kills": 1941,
+          "thunders": 23,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "none",
+      "skills": true,
+      "weaponVersion": 0,
+      "skillVersion": 1,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 871,
+      "meanWinTime": 871,
+      "meanLevel": 84,
+      "skillCasts": 248,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 813.7,
+          "level": 84,
+          "kills": 1545,
+          "thunders": 11,
+          "skillCasts": 48,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 842.7,
+          "level": 84,
+          "kills": 1549,
+          "thunders": 104,
+          "skillCasts": 48,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 804.7,
+          "level": 84,
+          "kills": 1580,
+          "thunders": 15,
+          "skillCasts": 46,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 747.9,
+          "level": 84,
+          "kills": 1553,
+          "thunders": 13,
+          "skillCasts": 45,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 974.5,
+          "level": 84,
+          "kills": 1732,
+          "thunders": 19,
+          "skillCasts": 49,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1042.4,
+          "level": 84,
+          "kills": 1930,
+          "thunders": 23,
+          "skillCasts": 12,
+          "weapon": null,
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "array",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 882.3,
+      "meanWinTime": 882.3,
+      "meanLevel": 84,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 840.3,
+          "level": 84,
+          "kills": 1556,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 917.8,
+          "level": 84,
+          "kills": 1752,
+          "thunders": 40,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 849.2,
+          "level": 84,
+          "kills": 1660,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 745.8,
+          "level": 84,
+          "kills": 1542,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 892.6,
+          "level": 84,
+          "kills": 1572,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1048.2,
+          "level": 84,
+          "kills": 1941,
+          "thunders": 23,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "array",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 871,
+      "meanWinTime": 871,
+      "meanLevel": 84,
+      "skillCasts": 248,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 813.7,
+          "level": 84,
+          "kills": 1545,
+          "thunders": 11,
+          "skillCasts": 48,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 842.7,
+          "level": 84,
+          "kills": 1549,
+          "thunders": 104,
+          "skillCasts": 48,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 804.7,
+          "level": 84,
+          "kills": 1580,
+          "thunders": 15,
+          "skillCasts": 46,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 747.9,
+          "level": 84,
+          "kills": 1553,
+          "thunders": 13,
+          "skillCasts": 45,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 974.5,
+          "level": 84,
+          "kills": 1732,
+          "thunders": 19,
+          "skillCasts": 49,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1042.4,
+          "level": 84,
+          "kills": 1930,
+          "thunders": 23,
+          "skillCasts": 12,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "heavy",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 924.2,
+      "meanWinTime": 924.2,
+      "meanLevel": 84,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 862.5,
+          "level": 84,
+          "kills": 1643,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 1029.3,
+          "level": 84,
+          "kills": 1840,
+          "thunders": 51,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 814.4,
+          "level": 84,
+          "kills": 1521,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 740.7,
+          "level": 84,
+          "kills": 1452,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 997.3,
+          "level": 84,
+          "kills": 1772,
+          "thunders": 21,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1101,
+          "level": 84,
+          "kills": 1894,
+          "thunders": 21,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "heavy",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 913.1,
+      "meanWinTime": 913.1,
+      "meanLevel": 84,
+      "skillCasts": 229,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 835.6,
+          "level": 84,
+          "kills": 1568,
+          "thunders": 12,
+          "skillCasts": 46,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 995,
+          "level": 84,
+          "kills": 1726,
+          "thunders": 93,
+          "skillCasts": 40,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 805.5,
+          "level": 84,
+          "kills": 1610,
+          "thunders": 15,
+          "skillCasts": 40,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 744.8,
+          "level": 84,
+          "kills": 1452,
+          "thunders": 14,
+          "skillCasts": 42,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 997,
+          "level": 84,
+          "kills": 1722,
+          "thunders": 22,
+          "skillCasts": 33,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1100.6,
+          "level": 84,
+          "kills": 1938,
+          "thunders": 21,
+          "skillCasts": 28,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "flow",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 909.9,
+      "meanWinTime": 909.9,
+      "meanLevel": 84,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 827.3,
+          "level": 84,
+          "kills": 1634,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 927,
+          "level": 84,
+          "kills": 1753,
+          "thunders": 33,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 827.8,
+          "level": 84,
+          "kills": 1613,
+          "thunders": 24,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 741.1,
+          "level": 84,
+          "kills": 1568,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 1003.7,
+          "level": 84,
+          "kills": 1733,
+          "thunders": 22,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1132.4,
+          "level": 84,
+          "kills": 2061,
+          "thunders": 26,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "flow",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 903.8,
+      "meanWinTime": 903.8,
+      "meanLevel": 84,
+      "skillCasts": 208,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 823.5,
+          "level": 84,
+          "kills": 1597,
+          "thunders": 11,
+          "skillCasts": 45,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 904.4,
+          "level": 84,
+          "kills": 1589,
+          "thunders": 82,
+          "skillCasts": 37,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 810.6,
+          "level": 84,
+          "kills": 1566,
+          "thunders": 16,
+          "skillCasts": 36,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 774.1,
+          "level": 84,
+          "kills": 1574,
+          "thunders": 17,
+          "skillCasts": 41,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 976.6,
+          "level": 84,
+          "kills": 1711,
+          "thunders": 19,
+          "skillCasts": 38,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1133.7,
+          "level": 84,
+          "kills": 2050,
+          "thunders": 26,
+          "skillCasts": 11,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "pierce",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 893.6,
+      "meanWinTime": 893.6,
+      "meanLevel": 84,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 813.9,
+          "level": 84,
+          "kills": 1642,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 940.5,
+          "level": 84,
+          "kills": 1788,
+          "thunders": 34,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 858.7,
+          "level": 84,
+          "kills": 1628,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 740.4,
+          "level": 84,
+          "kills": 1525,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 950.5,
+          "level": 84,
+          "kills": 1609,
+          "thunders": 19,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1057.8,
+          "level": 84,
+          "kills": 1944,
+          "thunders": 23,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "pierce",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 6,
+      "completed": 6,
+      "meanEndTime": 888.4,
+      "meanWinTime": 888.4,
+      "meanLevel": 84,
+      "skillCasts": 193,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 809.7,
+          "level": 84,
+          "kills": 1623,
+          "thunders": 11,
+          "skillCasts": 45,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 925.1,
+          "level": 84,
+          "kills": 1631,
+          "thunders": 58,
+          "skillCasts": 24,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 841.8,
+          "level": 84,
+          "kills": 1598,
+          "thunders": 16,
+          "skillCasts": 40,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 748.6,
+          "level": 84,
+          "kills": 1572,
+          "thunders": 15,
+          "skillCasts": 40,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 947.6,
+          "level": 84,
+          "kills": 1681,
+          "thunders": 19,
+          "skillCasts": 38,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1057.8,
+          "level": 84,
+          "kills": 1944,
+          "thunders": 23,
+          "skillCasts": 6,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "none",
+      "skills": false,
+      "weaponVersion": 0,
+      "skillVersion": 0,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 838,
+      "meanWinTime": 835.6,
+      "meanLevel": 82,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 866.2,
+          "level": 84,
+          "kills": 1752,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 891.9,
+          "level": 84,
+          "kills": 1788,
+          "thunders": 37,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 838.5,
+          "level": 84,
+          "kills": 1702,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 746,
+          "level": 84,
+          "kills": 1615,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 831,
+          "level": 80,
+          "kills": 1474,
+          "thunders": 13,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 854.6,
+          "level": 76,
+          "kills": 1521,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "none",
+      "skills": true,
+      "weaponVersion": 0,
+      "skillVersion": 1,
+      "wins": 5,
+      "completed": 6,
+      "meanEndTime": 909.8,
+      "meanWinTime": 925.4,
+      "meanLevel": 83.3,
+      "skillCasts": 235,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 842.6,
+          "level": 84,
+          "kills": 1711,
+          "thunders": 12,
+          "skillCasts": 46,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 964.6,
+          "level": 84,
+          "kills": 1721,
+          "thunders": 54,
+          "skillCasts": 22,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 856.9,
+          "level": 84,
+          "kills": 1766,
+          "thunders": 16,
+          "skillCasts": 52,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 771.5,
+          "level": 84,
+          "kills": 1716,
+          "thunders": 14,
+          "skillCasts": 44,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 831.7,
+          "level": 80,
+          "kills": 1512,
+          "thunders": 13,
+          "skillCasts": 43,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1191.6,
+          "level": 84,
+          "kills": 2078,
+          "thunders": 22,
+          "skillCasts": 28,
+          "weapon": null,
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "array",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 838,
+      "meanWinTime": 835.6,
+      "meanLevel": 82,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 866.2,
+          "level": 84,
+          "kills": 1752,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 891.9,
+          "level": 84,
+          "kills": 1788,
+          "thunders": 37,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 838.5,
+          "level": 84,
+          "kills": 1702,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 746,
+          "level": 84,
+          "kills": 1615,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 831,
+          "level": 80,
+          "kills": 1474,
+          "thunders": 13,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 854.6,
+          "level": 76,
+          "kills": 1521,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "array",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 5,
+      "completed": 6,
+      "meanEndTime": 909.8,
+      "meanWinTime": 925.4,
+      "meanLevel": 83.3,
+      "skillCasts": 235,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 842.6,
+          "level": 84,
+          "kills": 1711,
+          "thunders": 12,
+          "skillCasts": 46,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 964.6,
+          "level": 84,
+          "kills": 1721,
+          "thunders": 54,
+          "skillCasts": 22,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 856.9,
+          "level": 84,
+          "kills": 1766,
+          "thunders": 16,
+          "skillCasts": 52,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 771.5,
+          "level": 84,
+          "kills": 1716,
+          "thunders": 14,
+          "skillCasts": 44,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 831.7,
+          "level": 80,
+          "kills": 1512,
+          "thunders": 13,
+          "skillCasts": 43,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1191.6,
+          "level": 84,
+          "kills": 2078,
+          "thunders": 22,
+          "skillCasts": 28,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "heavy",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 3,
+      "completed": 6,
+      "meanEndTime": 744.5,
+      "meanWinTime": 830.1,
+      "meanLevel": 70.7,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 879.4,
+          "level": 84,
+          "kills": 1742,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 162.4,
+          "level": 14,
+          "kills": 129,
+          "thunders": 3,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 14
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 847,
+          "level": 84,
+          "kills": 1730,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 763.9,
+          "level": 84,
+          "kills": 1581,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 934.7,
+          "level": 82,
+          "kills": 1720,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 879.5,
+          "level": 76,
+          "kills": 1560,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "heavy",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 818.7,
+      "meanWinTime": 947.5,
+      "meanLevel": 73,
+      "skillCasts": 239,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 878.2,
+          "level": 84,
+          "kills": 1742,
+          "thunders": 12,
+          "skillCasts": 49,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 286.9,
+          "level": 22,
+          "kills": 323,
+          "thunders": 10,
+          "skillCasts": 5,
+          "weapon": "heavy",
+          "finalSwords": 22
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 931.6,
+          "level": 84,
+          "kills": 1882,
+          "thunders": 18,
+          "skillCasts": 44,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 745.2,
+          "level": 84,
+          "kills": 1650,
+          "thunders": 15,
+          "skillCasts": 66,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 835.1,
+          "level": 80,
+          "kills": 1497,
+          "thunders": 13,
+          "skillCasts": 42,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1235.1,
+          "level": 84,
+          "kills": 2286,
+          "thunders": 20,
+          "skillCasts": 33,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "flow",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 5,
+      "completed": 6,
+      "meanEndTime": 780.6,
+      "meanWinTime": 891.2,
+      "meanLevel": 72.2,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 856.1,
+          "level": 84,
+          "kills": 1808,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 914.1,
+          "level": 84,
+          "kills": 1829,
+          "thunders": 41,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 855.9,
+          "level": 84,
+          "kills": 1775,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 771.8,
+          "level": 84,
+          "kills": 1663,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 227.4,
+          "level": 13,
+          "kills": 198,
+          "thunders": 2,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 13
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1058.1,
+          "level": 84,
+          "kills": 2004,
+          "thunders": 19,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "flow",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 5,
+      "completed": 6,
+      "meanEndTime": 876.6,
+      "meanWinTime": 892.7,
+      "meanLevel": 83.7,
+      "skillCasts": 252,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 850.6,
+          "level": 84,
+          "kills": 1686,
+          "thunders": 12,
+          "skillCasts": 44,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 796,
+          "level": 82,
+          "kills": 1519,
+          "thunders": 59,
+          "skillCasts": 24,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 834,
+          "level": 84,
+          "kills": 1751,
+          "thunders": 17,
+          "skillCasts": 55,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 756.3,
+          "level": 84,
+          "kills": 1625,
+          "thunders": 15,
+          "skillCasts": 60,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": true,
+          "termination": "victory",
+          "time": 949.6,
+          "level": 84,
+          "kills": 1696,
+          "thunders": 15,
+          "skillCasts": 46,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1073.2,
+          "level": 84,
+          "kills": 2010,
+          "thunders": 20,
+          "skillCasts": 23,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "pierce",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 5,
+      "completed": 6,
+      "meanEndTime": 955.9,
+      "meanWinTime": 947.9,
+      "meanLevel": 83.8,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 838.7,
+          "level": 84,
+          "kills": 1759,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 1008.5,
+          "level": 84,
+          "kills": 2052,
+          "thunders": 47,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 874.3,
+          "level": 84,
+          "kills": 1790,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 762.4,
+          "level": 84,
+          "kills": 1663,
+          "thunders": 16,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 995.8,
+          "level": 83,
+          "kills": 1812,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1255.8,
+          "level": 84,
+          "kills": 2167,
+          "thunders": 21,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "pierce",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 910.9,
+      "meanWinTime": 926,
+      "meanLevel": 83,
+      "skillCasts": 251,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 846.8,
+          "level": 84,
+          "kills": 1766,
+          "thunders": 12,
+          "skillCasts": 45,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 904.9,
+          "level": 82,
+          "kills": 1723,
+          "thunders": 50,
+          "skillCasts": 21,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 893.9,
+          "level": 84,
+          "kills": 1806,
+          "thunders": 18,
+          "skillCasts": 53,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 756.6,
+          "level": 84,
+          "kills": 1638,
+          "thunders": 11,
+          "skillCasts": 45,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 856.3,
+          "level": 80,
+          "kills": 1601,
+          "thunders": 14,
+          "skillCasts": 61,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1206.7,
+          "level": 84,
+          "kills": 2194,
+          "thunders": 19,
+          "skillCasts": 26,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "none",
+      "skills": false,
+      "weaponVersion": 0,
+      "skillVersion": 0,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 507.1,
+      "meanWinTime": 817,
+      "meanLevel": 46.7,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 116.4,
+          "level": 7,
+          "kills": 94,
+          "thunders": 1,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 231.5,
+          "level": 16,
+          "kills": 209,
+          "thunders": 4,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 862.7,
+          "level": 84,
+          "kills": 1738,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 771.2,
+          "level": 84,
+          "kills": 1625,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 205.3,
+          "level": 13,
+          "kills": 179,
+          "thunders": 1,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 855.6,
+          "level": 76,
+          "kills": 1551,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": null,
+          "finalSwords": null
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "none",
+      "skills": true,
+      "weaponVersion": 0,
+      "skillVersion": 1,
+      "wins": 1,
+      "completed": 6,
+      "meanEndTime": 509.8,
+      "meanWinTime": 752.7,
+      "meanLevel": 46.7,
+      "skillCasts": 142,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 227.4,
+          "level": 13,
+          "kills": 194,
+          "thunders": 3,
+          "skillCasts": 13,
+          "weapon": null,
+          "finalSwords": 13
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 174.6,
+          "level": 14,
+          "kills": 143,
+          "thunders": 10,
+          "skillCasts": 5,
+          "weapon": null,
+          "finalSwords": 14
+        },
+        {
+          "path": 2,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 169.1,
+          "level": 13,
+          "kills": 151,
+          "thunders": 3,
+          "skillCasts": 9,
+          "weapon": null,
+          "finalSwords": 13
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 752.7,
+          "level": 84,
+          "kills": 1614,
+          "thunders": 15,
+          "skillCasts": 53,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 860.6,
+          "level": 80,
+          "kills": 1499,
+          "thunders": 12,
+          "skillCasts": 47,
+          "weapon": null,
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 874.3,
+          "level": 76,
+          "kills": 1596,
+          "thunders": 17,
+          "skillCasts": 15,
+          "weapon": null,
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "array",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 507.1,
+      "meanWinTime": 817,
+      "meanLevel": 46.7,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 116.4,
+          "level": 7,
+          "kills": 94,
+          "thunders": 1,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 7
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 231.5,
+          "level": 16,
+          "kills": 209,
+          "thunders": 4,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 16
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 862.7,
+          "level": 84,
+          "kills": 1738,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 771.2,
+          "level": 84,
+          "kills": 1625,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 205.3,
+          "level": 13,
+          "kills": 179,
+          "thunders": 1,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 13
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 855.6,
+          "level": 76,
+          "kills": 1551,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "array",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 1,
+      "completed": 6,
+      "meanEndTime": 509.8,
+      "meanWinTime": 752.7,
+      "meanLevel": 46.7,
+      "skillCasts": 142,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 227.4,
+          "level": 13,
+          "kills": 194,
+          "thunders": 3,
+          "skillCasts": 13,
+          "weapon": "array",
+          "finalSwords": 13
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 174.6,
+          "level": 14,
+          "kills": 143,
+          "thunders": 10,
+          "skillCasts": 5,
+          "weapon": "array",
+          "finalSwords": 14
+        },
+        {
+          "path": 2,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 169.1,
+          "level": 13,
+          "kills": 151,
+          "thunders": 3,
+          "skillCasts": 9,
+          "weapon": "array",
+          "finalSwords": 13
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 752.7,
+          "level": 84,
+          "kills": 1614,
+          "thunders": 15,
+          "skillCasts": 53,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 860.6,
+          "level": 80,
+          "kills": 1499,
+          "thunders": 12,
+          "skillCasts": 47,
+          "weapon": "array",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 874.3,
+          "level": 76,
+          "kills": 1596,
+          "thunders": 17,
+          "skillCasts": 15,
+          "weapon": "array",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "heavy",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 645.5,
+      "meanWinTime": 844.5,
+      "meanLevel": 57.5,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 218.5,
+          "level": 13,
+          "kills": 186,
+          "thunders": 2,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 13
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 606.8,
+          "level": 53,
+          "kills": 1189,
+          "thunders": 20,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 919.9,
+          "level": 84,
+          "kills": 1846,
+          "thunders": 19,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 769.1,
+          "level": 84,
+          "kills": 1626,
+          "thunders": 14,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 425.1,
+          "level": 34,
+          "kills": 477,
+          "thunders": 6,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 34
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 933.8,
+          "level": 77,
+          "kills": 1606,
+          "thunders": 17,
+          "skillCasts": 0,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "heavy",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 551.8,
+      "meanWinTime": 848.8,
+      "meanLevel": 49.7,
+      "skillCasts": 166,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 222.6,
+          "level": 13,
+          "kills": 186,
+          "thunders": 2,
+          "skillCasts": 13,
+          "weapon": "heavy",
+          "finalSwords": 13
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 151.4,
+          "level": 13,
+          "kills": 121,
+          "thunders": 10,
+          "skillCasts": 5,
+          "weapon": "heavy",
+          "finalSwords": 13
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 930.2,
+          "level": 84,
+          "kills": 1870,
+          "thunders": 19,
+          "skillCasts": 64,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 767.3,
+          "level": 84,
+          "kills": 1582,
+          "thunders": 14,
+          "skillCasts": 50,
+          "weapon": "heavy",
+          "finalSwords": 36
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 367.2,
+          "level": 29,
+          "kills": 394,
+          "thunders": 5,
+          "skillCasts": 20,
+          "weapon": "heavy",
+          "finalSwords": 29
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 871.9,
+          "level": 75,
+          "kills": 1569,
+          "thunders": 16,
+          "skillCasts": 14,
+          "weapon": "heavy",
+          "finalSwords": 36
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "flow",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 642.5,
+      "meanWinTime": 890.6,
+      "meanLevel": 58.7,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 902.3,
+          "level": 84,
+          "kills": 1838,
+          "thunders": 15,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 219.9,
+          "level": 16,
+          "kills": 213,
+          "thunders": 5,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 16
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 879,
+          "level": 84,
+          "kills": 1741,
+          "thunders": 18,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 541.9,
+          "level": 58,
+          "kills": 1196,
+          "thunders": 8,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 58
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 422.5,
+          "level": 34,
+          "kills": 441,
+          "thunders": 6,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 34
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 889.5,
+          "level": 76,
+          "kills": 1666,
+          "thunders": 19,
+          "skillCasts": 0,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "flow",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 2,
+      "completed": 6,
+      "meanEndTime": 681.7,
+      "meanWinTime": 894.7,
+      "meanLevel": 61,
+      "skillCasts": 171,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 845.1,
+          "level": 84,
+          "kills": 1775,
+          "thunders": 12,
+          "skillCasts": 45,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 360.8,
+          "level": 30,
+          "kills": 392,
+          "thunders": 22,
+          "skillCasts": 10,
+          "weapon": "flow",
+          "finalSwords": 30
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 944.3,
+          "level": 84,
+          "kills": 1867,
+          "thunders": 18,
+          "skillCasts": 48,
+          "weapon": "flow",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 531.2,
+          "level": 53,
+          "kills": 1194,
+          "thunders": 7,
+          "skillCasts": 33,
+          "weapon": "flow",
+          "finalSwords": 53
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 515.1,
+          "level": 40,
+          "kills": 683,
+          "thunders": 9,
+          "skillCasts": 22,
+          "weapon": "flow",
+          "finalSwords": 40
+        },
+        {
+          "path": 5,
+          "won": false,
+          "termination": "formation-defeat",
+          "time": 893.5,
+          "level": 75,
+          "kills": 1636,
+          "thunders": 18,
+          "skillCasts": 13,
+          "weapon": "flow",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "pierce",
+      "skills": false,
+      "weaponVersion": 1,
+      "skillVersion": 0,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 707.8,
+      "meanWinTime": 943,
+      "meanLevel": 60.5,
+      "skillCasts": 0,
+      "paths": [
+        {
+          "path": 0,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 228.9,
+          "level": 13,
+          "kills": 205,
+          "thunders": 2,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 13
+        },
+        {
+          "path": 1,
+          "won": true,
+          "termination": "victory",
+          "time": 978.2,
+          "level": 84,
+          "kills": 1900,
+          "thunders": 48,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 917.7,
+          "level": 84,
+          "kills": 1884,
+          "thunders": 21,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 755.2,
+          "level": 84,
+          "kills": 1642,
+          "thunders": 13,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 246,
+          "level": 14,
+          "kills": 217,
+          "thunders": 2,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 14
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1120.7,
+          "level": 84,
+          "kills": 2080,
+          "thunders": 19,
+          "skillCasts": 0,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "pierce",
+      "skills": true,
+      "weaponVersion": 1,
+      "skillVersion": 1,
+      "wins": 4,
+      "completed": 6,
+      "meanEndTime": 816.2,
+      "meanWinTime": 942.7,
+      "meanLevel": 72,
+      "skillCasts": 217,
+      "paths": [
+        {
+          "path": 0,
+          "won": true,
+          "termination": "victory",
+          "time": 866.6,
+          "level": 84,
+          "kills": 1756,
+          "thunders": 15,
+          "skillCasts": 40,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 1,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 242.4,
+          "level": 16,
+          "kills": 239,
+          "thunders": 10,
+          "skillCasts": 5,
+          "weapon": "pierce",
+          "finalSwords": 16
+        },
+        {
+          "path": 2,
+          "won": true,
+          "termination": "victory",
+          "time": 866.7,
+          "level": 84,
+          "kills": 1772,
+          "thunders": 17,
+          "skillCasts": 52,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 3,
+          "won": true,
+          "termination": "victory",
+          "time": 760.9,
+          "level": 84,
+          "kills": 1612,
+          "thunders": 12,
+          "skillCasts": 45,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 4,
+          "won": false,
+          "termination": "player-defeat",
+          "time": 883.9,
+          "level": 80,
+          "kills": 1620,
+          "thunders": 15,
+          "skillCasts": 40,
+          "weapon": "pierce",
+          "finalSwords": 72
+        },
+        {
+          "path": 5,
+          "won": true,
+          "termination": "victory",
+          "time": 1276.5,
+          "level": 84,
+          "kills": 2193,
+          "thunders": 17,
+          "skillCasts": 35,
+          "weapon": "pierce",
+          "finalSwords": 72
+        }
+      ]
+    }
+  ],
+  "weaponDeltas": [
+    {
+      "difficulty": 0,
+      "weapon": "array",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "array",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "heavy",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 41.9,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 22.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 111.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -34.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -5.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 104.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 52.8,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "heavy",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 42.1,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 21.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 152.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -3.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 22.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 58.2,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "flow",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 27.6,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -13,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 9.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -21.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -4.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 111.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 84.2,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "flow",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 32.8,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 9.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 61.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 5.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 26.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 2.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 91.3,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "pierce",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 11.3,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -26.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 22.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 9.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -5.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 57.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 9.6,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "pierce",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 17.4,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -4,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 82.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 37.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -26.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 15.4,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "array",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "array",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "heavy",
+      "skills": false,
+      "wins": -1,
+      "meanEndDelta": -93.5,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 13.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -729.5,
+          "levelDelta": -70
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 8.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 17.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 103.7,
+          "levelDelta": 2
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 24.9,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "heavy",
+      "skills": true,
+      "wins": -1,
+      "meanEndDelta": -91.1,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 35.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -677.7,
+          "levelDelta": -62
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 74.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -26.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 3.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 43.5,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "flow",
+      "skills": false,
+      "wins": 1,
+      "meanEndDelta": -57.4,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -10.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 22.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 17.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 25.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -603.6,
+          "levelDelta": -67
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 203.5,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "flow",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": -33.2,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 8,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -168.6,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -22.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -15.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 1,
+          "timeDelta": 117.9,
+          "levelDelta": 4
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -118.4,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "pierce",
+      "skills": false,
+      "wins": 1,
+      "meanEndDelta": 117.9,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -27.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 116.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 35.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 16.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 164.8,
+          "levelDelta": 3
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 401.2,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "pierce",
+      "skills": true,
+      "wins": -1,
+      "meanEndDelta": 1.1,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 4.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -59.7,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 37,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -14.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 24.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 15.1,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "array",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "array",
+      "skills": true,
+      "wins": 0,
+      "meanEndDelta": 0,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "heavy",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 138.4,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 102.1,
+          "levelDelta": 6
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 375.3,
+          "levelDelta": 37
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 57.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -2.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 219.8,
+          "levelDelta": 21
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 78.2,
+          "levelDelta": 1
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "heavy",
+      "skills": true,
+      "wins": 1,
+      "meanEndDelta": 42,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -4.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -23.2,
+          "levelDelta": -1
+        },
+        {
+          "path": 2,
+          "wonDelta": 1,
+          "timeDelta": 761.1,
+          "levelDelta": 71
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 14.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -493.4,
+          "levelDelta": -51
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -2.4,
+          "levelDelta": -1
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "flow",
+      "skills": false,
+      "wins": 0,
+      "meanEndDelta": 135.4,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 1,
+          "timeDelta": 785.9,
+          "levelDelta": 77
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -11.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 16.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": -1,
+          "timeDelta": -229.3,
+          "levelDelta": -26
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 217.2,
+          "levelDelta": 21
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 33.9,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "flow",
+      "skills": true,
+      "wins": 1,
+      "meanEndDelta": 171.9,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 1,
+          "timeDelta": 617.7,
+          "levelDelta": 71
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 186.2,
+          "levelDelta": 16
+        },
+        {
+          "path": 2,
+          "wonDelta": 1,
+          "timeDelta": 775.2,
+          "levelDelta": 71
+        },
+        {
+          "path": 3,
+          "wonDelta": -1,
+          "timeDelta": -221.5,
+          "levelDelta": -31
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -345.5,
+          "levelDelta": -40
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 19.2,
+          "levelDelta": -1
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "pierce",
+      "skills": false,
+      "wins": 2,
+      "meanEndDelta": 200.7,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 112.5,
+          "levelDelta": 6
+        },
+        {
+          "path": 1,
+          "wonDelta": 1,
+          "timeDelta": 746.7,
+          "levelDelta": 68
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 55,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -16,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 40.7,
+          "levelDelta": 1
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 265.1,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "pierce",
+      "skills": true,
+      "wins": 3,
+      "meanEndDelta": 306.4,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 1,
+          "timeDelta": 639.2,
+          "levelDelta": 71
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 67.8,
+          "levelDelta": 2
+        },
+        {
+          "path": 2,
+          "wonDelta": 1,
+          "timeDelta": 697.6,
+          "levelDelta": 71
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 8.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 23.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 402.2,
+          "levelDelta": 8
+        }
+      ]
+    }
+  ],
+  "skillDeltas": [
+    {
+      "difficulty": 0,
+      "weapon": "none",
+      "wins": 0,
+      "meanEndDelta": -11.3,
+      "casts": 248,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -26.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -75.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -44.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 2.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 81.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -5.8,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "array",
+      "wins": 0,
+      "meanEndDelta": -11.3,
+      "casts": 248,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -26.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -75.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -44.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 2.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 81.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -5.8,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "heavy",
+      "wins": 0,
+      "meanEndDelta": -11.1,
+      "casts": 229,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -26.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -34.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -8.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 4.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -0.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -0.4,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "flow",
+      "wins": 0,
+      "meanEndDelta": -6.1,
+      "casts": 208,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -3.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -22.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -17.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 33,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -27.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 1.3,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 0,
+      "weapon": "pierce",
+      "wins": 0,
+      "meanEndDelta": -5.2,
+      "casts": 193,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -4.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -15.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -16.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 8.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -2.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 0,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "none",
+      "wins": 1,
+      "meanEndDelta": 71.8,
+      "casts": 235,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -23.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 72.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 18.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 25.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 337,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "array",
+      "wins": 1,
+      "meanEndDelta": 71.8,
+      "casts": 235,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -23.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 72.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 18.4,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 25.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 0.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 337,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "heavy",
+      "wins": 1,
+      "meanEndDelta": 74.2,
+      "casts": 239,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -1.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 124.5,
+          "levelDelta": 8
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 84.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -18.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -99.6,
+          "levelDelta": -2
+        },
+        {
+          "path": 5,
+          "wonDelta": 1,
+          "timeDelta": 355.6,
+          "levelDelta": 8
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "flow",
+      "wins": 0,
+      "meanEndDelta": 96,
+      "casts": 252,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -5.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -118.1,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -21.9,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -15.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 1,
+          "timeDelta": 722.2,
+          "levelDelta": 71
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 15.1,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 1,
+      "weapon": "pierce",
+      "wins": -1,
+      "meanEndDelta": -45,
+      "casts": 251,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 8.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -103.6,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 19.6,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -5.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -139.5,
+          "levelDelta": -3
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -49.1,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "none",
+      "wins": -1,
+      "meanEndDelta": 2.7,
+      "casts": 142,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 111,
+          "levelDelta": 6
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -56.9,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": -1,
+          "timeDelta": -693.6,
+          "levelDelta": -71
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -18.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 655.3,
+          "levelDelta": 67
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 18.7,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "array",
+      "wins": -1,
+      "meanEndDelta": 2.7,
+      "casts": 142,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 111,
+          "levelDelta": 6
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -56.9,
+          "levelDelta": -2
+        },
+        {
+          "path": 2,
+          "wonDelta": -1,
+          "timeDelta": -693.6,
+          "levelDelta": -71
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -18.5,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 655.3,
+          "levelDelta": 67
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 18.7,
+          "levelDelta": 0
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "heavy",
+      "wins": 0,
+      "meanEndDelta": -93.7,
+      "casts": 166,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": 4.1,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": -455.4,
+          "levelDelta": -40
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 10.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -1.8,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": -57.9,
+          "levelDelta": -5
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": -61.9,
+          "levelDelta": -2
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "flow",
+      "wins": 0,
+      "meanEndDelta": 39.2,
+      "casts": 171,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 0,
+          "timeDelta": -57.2,
+          "levelDelta": 0
+        },
+        {
+          "path": 1,
+          "wonDelta": 0,
+          "timeDelta": 140.9,
+          "levelDelta": 14
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": 65.3,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": -10.7,
+          "levelDelta": -5
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 92.6,
+          "levelDelta": 6
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 4,
+          "levelDelta": -1
+        }
+      ]
+    },
+    {
+      "difficulty": 2,
+      "weapon": "pierce",
+      "wins": 0,
+      "meanEndDelta": 108.4,
+      "casts": 217,
+      "perPath": [
+        {
+          "path": 0,
+          "wonDelta": 1,
+          "timeDelta": 637.7,
+          "levelDelta": 71
+        },
+        {
+          "path": 1,
+          "wonDelta": -1,
+          "timeDelta": -735.8,
+          "levelDelta": -68
+        },
+        {
+          "path": 2,
+          "wonDelta": 0,
+          "timeDelta": -51,
+          "levelDelta": 0
+        },
+        {
+          "path": 3,
+          "wonDelta": 0,
+          "timeDelta": 5.7,
+          "levelDelta": 0
+        },
+        {
+          "path": 4,
+          "wonDelta": 0,
+          "timeDelta": 637.9,
+          "levelDelta": 66
+        },
+        {
+          "path": 5,
+          "wonDelta": 0,
+          "timeDelta": 155.8,
+          "levelDelta": 0
+        }
+      ]
+    }
+  ],
+  "evidence": "Synthetic fixed-strategy simulation. Not a human or on-device result; the numbers are candidates for the author to adopt or reject."
+}

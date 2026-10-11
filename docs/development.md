@@ -60,7 +60,11 @@ npm run check:release
 
 ## 固定策略模拟
 
-`npm run test:balance` 使用真实引擎和合法自动策略，不免伤、不发额外经验。支持 BATTLE_DIFFICULTY=0/1/2、BATTLE_SEED_PREFIX、BATTLE_SHARED_SEED=1、BATTLE_PATHS、BATTLE_VALIDATE_SAVES=1。输出默认写入 game/qa。自动策略胜负不是真人胜率；所有失败样本都保留。
+`npm run test:balance` 使用真实引擎和合法自动策略，不免伤、不发额外经验。支持 BATTLE_DIFFICULTY=0/1/2、BATTLE_SEED_PREFIX、BATTLE_SHARED_SEED=1、BATTLE_PATHS、BATTLE_VALIDATE_SAVES=1，以及两个 v2.0 输入：BATTLE_WEAPON=array/heavy/flow/pierce 声明御剑法门，BATTLE_SKILLS=1 开启流派技能。两者不写时配置与改版前逐字节一致，输出也不多任何字段。输出默认写入 game/qa。自动策略胜负不是真人胜率；所有失败样本都保留。
+
+单次运行体在 `scripts/balance-run.mjs`，`scripts/expedition-simulate.mjs` 只是 CLI 外壳；这样矩阵可以在同一进程里驱动很多格，不必派生子进程。技能释放判据在 `scripts/pilot-strategies.mjs` 的 `skillIntent`，它刻意避开神雷的资源：灵力与雷源是共用的，若策略随手花掉灵力，量到的就是策略在抢资源而不是技能本身。
+
+`npm run test:balance:matrix` 跑完整矩阵并写出证据：六流派 × 三档难度 × 法门（含「未声明」对照行）× 技能开关，同流派跨格共用同一个种子，所以格间差值可以归因到法门或技能。原始报告写 `game/qa-runs/balance-v2/`（不进发布），精简摘要写 `docs/qa/balance-v2.json`（进发布）。`BALANCE_SMOKE=1` 只跑三格并把输出改到 `game/qa-runs/balance-v2-smoke/`，不会覆盖已提交的摘要。
 
 ## 发布产物
 
