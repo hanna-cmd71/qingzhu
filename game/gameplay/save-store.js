@@ -7,6 +7,7 @@ import {touchSettings} from './touch-controls.js';
 import {copyAllies} from './snapshot-fields.js';
 import {initialSave,META} from './data.js';
 import {normalizeSkinState} from './skins.js';
+import {normalizeWeaponSkin} from './weapons.js';
 import {restoreRun} from './run-factory.js';
 import {normalizeGarden} from './expedition-data.js';
 export const MAX_SAVE_IMPORT_BYTES=8*1024*1024;
@@ -32,16 +33,16 @@ export function readableSaveError(error){
 }
 export function normalizeSave(x){
  if(!x||x.version!==1||!Array.isArray(x.meta)||!Array.isArray(x.history))throw new SaveError('invalid','存档格式无法识别');
- const base=initialSave(),allowed=['version','unlocked','insight','meta','metaRulesVersion','seen','relicSeen','wins','runs','kills','best','achievements','skins','skin','history','records','checkpoint','settings','keymap','garden','completed','guidesSeen','savedAt','revision'],known=Object.fromEntries(allowed.filter(k=>k in x).map(k=>[k,x[k]])),out={...base,...known,settings:{...base.settings,...x.settings}};out.metaRulesVersion=x.metaRulesVersion??(x.meta.length?1:3);if(![1,2,3].includes(out.metaRulesVersion))throw new SaveError('invalid','洞府规则版本无法识别');
+ const base=initialSave(),allowed=['version','unlocked','insight','meta','metaRulesVersion','seen','relicSeen','wins','runs','kills','best','achievements','skins','skin','weaponSkin','history','records','checkpoint','settings','keymap','garden','completed','guidesSeen','savedAt','revision'],known=Object.fromEntries(allowed.filter(k=>k in x).map(k=>[k,x[k]])),out={...base,...known,settings:{...base.settings,...x.settings}};out.metaRulesVersion=x.metaRulesVersion??(x.meta.length?1:3);if(![1,2,3].includes(out.metaRulesVersion))throw new SaveError('invalid','洞府规则版本无法识别');
  for(const key of ['insight','unlocked','wins','runs','kills','best'])if(!Number.isSafeInteger(out[key])||out[key]<0||out[key]>1e12)throw new SaveError('invalid','存档数值无效');
  if(!Number.isInteger(out.unlocked)||out.unlocked>5||out.best>72)throw new SaveError('invalid','存档章节无效');
  out.meta=[...new Set(x.meta.filter(id=>META.some(m=>m.id===id)))];out.history=keptHistory(x.history);for(const h of out.history)validateHistoryExperience(h);
  for(const key of ['seen','relicSeen','achievements','completed','guidesSeen'])out[key]=Array.isArray(x[key])?x[key].filter(v=>typeof v==='string'||Number.isFinite(v)):[];
- Object.assign(out,normalizeSkinState(out));
+ Object.assign(out,normalizeSkinState(out));out.weaponSkin=normalizeWeaponSkin(out.weaponSkin);
  for(const key of ['music','sfx'])out.settings[key]=Number.isFinite(out.settings[key])?Math.max(0,Math.min(1,out.settings[key])):base.settings[key];
  for(const key of ['shake','flash','numbers','skipSeenCinematics','endlessSkipSeen','skipSeenAfterWin'])out.settings[key]=typeof out.settings[key]==='boolean'?out.settings[key]:base.settings[key];out.settings.quality=out.settings.quality===0?0:1;Object.assign(out.settings,touchSettings(out.settings));
  for(const k of ['revision','savedAt'])if(out[k]!==undefined&&(!Number.isSafeInteger(out[k])||out[k]<0||out[k]>1e15))throw new SaveError('invalid','存档时间或修订记录无效');
- const defaults={dash:'Space',thunder:'KeyE',formation:'KeyQ',item1:'Digit1',item2:'Digit2'};if(x.keymap){if(typeof x.keymap!=='object'||Array.isArray(x.keymap))throw new SaveError('invalid','存档键位无效');const keys={...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>k in x.keymap).map(k=>[k,x.keymap[k]]))};if(Object.values(keys).some(v=>typeof v!=='string'||!/^[A-Za-z][A-Za-z0-9]{0,30}$/.test(v)))throw new SaveError('invalid','存档键位无效');out.keymap=keys;}
+ const defaults={dash:'Space',thunder:'KeyE',formation:'KeyQ',stroke:'KeyR',fuse:'KeyF',item1:'Digit1',item2:'Digit2'};if(x.keymap){if(typeof x.keymap!=='object'||Array.isArray(x.keymap))throw new SaveError('invalid','存档键位无效');const keys={...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>k in x.keymap).map(k=>[k,x.keymap[k]]))};if(Object.values(keys).some(v=>typeof v!=='string'||!/^[A-Za-z][A-Za-z0-9]{0,30}$/.test(v)))throw new SaveError('invalid','存档键位无效');out.keymap=keys;}
  out.records=normalizeRecords(x.records);out.garden=normalizeGarden(x.garden);if(out.checkpoint){if(out.checkpoint.options?.studyVersion)throw Error('观察包只能从对照体验入口恢复，不能覆盖正式存档');restoreRun(out.checkpoint,()=>{});validateCheckpointRecords(out.checkpoint,out.records);if(out.checkpoint.options?.rulesVersion===3){const c=out.checkpoint,ex=c.expedition;out.checkpoint={...c,expedition:{...ex,insects:copyAllies(ex.insects,'insect'),puppets:copyAllies(ex.puppets,'puppet')}};}}return out;
 }
 const removeKey=(storage,key)=>typeof storage.removeItem==='function'?storage.removeItem(key):storage.setItem(key,'');

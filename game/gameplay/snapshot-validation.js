@@ -5,6 +5,7 @@ import {validateFeedback,validateOrigin,FIRE_KINDS} from './combat-feedback.js';
 import {ENEMIES,META} from './data.js';
 import {SLOW_SOURCES} from './slow.js';
 import {weaponIds} from './weapons.js';
+import {ARRAY_VERSION,arrayDeclared,arrayPresetIds,INTENT} from './array.js';
 import {DAMAGE_SOURCES,PROJECTILE_SOURCES,MAX_PLAYER_RESOURCE,ZONE_KINDS} from './combat-values.js';
 import {BALANCE4} from './balance.js';
 const TIME=1e8,COUNT=1e12,POWER=1e200;
@@ -30,6 +31,13 @@ export function validateCommonSnapshot(d){
  if(d.options.weaponVersion!==undefined&&d.options.weaponVersion!==1)fail('御剑法门版本');
  if(d.options.weaponVersion===1&&!weaponIds.includes(d.options.weapon))fail('御剑法门');
  if(d.options.weapon!==undefined&&d.options.weaponVersion!==1)fail('御剑法门版本');
+ // 剑阵 2.0 is opt-in as well: a preset without the marker, or an out-of-range 剑意, is a mistake
+ // rather than a silent fallback. Below 1 is the engine's own "not declared" encoding (see
+ // arrayDeclared), so only a version that really claims the array but is not the current one fails.
+ if(d.options.arrayVersion!==undefined&&(d.options.arrayVersion??0)>=1&&d.options.arrayVersion!==ARRAY_VERSION)fail('剑阵编成版本');
+ if(d.arrayPreset!==undefined&&(!arrayPresetIds.includes(d.arrayPreset)||!arrayDeclared(d.options)))fail('剑阵阵图');
+ if(d.swordIntent!==undefined&&!arrayDeclared(d.options))fail('剑意');
+ if(d.swordIntent!==undefined)number(d.swordIntent,'剑意',0,INTENT.max);
  if(d.options.mode!==undefined&&!['story','seed','replay','endless','training'].includes(d.options.mode))fail('历练模式');if(d.seed!==undefined&&(typeof d.seed!=='string'||d.seed.length>256))fail('历练种子');if(d.formation!==undefined)number(d.formation,'御剑方式',0,2,true);
  number(d.level,'进阶等级',1,160,true);number(d.time,'历练时间',0,TIME);for(const k of ['xp','totalXP','gold','kills','thunders','hitCount','rerolls','queuedChoices'])number(d[k],'历练数值',0,COUNT,k!=='xp'&&k!=='totalXP');
  if(d.endlessLoop!==undefined)number(d.endlessLoop,'无尽轮次',0,1000,true);
@@ -87,7 +95,7 @@ export function validateWorldSnapshot(ex,options={}){
  for(const z of ex.zones){object(z,'场地效果');for(const k of ['x','y','ttl','warn'])number(z[k],'场地效果状态');number(z.r,'场地范围',0,5000);number(z.damage,'场地伤害',0,POWER);
   validateOrigin(z.origin);if(z.fireKind!==undefined&&(!FIRE_KINDS.includes(z.fireKind)||z.fireKind==='history'))fail('场地符火来源');
   if(!ZONE_KINDS.includes(z.kind))fail('场地效果类型');
-  for(const k of ['friendly','sigil','fired','twin','ember','metaEcho'])optionalBoolean(z,k,'场地效果标记');
+  for(const k of ['friendly','sigil','fired','twin','ember','metaEcho','carve'])optionalBoolean(z,k,'场地效果标记');
   if(z.fuseDuration!==undefined)number(z.fuseDuration,'符阵引信长度',.01,8);
   if(z.arming!==undefined){number(z.arming,'布符剩余时间',0,.35);if(!z.sigil||z.twin||z.metaEcho||!z.friendly||z.fuseDuration!==(options.balanceVersion===4?BALANCE4.sigilWarn:2.4))fail('布符触发规则');}
   if(z.originalDamage!==undefined)number(z.originalDamage,'原始符伤',0,POWER);

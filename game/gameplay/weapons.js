@@ -30,3 +30,26 @@ export function weaponEffectText(weapon=weaponById(DEFAULT_WEAPON)){
  if(weapon.mods.pierce)parts.push('穿透 +'+weapon.mods.pierce);
  return parts.join(' · ')||'维持现有调度';
 }
+
+// --- Flying-sword appearances -------------------------------------------------------------
+// The weapon atlas holds four columns, one sword look each. Every method points at its own column,
+// so switching methods changes the sword by default; an account-level pick can override that look
+// without entering the run snapshot, exactly like a costume.
+export const WEAPON_CELL={[DEFAULT_WEAPON]:0,heavy:1,flow:2,pierce:3};
+export const WEAPON_SKINS=[
+ {id:'jade',name:'青竹',desc:'青碧细直双刃剑，剑阵原色。',cell:0},
+ {id:'crimson',name:'赤锋',desc:'赤红阔刃重剑，锋锐沉重。',cell:1},
+ {id:'azure',name:'霜刃',desc:'霜蓝曲刃软剑，轻灵迅捷。',cell:2},
+ {id:'violet',name:'紫电',desc:'紫电细长刺剑，贯脉远击。',cell:3},
+];
+export const weaponSkinIds=WEAPON_SKINS.map(s=>s.id);
+export const weaponSkinById=id=>WEAPON_SKINS.find(s=>s.id===id)||null;
+// null means "follow the equipped method"; an unknown id falls back to the method too.
+export const normalizeWeaponSkin=id=>weaponSkinIds.includes(id)?id:null;
+// Column the renderer should read: a chosen skin wins, otherwise the method's own look.
+export function weaponCellFor(options={},skinId=null){
+ const skin=weaponSkinById(skinId);
+ if(skin)return skin.cell;
+ return WEAPON_CELL[weaponById(options.weapon).id]??0;
+}
+

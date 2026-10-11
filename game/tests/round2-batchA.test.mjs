@@ -65,7 +65,7 @@ void test('A-5 storage failures keep the original error as cause; home and dialo
  const game=src('Game.jsx');
  assert.match(game,/recoveryInfo\.issue\?<><Btn className="primary-start" onClick=\{openSettings\}>处理待恢复记录 →<\/Btn><Btn className="new-journey" variant="outline" onClick=\{preserveAndStart\}>保留原文并开启新历练/);
  assert.match(game,/function preserveAndStart\(\)\{[^\n]*recovery:true[^\n]*run:\(\)=>\{exportRecovery\(\);setPage\('journey'\);\}/);
- assert.match(game,/description:error\.message\+\(name\?'（浏览器报告：'\+name\+'）':''\)/);assert.match(game,/exportLabel:frozen\?'导出本次待保存记录':undefined,onExport:frozen\?exportPendingResult:undefined/);
+ assert.match(game,/description:denied\?/);assert.match(game,/:error\.message\+\(name\?'（浏览器报告：'\+name\+'）':''\)\+'。关闭提示后仍会保留原记录。'/);assert.match(game,/function storageDenied\(error\)\{return faultName\(error\)==='SecurityError'\|\|/);assert.match(game,/title:invalid\?'旧存档暂时无法读取':denied\?'此环境无法保存':'保存未成功'/);assert.match(game,/exportLabel:frozen\?'导出本次待保存记录':undefined,onExport:frozen\?exportPendingResult:undefined/);
  assert.match(game,/const idle=!battleRef\.current&&!pendingSaveRef\.current;/);assert.match(game,/\{risk\?\.footnote\|\|\(risk\?\.kind==='equipment'/);assert.match(game,/onClick=\{risk\?\.onExport\|\|\(risk\?\.recovery\?exportRecovery:exportSave\)\}>\{risk\?\.exportLabel\|\|/);
  assert.match(game,/const frozen=next\?structuredClone\(next\):null;/);
  // restoreProfileOnly now adopts the readable long-term part of a corrupt primary.

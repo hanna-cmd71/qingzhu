@@ -7,7 +7,8 @@ export function touchSettings(settings={}){return {joystickSide:settings.joystic
 export const supportsTouchLock=b=>b.rulesVersion===3&&b.options.focusVersion===3;
 export const touchLockAvailable=b=>supportsTouchLock(b)&&b.options.touchLockEnabled===true;
 // At least one sword must actually be able to acquire the target. Inner orbit groups keep their shorter range.
-export function touchLockRange(b){if(!b.swords.length)return 0;return b.formation===1?(180+Math.floor((b.swords.length-1)/18)*24)*(b.orbitMultiplier?.()??1):320*(1+(b.stats.range||0));}
+import {arrayDeclared,arrayMaxRange} from './array.js';
+export function touchLockRange(b){if(!b.swords.length)return 0;if(arrayDeclared(b.options))return arrayMaxRange(b.arrayPreset,b.stats,b.swords.length);return b.formation===1?(180+Math.floor((b.swords.length-1)/18)*24)*(b.orbitMultiplier?.()??1):320*(1+(b.stats.range||0));}
 export const legalTouchTarget=(b,e)=>!!e&&e.hp>0&&!e.untargetable&&!(e.phaseShield>0)&&!(e.bossType==='xuangu'&&b.bossEnding>0)&&Math.hypot(e.x-b.player.x,e.y-b.player.y)<touchLockRange(b);
 export function clearTouchLock(b,clearPoint=false){b.touchLockId=null;if(b.combatCues)b.combatCues=b.combatCues.filter(c=>!['touch-lock','touch-lock-release'].includes(c.key));if(clearPoint&&b.input){b.input.aim=null;b.input.focus=false;b.input.touchAim=false;}}
 export function setTouchAim(b,point,{allowLock=true,scale=1}={}){

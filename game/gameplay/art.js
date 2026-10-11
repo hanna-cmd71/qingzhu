@@ -8,6 +8,8 @@ import {afterThunderWindow} from './balance.js';
 import {ENEMY_ROLES} from './content-rules.js';
 import ASSETS from './assets.generated.js';
 import {DEFAULT_SKIN,skinById} from './skins.js';
+import {weaponCellFor} from './weapons.js';
+import {arrayDeclared,roleFor,roleById,STROKE,strokePointAt,FUSION} from './array.js';
 import {drawHealthBar,healthFraction} from './meters.js';
 import {sigilFuse} from './sigil-metrics.js';
 import {WORLD} from './engine.js';
@@ -104,6 +106,9 @@ export class Renderer{
   ctx.strokeStyle='#86c5ab35';ctx.lineWidth=1;if(b)ctx.strokeRect(27,35,WORLD.w-54,WORLD.h-63);
   if(b){
    for(const z of b.zones){
+    // 剑气刻痕: an inert ground mark. It is drawn as a dashed ring with a cross so it never reads as
+    // an area effect that is already ticking.
+    if(z.carve){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#cfe4ff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.22;ctx.fillStyle='#9dc6ff';ctx.fill();ctx.globalAlpha=1;ctx.translate(z.x,z.y);ctx.rotate(Math.PI/4);ctx.strokeRect(-8,-8,16,16);ctx.rotate(-Math.PI/4);ctx.fillStyle='#e6f1ff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText('痕',0,4);ctx.restore();continue;}
     if(z.sigil){ctx.save();const color=z.metaEcho?'#d4afff':z.arming>0?'#91bbca':'#ffbd78';ctx.fillStyle=z.metaEcho?'#8a52bb35':'#d176383d';ctx.strokeStyle=color;ctx.lineWidth=z.metaEcho?2:3;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,TAU);ctx.fill();ctx.stroke();ctx.setLineDash(z.metaEcho?[4,7]:z.arming>0?[3,5]:[]);ctx.beginPath();ctx.arc(z.x,z.y,z.r*.74,0,TAU);ctx.stroke();ctx.translate(z.x,z.y);ctx.rotate(Math.PI/4);ctx.strokeRect(-17,-17,34,34);ctx.rotate(-Math.PI/4);ctx.fillStyle=color;ctx.font='bold 17px sans-serif';ctx.textAlign='center';ctx.fillText(z.metaEcho?'回':'符',0,6);ctx.font='12px sans-serif';ctx.fillText(z.metaEcho?'复燃回响':z.twin&&!z.pair?'合符待配':z.twin?'合符同燃':z.arming>0?'布符中':z.arming===0?'踏入即爆':'起点留符',0,z.r+18);if(z.warn>0){ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,z.r+5,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,z.warn/(sigilFuse(z,b.stats))));ctx.stroke();}ctx.restore();continue;}
 
     ctx.save();ctx.globalAlpha=z.warn>0?.6:.33;ctx.fillStyle=z.friendly?(z.kind==='ward'?'#79c4ae':z.fireKind==='ember'?'#bd783f':'#dc8b46'):(z.kind==='poison'?'#85a653':z.kind==='frost'?'#85d8ef':z.kind==='web'?'#b5bbcc':z.kind==='sacred'?'#e1d1dc':'#bf563e');
@@ -151,16 +156,26 @@ export class Renderer{
   sprite(ctx,this.art.heroes[frame],p.x,p.y+9+(p.moving?Math.sin(seconds*15)*1.8:0),b?60:175,p.invuln>0&&Math.floor(seconds*15)%2===0?.55:1);
   ctx.restore();
   ctx.strokeStyle='#c8e5cd70';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y+9,14,4,0,0,TAU);ctx.stroke();
-  const weaponArt=this.art.weapons[0],swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
-  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){ctx.strokeStyle=b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
+  const weaponArt=this.art.weapons[weaponCellFor(b?.options||{},this.art.weaponSkin)]||this.art.weapons[0],swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
+  // 阵图编成 is legible only if the wings are distinguishable, so each sword's trail takes its
+  // 阵位角色 colour. Without the array marker this is null and the trail keeps its original colours.
+  const roleColors=b&&arrayDeclared(b.options)?swords.map((_,i)=>roleById(roleFor(b.arrayPreset,i,swords.length)).color):null;
+  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){ctx.strokeStyle=roleColors?roleColors[i]+'99':b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
     ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=weaponArt,height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
   }
+  // 御剑笔画: the recorded polyline plus the sweep head, so the player can see what the array is
+  // currently flying.
+  if(b?.sweep){const pts=b.sweep.points,head=strokePointAt(pts,b.sweep.dist);ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle='#e6d6ff';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(const pt of pts)ctx.lineTo(pt.x,pt.y);ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#fff2ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(head.x,head.y,STROKE.radius,0,TAU);ctx.stroke();ctx.fillStyle='#f6eaff';ctx.beginPath();ctx.arc(head.x,head.y,6,0,TAU);ctx.fill();ctx.restore();}
+  // 剑意·合体: one blade sweeping a ring around Han Li.
+  if(b?.fusion){const p2=b.player;ctx.save();ctx.translate(p2.x,p2.y);ctx.rotate(b.fusion.angle);ctx.globalAlpha=.42;ctx.strokeStyle='#d6ecff';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.globalAlpha=.85;ctx.fillStyle='#eaf6ff';ctx.beginPath();ctx.moveTo(0,-FUSION.radius-26);ctx.lineTo(11,0);ctx.lineTo(0,FUSION.radius+26);ctx.lineTo(-11,0);ctx.closePath();ctx.fill();ctx.restore();}
   if(b?.input.focus&&b.input.aim){const a=b.input.aim,r=16/scale,arm=22/scale;ctx.strokeStyle='#f1e5b5';ctx.lineWidth=2/scale;ctx.beginPath();ctx.arc(a.x,a.y,r,0,TAU);ctx.stroke();ctx.beginPath();ctx.moveTo(a.x-arm,a.y);ctx.lineTo(a.x+arm,a.y);ctx.moveTo(a.x,a.y-arm);ctx.lineTo(a.x,a.y+arm);ctx.stroke();}
   if(b)for(const f of b.fx){
    const alpha=Math.max(0,f.ttl/f.max);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=f.color||'#f4daa0';ctx.fillStyle=f.color||'#e5d4a3';
    if(f.kind==='ring'){ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1-alpha*.6),0,TAU);ctx.stroke();}
    if(f.kind==='incoming'){ctx.translate(f.x,f.y-12);ctx.rotate(f.angle);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(43,-9);ctx.lineTo(34,0);ctx.lineTo(43,9);ctx.stroke();}
    if(f.kind==='practice-warning'){const p=b.player,progress=1-alpha;ctx.globalAlpha=.55+progress*.45;ctx.strokeStyle='#ffb39c';ctx.lineWidth=3;ctx.setLineDash([9,6]);ctx.beginPath();ctx.moveTo(f.fromX,f.fromY);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,110-progress*70,0,TAU);ctx.stroke();ctx.fillStyle='#ffd7c4';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('来袭 '+Math.max(0,f.ttl).toFixed(1)+' 秒',p.x,p.y-52);}
+   if(f.kind==='carveBurst'){ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.15-alpha*.3),0,TAU);ctx.stroke();ctx.setLineDash([]);}
+   if(f.kind==='fusionSlash'){ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();}
    if(f.kind==='sigilBurst'){ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-alpha*.35),0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}}
    if(f.kind==='number'){ctx.font=f.key?'bold '+Math.max(17,12/scale)+'px sans-serif':'bold '+Math.max(13,11/scale)+'px monospace';ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
    if(f.kind==='line'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);ctx.stroke();}

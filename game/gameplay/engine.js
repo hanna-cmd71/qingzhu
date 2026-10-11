@@ -18,6 +18,7 @@ import {DAMAGE_SOURCES,WORLD} from './combat-values.js';
 import {clearDashInput,requestDash,tickDashInput} from './battle-input.js';
 import {feedbackSound} from './presentation-feedback.js';
 import {weaponMods,weaponSwordCap} from './weapons.js';
+import {arrayDeclared,normalizeArrayPreset,arrayPresetById,nextArrayPreset,roleFor,ROLE_PARAMS,STROKE,strokeLength,strokeValid,strokePointAt,strokeDamage,INTENT,intentReady,intentLabel,FUSION,fusionDamage,CARVE,carveDamage,carveBlastRadius} from './array.js';
 export {WORLD} from './combat-values.js';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const sumMods=(o,mods)=>{for(const [k,v]of Object.entries(mods))o[k]=(o[k]||0)+v;};
@@ -43,6 +44,9 @@ export class Battle {
   if(this.mode==='training'){this.chapter=0;this.level=meta.includes(PATHS[this.path].id+'-meta-5')?72:36;this.gold=500;if(!this.options.guidedPractice)for(let j=0;j<12;j++)this.traits[PATHS[this.path].id+'-'+j]=1;this.recalc();}
   if(this.chapter>0){this.level=1+this.chapter*11;this.time=this.chapter*185;this.waveTime=0;for(let j=0;j<this.chapter*3;j++){const t=TRAITS[(this.path*12+j)%TRAITS.length];this.traits[t.id]=Math.min(3,(this.traits[t.id]||0)+1);}this.gold+=this.chapter*40;this.grantStoryItems();this.recalc();this.player.hp=this.player.maxHp;}
   this.syncSwords();this.uiTimer=0;
+  // 剑阵 2.0 is opt-in: without the marker the array preset, 剑意, 笔画, 合体 and 刻痕 fields stay
+  // undefined and every branch below reads exactly what the frozen engine reads.
+  if(arrayDeclared(this.options)){this.arrayPreset=normalizeArrayPreset(this.arrayPreset);this.swordIntent=0;}
  }
  toastLimited(key,text){this.messageLimits??={};const old=this.messageLimits[key];if(old?.text===text&&old.until>this.time)return;this.messageLimits[key]={text,until:this.time+2.5};this.toast(text);}
  toast(text){this.toastText=text;this.toastUntil=this.time+3;this.emit({type:'toast',text});}
@@ -78,7 +82,103 @@ export class Battle {
  clearDashInput(){clearDashInput(this);clearTouchLock(this,true);}
  feedbackSound(name,interval){feedbackSound(this,name,interval);}
  resume(){if(this.modeState==='pause'){this.modeState='battle';this.scene=null;this.emit({type:'scene',scene:null});}}
- changeFormation(){if(this.stats.metaSwordRecall&&this.time-(this.player.metaSwitchAt??-100)>=8&&this.swords.some(sw=>sw.cool>.25)){this.player.metaSwitchAt=this.time;for(const sw of this.swords)sw.cool=Math.min(sw.cool,.25);}this.formation=((this.formation||0)+1)%3;this.toast(['御剑 · 分组追击','御剑 · 环绕护身','御剑 · 定向穿刺'][this.formation]);}
+ changeFormation(){if(this.stats.metaSwordRecall&&this.time-(this.player.metaSwitchAt??-100)>=8&&this.swords.some(sw=>sw.cool>.25)){this.player.metaSwitchAt=this.time;for(const sw of this.swords)sw.cool=Math.min(sw.cool,.25);}if(arrayDeclared(this.options)){this.arrayPreset=nextArrayPreset(this.arrayPreset);const preset=arrayPresetById(this.arrayPreset);this.toast('阵图 · '+preset.name+' · '+preset.desc);return;}this.formation=((this.formation||0)+1)%3;this.toast(['御剑 · 分组追击','御剑 · 环绕护身','御剑 · 定向穿刺'][this.formation]);}
+ // --- 剑阵 2.0 -----------------------------------------------------------------------------
+ // 剑意 is spent, not timed: sword work fills the meter and the player decides when to fuse. The
+ // stroke and the fusion both take the array away from its normal flight, so they clear each other.
+ arrayPresetName(){return arrayPresetById(this.arrayPreset).name;}
+ addIntent(value){
+  if(!arrayDeclared(this.options))return;
+  // The fusion spends 剑意 and must not refill it: the whirlwind hits far too often for that.
+  if(this.fusion)return;
+  const before=this.swordIntent||0,next=Math.min(INTENT.max,before+value);this.swordIntent=next;
+  if(!intentReady(before)&&intentReady(next)){this.cue('intent-full','剑意圆满 · 可凝为一剑','#d6ecff',3);this.toastLimited('intent-full','剑意圆满 · 按合体键凝锋');this.emit({type:'sound',name:'level'});}
+ }
+ intentReadiness(){const value=this.swordIntent||0;return {value,max:INTENT.max,ready:arrayDeclared(this.options)&&intentReady(value)&&!this.fusion&&this.modeState==='battle',label:intentLabel(value)};}
+ // A sword hit is the only thing that fills 剑意 and the only thing that carves. Detonating a 刻痕
+ // also hits with the sword, so the `carving` guard stops a chain from carving forever.
+ onSwordHit(e){
+  if(!arrayDeclared(this.options))return;
+  this.addIntent(INTENT.perHit);
+  if(this.carving)return;
+  const mark=this.zones.find(z=>z.carve&&!z.fired&&Math.hypot(z.x-e.x,z.y-e.y)<CARVE.trigger);
+  if(mark){(this.carveQueue??=[]).push(mark);return;}
+  if(this.rng()<CARVE.chance&&this.zones.reduce((n,z)=>n+(z.carve?1:0),0)<CARVE.max)this.zones.push({x:e.x,y:e.y,r:CARVE.radius,ttl:CARVE.ttl,warn:0,kind:'carve',friendly:true,carve:true,damage:carveDamage(this.level)});
+ }
+ // 刻痕 detonation is deferred out of hit() so the recursive sword hits it triggers cannot re-enter
+ // the carve decision mid-damage.
+ resolveCarves(){
+  const queue=this.carveQueue;if(!queue?.length)return;this.carveQueue=[];
+  const phase=this.modeState,r=carveBlastRadius();
+  for(const mark of queue){
+   if(mark.fired)continue;mark.fired=true;
+   const index=this.zones.indexOf(mark);if(index>=0)this.zones.splice(index,1);
+   this.pulse(mark.x,mark.y,'#d8ecff',r);
+   this.fx.push({kind:'carveBurst',x:mark.x,y:mark.y,r,color:'#d8ecff',ttl:.45,max:.45});
+   this.addIntent(INTENT.perCarve);
+   this.carving=true;
+   try{for(const e of this.near(mark.x,mark.y,r)){this.hit(e,mark.damage,'sword',true);if(this.modeState!==phase||this.finished)return;}}
+   finally{this.carving=false;}
+  }
+ }
+ fuseSwords(){
+  if(!arrayDeclared(this.options)||this.modeState!=='battle'||this.fusion)return false;
+  if(!intentReady(this.swordIntent||0)){this.toastLimited('intent-short','剑意未满 · '+intentLabel(this.swordIntent||0));return false;}
+  this.swordIntent=0;this.sweep=null;this.stroke=null;this.fusion={until:this.time+FUSION.duration,angle:0,tick:0};
+  this.cue('fusion','剑意合体 · 七十二剑凝为一柄','#d6ecff',2.6);this.toast('剑意合体 · 凝锋横扫');this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:8});
+  return true;
+ }
+ // 御剑笔画: the pointer path is recorded here, then flown at a fixed arc-length speed so the sweep
+ // takes the same time per unit of length however fast the pointer moved.
+ beginStroke(){
+  if(!arrayDeclared(this.options)||this.modeState!=='battle'||this.fusion)return false;
+  if(this.stroke?.active)return false;this.stroke={active:true,points:[]};return true;
+ }
+ addStrokePoint(x,y){
+  const st=this.stroke;if(!st?.active||!Number.isFinite(x)||!Number.isFinite(y))return false;
+  const px=clamp(x,0,WORLD.w),py=clamp(y,0,WORLD.h),last=st.points[st.points.length-1];
+  if(last&&Math.hypot(px-last.x,py-last.y)<STROKE.sample)return false;
+  if(st.points.length>=STROKE.maxPoints)return false;st.points.push({x:px,y:py});return true;
+ }
+ endStroke(){
+  const st=this.stroke;if(!st)return false;this.stroke=null;
+  if(!st.active||!strokeValid(st.points)){this.toastLimited('stroke-short','笔画过短 · 拖动一段更长的笔迹');return false;}
+  this.sweep={points:st.points,len:strokeLength(st.points),dist:0,damage:strokeDamage(this.level),hit:[]};
+  this.cue('stroke','御剑笔画 · 剑随笔迹横扫','#e6d6ff',1.6);this.emit({type:'sound',name:'focus'});return true;
+ }
+ cancelStroke(){this.stroke=null;}
+ // Swords ride the sweep head so the mechanic reads as the array flying the stroke, not as an
+ // invisible area damage tick.
+ flySweep(dt){
+  const n=this.swords.length,sw=this.sweep;sw.dist+=STROKE.speed*dt;
+  const head=strokePointAt(sw.points,sw.dist);
+  for(let i=0;i<n;i++){const s=this.swords[i];s.px=s.x;s.py=s.y;s.target=null;
+   const pt=strokePointAt(sw.points,clamp(sw.dist+(i-n/2)*14,0,sw.len));
+   s.a=Math.atan2(pt.y-s.y,pt.x-s.x);s.x+=(pt.x-s.x)*Math.min(1,dt*16);s.y+=(pt.y-s.y)*Math.min(1,dt*16);
+  }
+  const phase=this.modeState;
+  for(const e of this.near(head.x,head.y,STROKE.radius)){
+   if(sw.hit.includes(e.id))continue;sw.hit.push(e.id);
+   this.hit(e,sw.damage,'sword',true);this.addIntent(STROKE.intent);
+   if(this.modeState!==phase||this.finished)return;
+  }
+  if(sw.dist>=sw.len){this.sweep=null;this.cue('stroke-done','御剑笔画 · 收势','#c9c4ae',1.2);}
+ }
+ // 合体: the array collapses into one blade and whirls around Han Li, damaging everything in the
+ // ring on a fixed tick. Swords are parked on the ring so the renderer can draw the fused blade.
+ flyFusion(dt){
+  const p=this.player,n=this.swords.length,f=this.fusion;f.angle=(f.angle+FUSION.spin*dt)%TAU;f.tick-=dt;
+  for(let i=0;i<n;i++){const s=this.swords[i];s.px=s.x;s.py=s.y;s.target=null;
+   const a=f.angle+i*TAU/n,r=24+Math.floor(i/12)*9;s.a=a+Math.PI/2;s.x=p.x+Math.cos(a)*r;s.y=p.y+Math.sin(a)*r;
+  }
+  if(f.tick<=0){
+   f.tick=FUSION.tick;const phase=this.modeState,dmg=fusionDamage(this.level);
+   this.pulse(p.x,p.y,'#dff0ff',FUSION.radius);
+   this.fx.push({kind:'fusionSlash',x:p.x,y:p.y,r:FUSION.radius,angle:f.angle,color:'#d6ecff',ttl:.24,max:.24});
+   for(const e of this.near(p.x,p.y,FUSION.radius)){this.hit(e,dmg,'sword',true);if(this.modeState!==phase||this.finished)return;}
+  }
+  if(this.time>=f.until){this.fusion=null;this.toast('合体收束 · 七十二剑归位');}
+ }
  addXP(value){
   const previousLevel=this.level;this.xp+=value;this.totalXP+=value;let gained=0;
   while(this.xp>=xpCostFor(this,this.level)&&this.level<160){this.xp-=xpCostFor(this,this.level);this.level++;gained++;if(this.level%4===0)this.queuedChoices++;}
@@ -216,6 +316,7 @@ export class Battle {
   if(e.bossType==='xuangu'&&this.bossEnding>0)d=0;
   if(e.boss&&!this.bossEnding){const next=e.maxHp*(e.phase===0?.66:e.phase===1?.33:0);if(e.hp-d<=next&&e.phase<2){d=Math.max(0,e.hp-next);e.phase++;e.phaseShield=2.6;e.timer=.15;this.toast(e.name+' · 护势变化，准备避招');}}const effective=this.rulesVersion>=2?Math.min(Math.max(0,e.hp),Math.max(0,d)):d;e.hp-=d;e.flash=.1;this.damageSources[source]=(this.damageSources[source]||0)+effective;if(source==='fire')this.fireBreakdown[fireKind]+=effective;observeSigil(this,e,source,fireKind,Math.min(effective,hpBefore));
   if(effective>0&&source==='insect'&&s.metaInsectAssist)e.lastInsectHit=this.time;
+  if(effective>0&&source==='sword')this.onSwordHit(e);
   if(effective>0&&empowered)this.cue('focus',s.metaSwordMomentum?'聚锋触发 · 飞剑攻速 +12%':'四击聚锋','#d8ffe9');
   const key=empowered?'聚锋':source==='fire'&&['sigil','echo','line'].includes(fireKind)?FIRE_LABELS[fireKind]:source==='guard'?'反击':null;
   if(effective>0){const sound=empowered?'focus':source==='guard'?'counter':source==='fire'&&['sigil','echo','line'].includes(fireKind)?fireKind:crit?'critical':null;if(sound)this.feedbackSound(sound);}
@@ -335,19 +436,28 @@ export class Battle {
   if(this.comboSet.has('swordGuard')&&this.time-p.lastDash<3)m+=.3;return (12+this.level*.06)*m;
  }
  updateSwords(dt){
-  const p=this.player,s=this.stats,n=this.swords.length,formation=this.formation||0,phase=this.modeState;
+  const p=this.player,s=this.stats,n=this.swords.length,formation=this.formation||0,phase=this.modeState,array=arrayDeclared(this.options);
+  if(array&&this.fusion){this.flyFusion(dt);return;}
+  if(array&&this.sweep){this.flySweep(dt);return;}
+  const orbitMul=this.orbitMultiplier?.()??1;
   for(let i=0;i<n;i++){
    const sw=this.swords[i];sw.px=sw.x;sw.py=sw.y;sw.cool-=dt;sw.life-=dt;
-   const angle=this.time*(formation===1?1.5:.5)+i*TAU/n,ring=formation===1?(90+Math.floor(i/18)*24)*(this.orbitMultiplier?.()??1):48+Math.floor(i/16)*15;
+   // 阵位角色 replaces the single global formation: each wing flies its own ring, reach and cadence.
+   const role=array?roleFor(this.arrayPreset,i,n):null,params=role?ROLE_PARAMS[role]:null;
+   const angle=array?this.time*params.orbit+i*TAU/n:this.time*(formation===1?1.5:.5)+i*TAU/n;
+   const ring=array?params.ring+Math.floor(i/params.ringEvery)*params.ringStep:formation===1?(90+Math.floor(i/18)*24)*orbitMul:48+Math.floor(i/16)*15;
    if(!sw.target||sw.target.hp<=0||sw.life<=0){
     sw.target=null;
     if(sw.cool<=0){
-     let candidates=this.near(p.x,p.y,formation===1?Math.max(320*(1+(s.range||0)),ring+90*(this.orbitMultiplier?.()??1)):320*(1+(s.range||0)));
-     if(formation===1)candidates=candidates.filter(e=>dist(p,e)<ring+90*(this.orbitMultiplier?.()??1));
+     let candidates=array
+      ?this.near(p.x,p.y,role==='orbit'?Math.max(params.range*(1+(s.range||0)),ring+90*orbitMul):params.range*(1+(s.range||0)))
+      :this.near(p.x,p.y,formation===1?Math.max(320*(1+(s.range||0)),ring+90*orbitMul):320*(1+(s.range||0)));
+     if((array&&role==='orbit')||(!array&&formation===1))candidates=candidates.filter(e=>dist(p,e)<ring+90*orbitMul);
      if(this.input.focus&&this.input.aim)candidates.sort((a,b)=>dist(a,this.input.aim)-dist(b,this.input.aim));
      else candidates.sort((a,b)=>(dist(a,p)+(a.assigned||0)*45)-(dist(b,p)+(b.assigned||0)*45));
-     const e=candidates[Math.min(candidates.length-1,formation===2||directFocus(this)?0:i%Math.min(3,candidates.length))];
-     if(e){this.onSwordLaunch?.(sw);practiceSwordLaunch(this,e);sw.target=e;e.assigned=(e.assigned||0)+1;sw.life=1.4;sw.hits=[];sw.pierce=Math.floor(s.pierce||0)+(formation===2?1:0)+(s.metaSwordPierce&&i%3===2?1:0);sw.cool=Math.max(.22,1.05/(1+(s.haste||0)+(p.buffs.metaSwordTempo>this.time?.12:0)+(this.time-p.lastKill<2?(s.killHaste||0):0)));}
+     const pick=array?params.pick==='far'?candidates.length-1:params.pick==='near'?0:i%Math.min(3,candidates.length):formation===2||directFocus(this)?0:i%Math.min(3,candidates.length);
+     const e=candidates[Math.min(candidates.length-1,pick)];
+     if(e){this.onSwordLaunch?.(sw);practiceSwordLaunch(this,e);sw.target=e;e.assigned=(e.assigned||0)+1;sw.life=1.4;sw.hits=[];sw.pierce=Math.floor(s.pierce||0)+(array?params.pierce:formation===2?1:0)+(s.metaSwordPierce&&i%3===2?1:0);sw.cool=Math.max(.22,(array?params.cool:1)*1.05/(1+(s.haste||0)+(p.buffs.metaSwordTempo>this.time?.12:0)+(this.time-p.lastKill<2?(s.killHaste||0):0)));}
     }
    }
    let tx=p.x+Math.cos(angle)*ring,ty=p.y+Math.sin(angle)*ring;
@@ -356,7 +466,7 @@ export class Battle {
    sw.a=Math.atan2(dy,dx);const travel=Math.min(d,speed*dt);sw.x+=dx/d*travel;sw.y+=dy/d*travel;
    if(returning&&travel>0){this.onSwordReturn?.(sw,travel>=d);if(this.modeState!==phase||this.finished)return;}
    if(sw.target&&d<sw.target.r+travel+6){
-    const e=sw.target;if(!sw.hits.includes(e.id)){const result=this.hit(e,this.swordDamage(e),'sword');if(this.modeState!==phase||this.finished)return;if(result?.empowered)sw.pierce++;sw.hits.push(e.id);if(!(this.practice?.step===2&&e.practiceAnchor)&&!e.boss&&e.mission!=='rune'&&!(this.practice?.step===5&&e.practiceTarget)){e.x=clamp(e.x+dx/d*5*(1+(s.knock||0)),20,1260);e.y=clamp(e.y+dy/d*5*(1+(s.knock||0)),20,780);}}
+    const e=sw.target;if(!sw.hits.includes(e.id)){const result=this.hit(e,this.swordDamage(e)*(array?params.damage:1),'sword');if(this.modeState!==phase||this.finished)return;if(result?.empowered)sw.pierce++;sw.hits.push(e.id);if(!(this.practice?.step===2&&e.practiceAnchor)&&!e.boss&&e.mission!=='rune'&&!(this.practice?.step===5&&e.practiceTarget)){e.x=clamp(e.x+dx/d*5*(1+(s.knock||0)),20,1260);e.y=clamp(e.y+dy/d*5*(1+(s.knock||0)),20,780);}}
     if(sw.pierce>0){sw.pierce--;sw.target=this.nearest(sw.x,sw.y,130,sw.hits);}else sw.target=null;
    }
   }
@@ -412,7 +522,7 @@ export class Battle {
   if(this.modeState!=='battle')return;
   for(const e of this.enemies)e.defended=false;for(const e of this.enemies){e.assigned=0;this.attackOrigin={name:e.name,x:e.x,y:e.y};try{this.updateEnemy(e,dt);}finally{this.attackOrigin=null;}if(this.modeState!=='battle')return;}
   if(this.modeState!=='battle')return;
-  this.rebuildHash();updateTouchLock(this);this.updateSwords(dt);if(this.isExpedition&&this.modeState!=='battle')return;this.updateAllies(dt);if(this.isExpedition&&this.modeState!=='battle')return;this.updateEnvironment(dt);
+  this.rebuildHash();updateTouchLock(this);this.updateSwords(dt);this.resolveCarves();if(this.isExpedition&&this.modeState!=='battle')return;this.updateAllies(dt);if(this.isExpedition&&this.modeState!=='battle')return;this.updateEnvironment(dt);
   if(s.chain&&this.time-this.lastChain>3){this.lastChain=this.time;const e=this.nearest(p.x,p.y,400);if(e){let from=p;for(const target of this.near(e.x,e.y,160).slice(0,2+s.chain)){this.hit(target,(20+this.level*.5)*s.chain,'thunder');if(this.modeState!=='battle')return;this.fx.push({kind:'line',x:from.x,y:from.y,tx:target.x,ty:target.y,color:'#eddb91',ttl:.2,max:.2});from=target;}}}
   if(s.ward&&this.time-this.lastWard>7){this.lastWard=this.time;this.zones.push({x:p.x,y:p.y,r:80*(this.comboSet.has('fireGuard')?1.4:1),ttl:5,warn:0,kind:'ward',friendly:true,damage:2});}
   for(const b of this.shots){b.ttl-=dt;b.px=b.x;b.py=b.y;b.x+=b.vx*dt;b.y+=b.vy*dt;
@@ -422,6 +532,7 @@ export class Battle {
   }
   this.shots=this.shots.filter(b=>b.ttl>0&&b.x>-20&&b.y>-20&&b.x<WORLD.w+20&&b.y<WORLD.h+20);
   for(const z of this.zones){z.ttl-=dt;z.warn-=dt;if(z.arming!==undefined){const wasArming=z.arming>0;z.arming=Math.max(0,z.arming-dt);if(!z.twin&&!z.fired&&(wasArming||z.arming===0)){const live=this.sigilLiveTargets(z);if(wasArming&&z.armedTargets!==undefined)z.armedTargets=Math.max(z.armedTargets,live.length);if(z.arming===0){if(live.length)z.warn=0;else if(wasArming&&z.armedTargets>0&&this.kills>z.killsAtArming)z.cleared=true;}}}if(z.warn>0)continue;
+   if(z.carve)continue; // 剑气刻痕 is inert until a sword hit detonates it (see resolveCarves)
    if(z.sigil){if(!z.fired){z.fired=true;this.fx.push({kind:'sigilBurst',x:z.x,y:z.y,r:z.r,color:z.metaEcho?'#d4afff':'#ffbd78',ttl:.65,max:.65});const record=beginSigil(this,z);this.sigilObservation=record;try{this.explode(z.x,z.y,z.r,z.damage,'fire',record.kind);}finally{this.sigilObservation=null;}this.emit({type:'sigil',record:{...record}});if(record.hits||record.blocked){this.cue(record.kind,(z.metaEcho?'复燃回响':'起点符阵')+' · '+(record.hits?'命中 '+record.hits+' · 击杀 '+record.kills:'被护势／不可伤阻挡 '+record.blocked),z.metaEcho?'#d4afff':'#ffbd78');}else if(!z.metaEcho){if(record.cleared)this.cue('sigil-cleared','引敌目标已被清场 · 不计纯落空','#c9c4ae');else if(emptySigilStreak(this.sigilStats)===3)this.cue('sigil-tip','把追兵引入符阵；靠近后向外闪避','#c9c4ae');}if(this.modeState!=='battle')return;this.onSigilDetonate?.(z);z.ttl=.28;}continue;}
    if(z.friendly){for(const e of this.near(z.x,z.y,z.r)){if(z.kind==='ward'){applySlow(e,'ward',.5,.4);}else{this.hit(e,z.damage*dt,'fire',false,z.fireKind||'other');if(this.modeState!=='battle')return;if(z.slow){applySlow(e,'ember',z.slow,.4);}}}if(z.kind==='ward'&&dist(z,p)<z.r&&p.shield<p.maxShield)p.shield=Math.min(p.maxShield,p.shield+dt*(s.wardShield||0));}
    else if(dist(z,p)<z.r){if(z.kind==='web'||z.kind==='frost')p.webSlow=.4;else this.hitPlayer(z.damage,true,{...(z.origin||{name:'场地危险'}),x:z.x,y:z.y,kind:'险地'});}
@@ -451,7 +562,7 @@ export class Battle {
  mergeDrops(extra){const d=extra[0];d.value=extra.reduce((a,b)=>a+b.value,0);d.gold=extra.reduce((a,b)=>a+b.gold,0);return d;}
  collectAll(){let xp=0,gold=0;for(const d of this.drops){xp+=d.value;gold+=d.gold;if(d.heal)this.player.hp=Math.min(this.player.maxHp,this.player.hp+d.heal);}this.drops=[];this.addXP(xp);this.gold+=gold;}
  endWave(){
-  this.collectAll();this.enemies=[];this.shots=[];this.zones=[];this.wave++;this.waveTime=0;this.nextElite=35;this.nextHazard=12;this.midEncounter=null;
+  this.collectAll();this.enemies=[];this.shots=[];this.zones=[];this.sweep=null;this.fusion=null;this.stroke=null;this.carveQueue=null;this.wave++;this.waveTime=0;this.nextElite=35;this.nextHazard=12;this.midEncounter=null;
   if(this.wave===3){this.spawnBoss();return;}
   this.modeState='rest';this.scene=this.wave===1?'event':'shop';this.risk=false;
   this.shopRolls=0;this.purchased=[];this.makeShop();this.eventIndex=Math.floor(this.rng()*24);
@@ -501,7 +612,7 @@ export class Battle {
   if(effect==='riskRelic'){p.hp=Math.max(1,p.hp*.8);const candidates=RELICS.filter(r=>!r.story&&!this.relics.includes(r.id));if(this.relics.length<6&&candidates.length){this.relics.push(candidates[Math.floor(this.rng()*candidates.length)].id);this.recalc();}else this.gold+=70;}
   this.continueRest();
  }
- serialize(){return {notices:[...this.notices],lastSigil:this.lastSigil,lastCounter:this.lastCounter,risk:!!this.risk,layoutOffset:this.layoutOffset,formation:this.formation||0,locked:this.locked,version:1,options:this.options,seed:this.seed,rng:this.rng.state(),chapter:this.chapter,wave:this.wave,time:this.time,level:this.level,xp:this.xp,totalXP:this.totalXP,gold:this.gold,kills:this.kills,thunders:this.thunders,hitCount:this.hitCount,traits:{...this.traits},relics:[...this.relics],consumables:this.consumables.map(c=>({...c})),player:{...this.player,buffs:{...this.player.buffs}},rerolls:this.rerolls,queuedChoices:this.queuedChoices,scene:this.scene,modeState:this.modeState,damageSources:{...this.damageSources},fireBreakdown:{...this.fireBreakdown},sigilStats:structuredClone(this.sigilStats),recentHits:this.recentHits.map(h=>({...h})),storyInventory:[...(this.storyInventory||[])],endlessLoop:this.endlessLoop||0};}
+ serialize(){return {notices:[...this.notices],lastSigil:this.lastSigil,lastCounter:this.lastCounter,risk:!!this.risk,layoutOffset:this.layoutOffset,formation:this.formation||0,locked:this.locked,version:1,...(arrayDeclared(this.options)?{arrayPreset:normalizeArrayPreset(this.arrayPreset),swordIntent:this.swordIntent||0}:{}),options:this.options,seed:this.seed,rng:this.rng.state(),chapter:this.chapter,wave:this.wave,time:this.time,level:this.level,xp:this.xp,totalXP:this.totalXP,gold:this.gold,kills:this.kills,thunders:this.thunders,hitCount:this.hitCount,traits:{...this.traits},relics:[...this.relics],consumables:this.consumables.map(c=>({...c})),player:{...this.player,buffs:{...this.player.buffs}},rerolls:this.rerolls,queuedChoices:this.queuedChoices,scene:this.scene,modeState:this.modeState,damageSources:{...this.damageSources},fireBreakdown:{...this.fireBreakdown},sigilStats:structuredClone(this.sigilStats),recentHits:this.recentHits.map(h=>({...h})),storyInventory:[...(this.storyInventory||[])],endlessLoop:this.endlessLoop||0};}
  static restore(data,emit){
   validateCommonSnapshot(data);
   if(data?.version!==1||!Number.isFinite(data.level)||data.level<1||data.level>160||!Number.isInteger(data.chapter)||data.chapter<0||data.chapter>5)throw Error('存档格式不兼容');
@@ -516,7 +627,7 @@ export class Battle {
   if(data.damageSources!==undefined&&(!data.damageSources||typeof data.damageSources!=='object'||Array.isArray(data.damageSources)||Object.values(data.damageSources).some(n=>!Number.isFinite(n)||n<0)))throw Error('存档统计无效');
   if(data.storyInventory!==undefined&&(!Array.isArray(data.storyInventory)||data.storyInventory.some(id=>!RELICS.some(r=>r.id===id))))throw Error('剧情物品记录无效');
   if(data.locked!==undefined&&(!Array.isArray(data.locked)||data.locked.length>2||data.locked.some(r=>!r||!RELICS.some(x=>x.id===r.id)||!Number.isFinite(r.price)||r.price<0)))throw Error('整备锁定记录无效');
-  const b=new Battle({...data.options,chapter:0,rulesVersion:data.options.rulesVersion??1},emit);restoreFeedback(b,data);for(const k of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter'])if(data[k]!==undefined)b[k]=structuredClone(data[k]);
+  const b=new Battle({...data.options,chapter:0,rulesVersion:data.options.rulesVersion??1},emit);restoreFeedback(b,data);for(const k of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter','arrayPreset','swordIntent'])if(data[k]!==undefined)b[k]=structuredClone(data[k]);
   if(b.endlessLoop)b.difficulty={...b.difficulty,hp:b.difficulty.hp*1.4**b.endlessLoop,damage:b.difficulty.damage*1.12**b.endlessLoop};b.stats={};b.recalc();b.player={...b.player,...data.player,x:WORLD.w/2,y:WORLD.h/2,invuln:1,dash:0,dashCD:0,buffs:{}};b.recalc();b.rng.set(data.rng);b.syncSwords();
   b.locked=(b.locked||[]).map(r=>({...RELICS.find(v=>v.id===r.id),kind:'relic',price:r.price}));b.notices=new Set(data.notices||[]);b.modeState='intro';b.scene='intro';b.resuming=true;return b;
  }
