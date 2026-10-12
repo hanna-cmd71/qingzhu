@@ -50,3 +50,22 @@ export function activeThunder(b,pilot,priority,baseline){
  const threats=b.enemies.filter(e=>e.hp>0&&!e.untargetable&&distance(e,b.player)<350).length;
  return baseline||hostile>=5||threats>=10||priority&&!priority.phaseShield&&priority.hp>600;
 }
+// 流派技能 (WP6) 的固定释放判据。和 activeThunder 一样，这是模拟器输入，不进游戏。
+// 灵力与雷源是技能和神雷共用的，所以判据只在「这份资源本来也用不上」时才放技能：雷源不够放神雷
+// 时灵力是闲着的，或者灵力满了而当前不需要神雷。否则量到的是「策略在抢神雷的资源」，不是技能本身。
+// 再按技能的用途分开：有目标才有意义的等目标，防御型的等掉血。
+export function skillIntent(b,skill,{thunderWanted=false}={}){
+ if(!skill)return false;
+ const p=b.player,threat=b.enemies.some(e=>e.hp>0&&!e.untargetable),thunder=b.thunderReadiness();
+ if(skill.resource==='reserve')return p.mana<55&&p.reserve>=thunder.cost+skill.cost;
+ const spare=p.reserve<thunder.cost||(p.mana>=100&&!thunderWanted);
+ if(!spare)return false;
+ switch(skill.id){
+  case 'focusLead':return threat;
+  case 'volley':return threat;
+  case 'swarmOrder':return threat;
+  case 'sigilLead':return true;
+  case 'wardUp':return p.hp<p.maxHp*.75||!!b.boss;
+  default:return false;
+ }
+}

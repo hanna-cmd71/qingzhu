@@ -11,11 +11,13 @@ import {artifactPath} from './delivery-paths.mjs';
 const read=file=>fs.readFileSync(path.join(root,file)),readArtifact=file=>fs.readFileSync(artifactPath(file));
 const files=releaseFiles(),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const guide=read('青竹剑阵_游玩说明.md').toString();validateGuide(guide);
-assert.equal(GAME_VERSION,'1.0');assert.equal(JSON.parse(read('game/package.json')).version,'1.0.0');assert.equal(JSON.parse(read('game/package.json')).license,'GPL-3.0-only');assert.equal(read('青竹剑阵_更新日志.md').toString().trim(),'1.0正式发布');
+const packageJson=JSON.parse(read('game/package.json'));assert.equal(packageJson.version,GAME_VERSION+'.0','包版本须与显示版本一致');assert.equal(packageJson.license,'GPL-3.0-only');
+// 更新日志每版一行、逐版追加，首行即当前版本；正文由作者指定，不擅自升版。
+const changeLines=read('青竹剑阵_更新日志.md').toString().trim().split('\n').map(line=>line.trim()).filter(Boolean);assert.ok(changeLines[0].startsWith(GAME_VERSION+' '),'更新日志首行须是当前版本：'+changeLines[0]);
 const manifest=JSON.parse(readArtifact('release-manifest.json')),archive=unzipSync(readArtifact('青竹剑阵_源码.zip'));
 const playerFolder='青竹剑阵_'+GAME_VERSION+'_免安装版',player=unzipSync(readArtifact(playerFolder+'.zip'));
-assert.equal(Object.keys(player).length,5);
-for(const [name,original]of Object.entries({'开始游戏.html':'凡人修仙传_青竹剑阵.html','兼容版/开始游戏_PNG.html':'凡人修仙传_青竹剑阵_兼容PNG.html','开源资料/青竹剑阵_源码.zip':'青竹剑阵_源码.zip','开源资料/LICENSE.txt':'LICENSE'}))assert.ok(Buffer.from(player[playerFolder+'/'+name]).equals(original==='LICENSE'?read(original):readArtifact(original)),'Player package differs: '+name);
+assert.equal(Object.keys(player).length,4);
+for(const [name,original]of Object.entries({'开始游戏.html':'凡人修仙传_青竹剑阵.html','开源资料/青竹剑阵_源码.zip':'青竹剑阵_源码.zip','开源资料/LICENSE.txt':'LICENSE'}))assert.ok(Buffer.from(player[playerFolder+'/'+name]).equals(original==='LICENSE'?read(original):readArtifact(original)),'Player package differs: '+name);
 assert.match(Buffer.from(player[playerFolder+'/先读我.txt']).toString(),/双击同一文件夹内的「开始游戏.html」/);
 assert.deepEqual(Object.keys(archive).sort((a,b)=>a<b?-1:a>b?1:0),files);assert.deepEqual(Object.keys(manifest.source).sort((a,b)=>a<b?-1:a>b?1:0),files);
 for(const file of files){const bytes=read(file);assert.ok(Buffer.from(archive[file]).equals(bytes),'ZIP differs: '+file);assert.equal(sha(bytes),manifest.source[file],'Manifest differs: '+file);assert.ok(bytes.length<50*1024*1024,'Oversized source: '+file);
@@ -26,7 +28,7 @@ for(const file of files){const bytes=read(file);assert.ok(Buffer.from(archive[fi
  }
 }
 const assets=JSON.parse(read('game/public/assets/encoded/manifest.json'));
-for(const item of manifest.files){const html=readArtifact(item.file);assert.equal(sha(html),item.sha256);assert.equal(html.length,item.bytes);if(item.file.endsWith('.html')){assert.ok(read(item.file).equals(html),'Root play entry differs: '+item.file);const text=html.toString(),png=item.file.includes('兼容PNG');assert.ok(text.includes('<title>'+GAME_TITLE+' '+GAME_VERSION+'</title>'));assert.ok(text.includes('third-party-notices'));assert.doesNotMatch(text,/<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=["']https?:/i);for(const a of Object.values(assets.assets)){const bytes=read('game/public/assets/'+(png?a.source:a.file));assert.equal(sha(bytes),png?a.sourceSHA256:a.sha256);assert.ok(text.includes('data:'+(png?'image/png':a.mime)+';base64,'+bytes.toString('base64')),'Wrong embedded asset profile: '+item.file+' / '+a.source);}}}
+for(const item of manifest.files){const html=readArtifact(item.file);assert.equal(sha(html),item.sha256);assert.equal(html.length,item.bytes);if(item.file.endsWith('.html')){assert.ok(read(item.file).equals(html),'Root play entry differs: '+item.file);const text=html.toString();assert.ok(text.includes('<title>'+GAME_TITLE+' '+GAME_VERSION+'</title>'));assert.ok(text.includes('third-party-notices'));assert.doesNotMatch(text,/<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=["']https?:/i);for(const a of Object.values(assets.assets)){const bytes=read('game/public/assets/'+a.file);assert.equal(sha(bytes),a.sha256);assert.ok(text.includes('data:'+a.mime+';base64,'+bytes.toString('base64')),'Wrong embedded asset profile: '+item.file+' / '+a.source);}}}
 const generated=read('game/gameplay/docs.generated.js').toString(),docs=JSON.parse(generated.replace(/^export default /,'').trim().replace(/;$/,''));assert.equal(docs.guide,guide);assert.equal(docs.changes,read('青竹剑阵_更新日志.md').toString());assert.ok(docs.license.includes('GNU GENERAL PUBLIC LICENSE'));
 const inventory=JSON.parse(read('docs/dependency-inventory.json')),lock=JSON.parse(read('game/package-lock.json'));for(const [key,p]of Object.entries(lock.packages)){if(!key)continue;const name=key.split('node_modules/').at(-1);assert.ok(inventory.some(r=>r.package===name&&r.version===p.version&&r.license===p.license),'Dependency inventory outdated: '+name);}
 const sums=manifest.files.map(f=>f.sha256+'  '+f.file).join('\n')+'\n';assert.equal(readArtifact('SHA256SUMS.txt').toString(),sums);

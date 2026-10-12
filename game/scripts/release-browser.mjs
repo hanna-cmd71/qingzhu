@@ -21,12 +21,12 @@ const cancel=page=>page.locator('.risk-dialog').getByRole('button',{name:'取消
 try{
  for(const [width,height]of [[1440,900],[360,640],[390,844],[420,900],[844,390]]){
   const {page,context}=await open(width,height,null,false);assert.equal(await page.evaluate(()=>typeof window.__FANREN__),'undefined');assert.ok((await page.title()).endsWith(GAME_VERSION));
-  await page.getByText('制作人：bilibili@卡布奇诺ultra',{exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByText('制作人：bilibili@卡布奇诺ultra',{exact:true}).isVisible());
+  await page.getByText('制作人：hanner-cmd71',{exact:true}).scrollIntoViewIfNeeded();assert.ok(await page.getByText('制作人：hanner-cmd71',{exact:true}).isVisible());
   if(width===1440)await page.screenshot({path:qaFile(out,'home.png')});
   const before=await snapshot(page);await page.getByRole('button',{name:/开源许可与源码/}).click();const body=page.getByLabel('开源许可正文');assert.match(await body.innerText(),/GPL-3.0-only/);assert.match(await body.innerText(),/GNU GENERAL PUBLIC LICENSE/);assert.match(await body.innerText(),/青竹剑阵_源码.zip/);
   await page.getByRole('button',{name:'关闭说明',exact:true}).click();assert.deepEqual(await snapshot(page),before);
   await page.getByRole('button',{name:/游玩说明/}).click();await page.getByLabel('搜索说明关键词').fill('隔离原文');assert.match(await page.getByLabel('游玩说明正文').innerText(),/满额时停止本次覆盖/);await page.getByRole('button',{name:'下一个匹配段落',exact:true}).click();await page.screenshot({path:qaFile(out,'help-'+width+'x'+height+'.png')});
-  await page.getByRole('button',{name:'关闭说明',exact:true}).click();await page.getByRole('button',{name:/更新日志/}).click();assert.equal((await page.getByLabel('更新日志正文').innerText()).trim(),'1.0正式发布');
+  await page.getByRole('button',{name:'关闭说明',exact:true}).click();await page.getByRole('button',{name:/更新日志/}).click();assert.ok((await page.getByLabel('更新日志正文').innerText()).trim().startsWith(GAME_VERSION),'更新日志首行须是当前版本');
   if(width===1440){
    await page.getByRole('button',{name:'关闭说明',exact:true}).click();await page.getByRole('button',{name:/藏经图鉴/}).click();
    const thunder=page.locator('.codex-card').filter({has:page.getByRole('heading',{name:'雷威',exact:true})});assert.match(await thunder.innerText(),/40%/);

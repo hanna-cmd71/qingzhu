@@ -7,13 +7,36 @@ import {gnawTargets} from './targeting.js';
 import {afterThunderWindow} from './balance.js';
 import {ENEMY_ROLES} from './content-rules.js';
 import ASSETS from './assets.generated.js';
+import {DEFAULT_SKIN,skinById} from './skins.js';
+import {weaponCellFor} from './weapons.js';
+import {arrayDeclared,roleFor,roleById,STROKE,strokePointAt,FUSION} from './array.js';
 import {drawHealthBar,healthFraction} from './meters.js';
 import {sigilFuse} from './sigil-metrics.js';
 import {WORLD} from './engine.js';
 import {layoutFor} from './encounters.js';
 import {seeded} from './data.js';
+import {shakeDecay,impactFlashAlpha,damageNumberEmphasis} from './feel.js';
+import {additiveEnabled,glowFor,glowAlpha,sparkCount,sparkAt} from './effects.js';
+import {lagStep,hurtGain,hurtDecay,lowHealthPulse,vignetteAlpha,numberPop,numberRise} from './impact.js';
+import {motionKept} from './presentation.js';
 export {ASSETS};
 const TAU=Math.PI*2;
+// 2.3 表现层：一层加色混合的宽描边叠在 2.2 原有细描边下面，让特效在暗底上有体积感。
+// path 只描述几何（moveTo/lineTo/arc），beginPath 与 stroke 由这里统一处理，所以几何与原来逐字节相同。
+// 画质档为「精简」时上层 alpha 算出来是 0，整层直接跳过，像素与 2.2 一致。
+function glowStroke(ctx,width,alpha,path){
+ if(!(width>0)||!(alpha>0))return;
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=alpha;ctx.lineWidth=width;ctx.beginPath();path();ctx.stroke();ctx.restore();
+}
+// 冲击火花的落点由序号与进度算出，不取随机数：表现层不该有自己的隐藏状态，否则重画同一帧会不一样。
+// 2.5：火花属于「会动的」那一层，减少动效时整层不画（allow 由调用方按同一个总闸算好）。
+function glowSparks(ctx,f,alpha,settings,color,allow=true){
+ const count=allow?sparkCount(f.kind,settings):0;if(!count)return;
+ const progress=1-Math.max(0,Math.min(1,alpha));
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle=color||f.color||'#f4daa0';
+ for(let i=0;i<count;i++){const s=sparkAt(i,count,progress,f.r);ctx.globalAlpha=Math.max(0,alpha)*s.alpha;ctx.fillRect(f.x+s.x-s.size/2,f.y+s.y-s.size/2,s.size,s.size);}
+ ctx.restore();
+}
 function load(src){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('素材未能加载'));i.src=src;});}
 function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 // Runtime sprite extraction removes only edge-connected near-white atlas background.
@@ -33,26 +56,74 @@ function crop(image,x,y,w,h,key=false){
  if(right<=left||bottom<=top)return c;
  const out=canvas(right-left+3,bottom-top+3);out.getContext('2d').drawImage(c,left,top,right-left+1,bottom-top+1,1,1,right-left+1,bottom-top+1);return out;
 }
+// Atlas layouts. The hero sheet is 4x2 and now carries character poses only: the flying sword that
+// used to be its eighth cell lives in its own sheet, so a costume cannot change the weapon and a
+// weapon cannot change the character.
+const HERO_COLUMNS=4,HERO_ROWS=2,HERO_POSES=7,WEAPON_COLUMNS=4;
+// Every costume sheet is embedded, but only the equipped one is sliced at startup, so a run that
+// never changes costume decodes exactly what it did before costumes existed.
+const heroPoses=image=>Array.from({length:HERO_POSES},(_,i)=>crop(image,(i%HERO_COLUMNS)*image.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*image.height/HERO_ROWS,image.width/HERO_COLUMNS,image.height/HERO_ROWS,true));
+// 受击白闪：预先烘一张同尺寸白色剪影，命中瞬间叠在普通贴图上，比整体降透明度更像「打中了」。
+// 只用原有像素的轮廓，不引入新素材。
+function whiten(image){
+ const c=canvas(image.width,image.height),ctx=c.getContext('2d');
+ ctx.drawImage(image,0,0);ctx.globalCompositeOperation='source-atop';ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
+ return c;
+}
+async function ensureSkin(art,skinId,sources){
+ const skin=skinById(skinId);
+ if(!art.skinPoses[skin.id])art.skinPoses[skin.id]=heroPoses(skin.id===DEFAULT_SKIN?art.skinSheets[DEFAULT_SKIN]:await load(sources[skin.atlas]));
+ return skin;
+}
+export async function applySkin(art,skinId,sources=ASSETS){
+ const skin=await ensureSkin(art,skinId,sources);
+ art.heroes=art.skinPoses[skin.id];art.skin=skin.id;
+ return art;
+}
+// Preview reads a pose without touching art.heroes, so browsing costumes never changes what is worn.
+export async function skinPose(art,skinId,index=0,sources=ASSETS){
+ const skin=await ensureSkin(art,skinId,sources);
+ const poses=art.skinPoses[skin.id];
+ return poses[index]||poses[0];
+}
 export async function loadArt(sources=ASSETS){
- const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait)]);
- const heroes=Array.from({length:8},(_,i)=>crop(hero,(i%4)*hero.width/4,Math.floor(i/4)*hero.height/2,hero.width/4,hero.height/2,true));
+ const [hero,enemies,maps,gold,menu,portraits,icons,props,hanliPortrait,weaponSheet]=await Promise.all([load(sources.hero),load(sources.enemies),load(sources.maps),load(sources.golden),load(sources.menu),load(sources.portraits),load(sources.icons),load(sources.props),load(sources.hanliPortrait),load(sources.weapons)]);
+ const heroes=heroPoses(hero);
+ const weapons=Array.from({length:WEAPON_COLUMNS},(_,i)=>crop(weaponSheet,i*weaponSheet.width/WEAPON_COLUMNS,0,weaponSheet.width/WEAPON_COLUMNS,weaponSheet.height,true));
  const foes=Array.from({length:16},(_,i)=>crop(enemies,(i%4)*enemies.width/4,Math.floor(i/4)*enemies.height/4,enemies.width/4,enemies.height/4));
  const grounds=Array.from({length:6},(_,i)=>crop(maps,(i%3)*maps.width/3,Math.floor(i/3)*maps.height/2,maps.width/3,maps.height/2));
  const grid=(img,cols,rows)=>Array.from({length:cols*rows},(_,i)=>crop(img,i%cols*img.width/cols,Math.floor(i/cols)*img.height/rows,img.width/cols,img.height/rows));
- return {heroes,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ const art={heroes,weapons,foes,foesWhite:foes.map(whiten),grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ art.skin=DEFAULT_SKIN;art.skinSheets={[DEFAULT_SKIN]:hero};art.skinPoses={[DEFAULT_SKIN]:heroes};
+ return art;
 }
 export function sprite(ctx,img,x,y,height,alpha=1,flip=false){
  if(!img)return;const w=height*img.width/img.height;ctx.save();ctx.globalAlpha*=alpha;ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-height,w,height);ctx.restore();
 }
 export class Renderer{
- constructor(canvas,art){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.art=art;this.shake=0;this.camera={x:0,y:0,scale:1};this.resize();}
+ constructor(canvas,art){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.art=art;this.shake=0;this.camera={x:0,y:0,scale:1};
+  // 2.4 打击反馈的私有状态：血条残影按单位 key 记一条，受击红晕按帧累积衰减。
+  // 全部只活在渲染器里，不进快照、也不进引擎。
+  this.hpLag=new Map();this.lagBattle=null;this.lastHp=null;this.hurt=0;this.resize();}
+ // 血条滞后：换局清空残影，之后每个单位按 key 记一条，慢慢追真实血量。
+ lagFor(key,hp,maxHp,dt){
+  const ratio=Math.max(0,Math.min(1,maxHp>0?hp/maxHp:0)),next=lagStep(this.hpLag.get(key)??ratio,ratio,dt);
+  if(this.hpLag.size>240)this.hpLag.clear();
+  this.hpLag.set(key,next);return next;
+ }
  showFormationReady(battle){if(battle)this.formationMoment={battle,started:null};}
- drawFormationMoment(b,seconds){const moment=this.formationMoment;if(!moment)return;if(moment.battle!==b){this.formationMoment=null;return;}if(b.modeState!=='battle')return;if(moment.started===null)moment.started=seconds;const t=(seconds-moment.started)/2.4;if(t>=1){this.formationMoment=null;return;}const ctx=this.ctx,p=b.player;ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.6;ctx.strokeStyle='#d3e9ac';ctx.lineWidth=1.6;for(let i=0;i<72;i++){const ring=Math.floor(i/24),angle=i%24*TAU/24-Math.PI/2+ring*.06,r=56+ring*18+t*10,x=p.x+Math.cos(angle)*r,y=p.y-12+Math.sin(angle)*r;ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.PI/2);ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(0,-7);ctx.lineTo(-2,-4);ctx.moveTo(0,-7);ctx.lineTo(2,-4);ctx.moveTo(-3,2);ctx.lineTo(3,2);ctx.stroke();ctx.restore();}ctx.restore();}
+ drawFormationMoment(b,seconds,settings={}){const moment=this.formationMoment;if(!moment)return;if(moment.battle!==b){this.formationMoment=null;return;}if(b.modeState!=='battle')return;if(moment.started===null)moment.started=seconds;const t=(seconds-moment.started)/2.4;if(t>=1){this.formationMoment=null;return;}const ctx=this.ctx,p=b.player;
+  // 2.3: 布阵瞬间先铺一层加色柔光，剑环才像是「亮起来」的。
+  if(additiveEnabled(settings)){ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.3;ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(p.x,p.y-12,10,p.x,p.y-12,150+t*20);g.addColorStop(0,'#d3e9ac');g.addColorStop(1,'#d3e9ac00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y-12,150+t*20,0,TAU);ctx.fill();ctx.restore();}
+  ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.6;ctx.strokeStyle='#d3e9ac';ctx.lineWidth=1.6;for(let i=0;i<72;i++){const ring=Math.floor(i/24),angle=i%24*TAU/24-Math.PI/2+ring*.06,r=56+ring*18+t*10,x=p.x+Math.cos(angle)*r,y=p.y-12+Math.sin(angle)*r;ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.PI/2);ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(0,-7);ctx.lineTo(-2,-4);ctx.moveTo(0,-7);ctx.lineTo(2,-4);ctx.moveTo(-3,2);ctx.lineTo(3,2);ctx.stroke();ctx.restore();}ctx.restore();}
  showBossDefeat(effect){this.bossDeath={...effect,started:performance.now()};}
  clearBossDefeat(){this.bossDeath=null;}
- drawBossDefeat(){const f=this.bossDeath;if(!f)return;const t=(performance.now()-f.started)/900;if(t>=1){this.bossDeath=null;return;}const ctx=this.ctx,{x,y,scale}=this.camera;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=1-t;ctx.strokeStyle=f.color;ctx.fillStyle=f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();sprite(ctx,this.art.foes[f.sprite],f.x,f.y+10-t*22,110*(1-t*.18),(1-t)*.65);for(let i=0;i<18;i++){const a=i*2.39996,d=24+t*(55+i%4*15),size=Math.max(1,5*(1-t));ctx.fillRect(f.x+Math.cos(a)*d-size/2,f.y-35+Math.sin(a)*d-size/2-t*20,size,size);}ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(f.name+' · 消散',f.x,f.y-120-t*15);ctx.restore();}
- drawObjective(b,_time){const q=b.objective,ctx=this.ctx;if(!q)return;ctx.save();ctx.textAlign='center';ctx.font='bold 17px sans-serif';ctx.lineWidth=3;
-  if(q.kind==='defend'){sprite(ctx,this.art.props[0],q.x,q.y+20,110);drawHealthBar(ctx,q.x-55,q.y-112,110,8,q.hp,q.maxHp,'#a2e7c3');ctx.fillStyle='#a2e7c3';ctx.fillText('护持阵盘',q.x,q.y-130);}
+ drawBossDefeat(settings={}){const f=this.bossDeath;if(!f)return;const t=(performance.now()-f.started)/900;if(t>=1){this.bossDeath=null;return;}const ctx=this.ctx,{x,y,scale}=this.camera;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=1-t;ctx.strokeStyle=f.color;ctx.fillStyle=f.color;ctx.lineWidth=3;
+  // 2.3: 首领消散是全场最重的一次收束，扩散环加一层加色外发光。
+  if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(1-t)*.34;ctx.lineWidth=16;ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();ctx.restore();}
+  ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();sprite(ctx,this.art.foes[f.sprite],f.x,f.y+10-t*22,110*(1-t*.18),(1-t)*.65);for(let i=0;i<18;i++){const a=i*2.39996,d=24+t*(55+i%4*15),size=Math.max(1,5*(1-t));ctx.fillRect(f.x+Math.cos(a)*d-size/2,f.y-35+Math.sin(a)*d-size/2-t*20,size,size);}ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(f.name+' · 消散',f.x,f.y-120-t*15);ctx.restore();}
+ drawObjective(b,_time,settings={}){const q=b.objective,ctx=this.ctx;if(!q)return;ctx.save();ctx.textAlign='center';ctx.font='bold 17px sans-serif';ctx.lineWidth=3;
+  if(q.kind==='defend'){sprite(ctx,this.art.props[0],q.x,q.y+20,110);drawHealthBar(ctx,q.x-55,q.y-112,110,8,q.hp,q.maxHp,'#a2e7c3',motionKept('lag',settings)?this.lagFor('objective',q.hp,q.maxHp,this.lastDt??0):null);ctx.fillStyle='#a2e7c3';ctx.fillText('护持阵盘',q.x,q.y-130);}
   if(q.kind==='illusion')q.gates.forEach((g,i)=>{const real=i===q.trueGate,open=b.waveTime>=q.next;sprite(ctx,this.art.props[open?2:1],g.x,g.y+40,125,real?1:.6);ctx.strokeStyle=real?'#dfd3a2':'#91a5b0';ctx.beginPath();ctx.arc(g.x,g.y,72,0,TAU);ctx.stroke();if(real){ctx.beginPath();ctx.arc(g.x,g.y,79,0,TAU);ctx.stroke();}ctx.fillStyle=real?'#ffe4aa':'#b5c1c5';ctx.fillText(real?(open?'真 · 可通行':'真 · '+Math.max(0,Math.ceil(q.next-b.waveTime))+'秒后通行'):'幻 · 勿入',g.x,g.y-103);});
   if(q.kind==='ice'){ctx.fillStyle='#a2c8ed44';ctx.strokeStyle='#dcecff';ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#dbedff';ctx.fillText('乾蓝冰焰 · 后撤',q.x,q.y-15);}
   if(q.exit){const open=q.kind==='ice'?b.waveTime>=40:q.done>=q.total;sprite(ctx,this.art.props[open?2:1],q.exit.x,q.exit.y+35,125);ctx.strokeStyle=open?'#a4edc7':'#9dada7';ctx.beginPath();ctx.arc(q.exit.x,q.exit.y,q.exit.r,0,TAU);ctx.stroke();ctx.fillStyle='#e9e1b8';ctx.fillText(open?'退路已开 · 靠近离场':'退路待开',q.exit.x,q.exit.y-106);}
@@ -62,6 +133,9 @@ export class Renderer{
  toWorld(x,y){const r=this.canvas.getBoundingClientRect();return {x:(x-r.left-this.camera.x)/this.camera.scale,y:(y-r.top-this.camera.y)/this.camera.scale};}
  draw(battle,seconds,settings={}){
   const ctx=this.ctx,c=this.canvas,w=c.width,h=c.height;
+  // 2.5 总闸：这一帧里「会动或会闪」的每一项都问同一个判据，设置页的三档只在这一处生效。
+  const allow=kind=>motionKept(kind,settings);
+  const lag=allow('lag')?(key,hp,maxHp,step)=>this.lagFor(key,hp,maxHp,step):()=>null;
   ctx.fillStyle='#081412';ctx.fillRect(0,0,w,h);
   const b=battle,p=b?.player||{x:955,y:555,dx:0,dy:1,moving:false,invuln:0,dash:0};
   const gnawSelected=b?.path===3?new Map(gnawTargets(b).map((t,i)=>[t.id,String.fromCharCode(65+i)])):new Map(),afterThunder=b&&seconds-b.thunderTime<afterThunderWindow(b)&&((b.stats.afterThunder||0)>0||b.rulesVersion>=2&&b.path===1);
@@ -69,14 +143,26 @@ export class Renderer{
   const view=b&&!settings.preview?battleCamera(w,h,p,{top:this.hudTop||0,bottom:this.hudBottom||0,left:this.hudLeft||0,right:this.hudRight||0}):{x:b?Math.min(0,Math.max(w-WORLD.w*scale,w/2-p.x*scale)):(w-WORLD.w*scale)/2,y:b?Math.min(0,Math.max(h-WORLD.h*scale,h/2-p.y*scale)):(h-WORLD.h*scale)/2,scale};
   scale=view.scale;const ox=view.x,oy=view.y;
   this.camera=view;
-  this.shake*=.85;const sx=settings.shake?Math.sin(seconds*83)*this.shake:0,sy=settings.shake?Math.cos(seconds*109)*this.shake:0;
+  // 按时间衰减而不是按帧，高刷新率屏幕上震动时长才和 60Hz 一致。
+  const dt=seconds-(this.lastSeconds??seconds);this.shake=shakeDecay(this.shake,dt);this.lastSeconds=seconds;this.lastDt=dt;
+  // 2.4: 换局就清空血条残影与受击红晕，上一局的单位 id 不会漏到这一局。
+  if(this.lagBattle!==b){this.lagBattle=b;this.hpLag.clear();this.lastHp=null;this.hurt=0;}
+  // 受击红晕只在真的掉血时累积；掉多少看比例，所以擦伤和重击的差别一眼可辨。
+  if(b){if(this.lastHp!==null&&p.hp<this.lastHp)this.hurt=Math.min(1,this.hurt+hurtGain(this.lastHp-p.hp,p.maxHp));this.lastHp=p.hp;}
+  this.hurt=hurtDecay(this.hurt,dt);
+  // 2.5：镜头震动既受「受击反馈」开关控制，也受「减少动效」总闸控制。
+  const shakeOn=settings.shake&&allow('shake');
+  const sx=shakeOn?Math.sin(seconds*83)*this.shake:0,sy=shakeOn?Math.cos(seconds*109)*this.shake:0;
   this.camera={...view,x:ox+sx,y:oy+sy};ctx.save();ctx.translate(ox+sx,oy+sy);ctx.scale(scale,scale);
   ctx.drawImage(b?this.art.grounds[layoutFor(b).map]:this.art.menu,0,0,WORLD.w,WORLD.h);
-  ctx.fillStyle=b?'#05131530':'#07171308';ctx.fillRect(0,0,WORLD.w,WORLD.h);if(b)this.drawFormationMoment(b,seconds);else this.formationMoment=null;
+  ctx.fillStyle=b?'#05131530':'#07171308';ctx.fillRect(0,0,WORLD.w,WORLD.h);if(b)this.drawFormationMoment(b,seconds,settings);else this.formationMoment=null;
   // Arena boundary and faint tactical grid are UI, not decorative artwork.
   ctx.strokeStyle='#86c5ab35';ctx.lineWidth=1;if(b)ctx.strokeRect(27,35,WORLD.w-54,WORLD.h-63);
   if(b){
    for(const z of b.zones){
+    // 剑气刻痕: an inert ground mark. It is drawn as a dashed ring with a cross so it never reads as
+    // an area effect that is already ticking.
+    if(z.carve){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle='#cfe4ff';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.22;ctx.fillStyle='#9dc6ff';ctx.fill();ctx.globalAlpha=1;ctx.translate(z.x,z.y);ctx.rotate(Math.PI/4);ctx.strokeRect(-8,-8,16,16);ctx.rotate(-Math.PI/4);ctx.fillStyle='#e6f1ff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText('痕',0,4);ctx.restore();continue;}
     if(z.sigil){ctx.save();const color=z.metaEcho?'#d4afff':z.arming>0?'#91bbca':'#ffbd78';ctx.fillStyle=z.metaEcho?'#8a52bb35':'#d176383d';ctx.strokeStyle=color;ctx.lineWidth=z.metaEcho?2:3;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,TAU);ctx.fill();ctx.stroke();ctx.setLineDash(z.metaEcho?[4,7]:z.arming>0?[3,5]:[]);ctx.beginPath();ctx.arc(z.x,z.y,z.r*.74,0,TAU);ctx.stroke();ctx.translate(z.x,z.y);ctx.rotate(Math.PI/4);ctx.strokeRect(-17,-17,34,34);ctx.rotate(-Math.PI/4);ctx.fillStyle=color;ctx.font='bold 17px sans-serif';ctx.textAlign='center';ctx.fillText(z.metaEcho?'回':'符',0,6);ctx.font='12px sans-serif';ctx.fillText(z.metaEcho?'复燃回响':z.twin&&!z.pair?'合符待配':z.twin?'合符同燃':z.arming>0?'布符中':z.arming===0?'踏入即爆':'起点留符',0,z.r+18);if(z.warn>0){ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,0,z.r+5,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,z.warn/(sigilFuse(z,b.stats))));ctx.stroke();}ctx.restore();continue;}
 
     ctx.save();ctx.globalAlpha=z.warn>0?.6:.33;ctx.fillStyle=z.friendly?(z.kind==='ward'?'#79c4ae':z.fireKind==='ember'?'#bd783f':'#dc8b46'):(z.kind==='poison'?'#85a653':z.kind==='frost'?'#85d8ef':z.kind==='web'?'#b5bbcc':z.kind==='sacred'?'#e1d1dc':'#bf563e');
@@ -87,7 +173,7 @@ export class Renderer{
    }
    const objective=b.mechanism||(b.midEncounter&&!b.midEncounter.done?b.midEncounter:null);
    if(objective){const q=objective;ctx.save();ctx.fillStyle='#7be8c229';ctx.strokeStyle='#99efc9';ctx.lineWidth=3;ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();ctx.stroke();ctx.lineWidth=7;ctx.strokeStyle='#e6d29a';ctx.beginPath();ctx.arc(q.x,q.y,q.r+7,-Math.PI/2,-Math.PI/2+TAU*Math.min(1,q.progress/q.goal));ctx.stroke();ctx.fillStyle='#d5eed7';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText((b.encounter?.kind==='treasure'?'阵位 '+(q.step+1)+' / 3 · ':'')+Math.floor(q.progress)+' / '+q.goal+' 秒',q.x,q.y-q.r-18);if(b.encounter?.kind==='treasure'){const dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy);if(d>q.r){const angle=Math.atan2(dy,dx);ctx.save();ctx.translate(p.x+Math.cos(angle)*42,p.y+Math.sin(angle)*42);ctx.rotate(angle);ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-6,-6);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();ctx.restore();}}ctx.restore();}
-   if(b.isExpedition)this.drawObjective(b,seconds);
+   if(b.isExpedition)this.drawObjective(b,seconds,settings);
    for(const d of b.drops){ctx.save();ctx.translate(d.x,d.y);ctx.rotate(Math.PI/4);ctx.fillStyle=d.heal?'#dc8a79':d.xpBonus>0?'#e6bc76':d.value>8?'#e4c67d':'#81d4b0';const size=d.heal?5:d.value>8?5:3;ctx.fillRect(-size,-size,size*2,size*2);ctx.restore();}
    for(const e of b.enemies){
     if(e.hp<=0)continue;const ghost=e.family==='阴魂',bob=ghost?Math.sin(seconds*3+e.id)*3:Math.sin(e.age*9)*1.5;
@@ -97,12 +183,12 @@ export class Renderer{
     if(e.boss){ctx.save();ctx.strokeStyle=e.bossType==='xuangu'?'#b9e3c6':'#f0ce92';ctx.lineWidth=3/scale;ctx.beginPath();ctx.ellipse(e.x,e.y+7,e.r+16,13,0,0,TAU);ctx.stroke();ctx.translate(e.x,e.y-height-22);ctx.beginPath();ctx.moveTo(-9,4);ctx.lineTo(-11,-6);ctx.lineTo(-4,-1);ctx.lineTo(0,-10);ctx.lineTo(4,-1);ctx.lineTo(11,-6);ctx.lineTo(9,4);ctx.closePath();ctx.stroke();ctx.restore();}
     if(b.touchLockId===e.id){ctx.save();ctx.strokeStyle='#a5f4d6';ctx.lineWidth=2/scale;ctx.setLineDash([6/scale,3/scale]);ctx.strokeRect(e.x-e.r-8,e.y-e.r-8,(e.r+8)*2,(e.r+8)*2);ctx.restore();}
     if(e.spawn>0){ctx.strokeStyle='#d1987855';ctx.beginPath();ctx.arc(e.x,e.y,20,0,TAU);ctx.stroke();}
-    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582');}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:e.flash>0?.65:1,e.a>Math.PI/2||e.a<-Math.PI/2);
+    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582',lag('rune:'+e.id,e.hp,e.maxHp,dt));}else{const flip=e.a>Math.PI/2||e.a<-Math.PI/2;if(e.flash>0&&allow('flash')){sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,1,flip);sprite(ctx,(this.art.foesWhite||this.art.foes)[e.sprite],e.x,e.y+10+bob,height,impactFlashAlpha(e.flash)*.8,flip);}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:1,flip);}
     if(b.practice?.step===2&&e.practiceAnchor){ctx.save();ctx.font='bold 22px sans-serif';ctx.fillStyle=e.name.startsWith('B')?'#ffdf90':'#a8e6eb';ctx.textAlign='center';ctx.fillText(e.name[0],e.x,e.y-height-28);ctx.restore();}
-    if(['marked','carrier'].includes(e.mission)){ctx.save();ctx.strokeStyle=e.untargetable?'#91a6b4':'#ffdfa0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,32,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.fillStyle='#ffdfa0';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-height-30);drawHealthBar(ctx,e.x-40,e.y-height-19,80,7,e.hp,e.maxHp,e.untargetable?'#91a6b4':'#dcaa5a');ctx.font='12px sans-serif';ctx.fillText(e.untargetable?'护卫未清 · 暂不可伤':Math.ceil(Math.max(0,e.hp))+' / '+Math.ceil(e.maxHp)+' 生命',e.x,e.y-height+5);ctx.restore();}
+    if(['marked','carrier'].includes(e.mission)){ctx.save();ctx.strokeStyle=e.untargetable?'#91a6b4':'#ffdfa0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,32,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.fillStyle='#ffdfa0';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-height-30);drawHealthBar(ctx,e.x-40,e.y-height-19,80,7,e.hp,e.maxHp,e.untargetable?'#91a6b4':'#dcaa5a',lag('mark:'+e.id,e.hp,e.maxHp,dt));ctx.font='12px sans-serif';ctx.fillText(e.untargetable?'护卫未清 · 暂不可伤':Math.ceil(Math.max(0,e.hp))+' / '+Math.ceil(e.maxHp)+' 生命',e.x,e.y-height+5);ctx.restore();}
     const role=ENEMY_ROLES[e.index];if(role&&!e.boss){ctx.save();ctx.fillStyle='#0a172bdd';const font=Math.max(12,10/scale);ctx.fillRect(e.x-font*1.5,e.y-height-font-4,font*3,font+3);ctx.fillStyle=role.color;ctx.font='bold '+font+'px sans-serif';ctx.textAlign='center';ctx.fillText(role.label,e.x,e.y-height-4);if(e.ai==='bulwark'&&e.timer>1.6){ctx.strokeStyle=role.color;ctx.lineWidth=5;ctx.beginPath();ctx.arc(e.x,e.y-12,29,e.a-1,e.a+1);ctx.stroke();}ctx.restore();}
     if(e.phaseShield>0){ctx.strokeStyle='#ebcf9bbc';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(e.x,e.y-38,54,70,0,0,TAU);ctx.stroke();}
-    if(e.elite&&!['marked','carrier','rune'].includes(e.mission))drawHealthBar(ctx,e.x-24,e.y-height+7,48,5,e.hp,e.maxHp);
+    if(e.elite&&!['marked','carrier','rune'].includes(e.mission))drawHealthBar(ctx,e.x-24,e.y-height+7,48,5,e.hp,e.maxHp,'#dcaa5a',lag('elite:'+e.id,e.hp,e.maxHp,dt));
     if(b.path===0&&e.focusHits>0&&e.focusUntil>seconds){ctx.save();ctx.strokeStyle='#c6f9e1';ctx.lineWidth=3/scale;ctx.beginPath();ctx.arc(e.x,e.y,e.r+10,-Math.PI/2,-Math.PI/2+TAU*e.focusHits/4);ctx.stroke();ctx.restore();}
     if(gnawSelected.has(e.id)){ctx.save();ctx.strokeStyle='#d5a5f2';ctx.lineWidth=Math.max(2,1.5/scale);ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(e.x,e.y+7,e.r+9,8,0,0,TAU);ctx.stroke();ctx.fillStyle='#e3b9fc';ctx.font='bold '+Math.max(12,10/scale)+'px sans-serif';ctx.textAlign='center';ctx.fillText(gnawSelected.get(e.id),e.x,e.y-height-20);ctx.restore();}
     if(e.gnawUntil>seconds){ctx.save();ctx.strokeStyle='#d5a5f2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x+18,e.y-height-8);ctx.lineTo(e.x+27,e.y-height-5);ctx.lineTo(e.x+25,e.y-height+3);ctx.lineTo(e.x+18,e.y-height+9);ctx.lineTo(e.x+13,e.y-height+3);ctx.stroke();ctx.beginPath();ctx.moveTo(e.x+20,e.y-height-5);ctx.lineTo(e.x+16,e.y-height);ctx.lineTo(e.x+21,e.y-height+2);ctx.stroke();ctx.fillStyle='#d5a5f2';ctx.fillRect(e.x+12,e.y-height+12,18*(e.gnaw/.12),3);ctx.restore();}
@@ -115,7 +201,8 @@ export class Renderer{
    for(const [puppetIndex,a] of b.puppets.entries()){ctx.save();ctx.fillStyle='#5acfee44';ctx.strokeStyle='#8eeaff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y+10,23,9,0,0,TAU);ctx.fill();ctx.stroke();sprite(ctx,this.art.foes[10],a.x,a.y+10,42,1);ctx.strokeStyle='#8eeaff';ctx.beginPath();ctx.moveTo(a.x-21,a.y-21);ctx.lineTo(a.x-21,a.y-35);ctx.lineTo(a.x-10,a.y-35);ctx.moveTo(a.x+21,a.y-21);ctx.lineTo(a.x+21,a.y-35);ctx.lineTo(a.x+10,a.y-35);ctx.stroke();ctx.fillStyle='#092b3a';ctx.fillRect(a.x-11,a.y-55,22,18);ctx.fillStyle='#a9eeff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText('友',a.x,a.y-41);ctx.font='bold '+Math.max(12,10/scale)+'px sans-serif';ctx.fillText(String(puppetIndex+1)+'号',a.x,a.y+24);ctx.restore();}
    for(const bug of b.insects)sprite(ctx,this.art.golden,bug.x,bug.y+7,22,1);
    for(const shot of b.shots){ctx.strokeStyle=shot.color||(shot.friendly?'#bfd3e5':'#e28d72');ctx.lineWidth=shot.friendly?3:5;ctx.beginPath();ctx.moveTo(shot.px,shot.py);ctx.lineTo(shot.x,shot.y);ctx.stroke();ctx.fillStyle='#f1e2c4';ctx.fillRect(shot.x-2,shot.y-2,4,4);}
-   for(const f of b.fx)if(f.kind==='afterimage')sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,f.ttl/f.max*.25);
+   // 冲刺残影：画质档「完整」时用加色混合叠一层，残影才像御剑留下的灵光而不是半透明贴图。
+   for(const f of b.fx)if(f.kind==='afterimage'){const a=f.ttl/f.max*.25;if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,a*.85);ctx.restore();}else sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,a);}
   }
   ctx.fillStyle='#00000060';ctx.beginPath();ctx.ellipse(p.x,p.y+4,18,7,0,0,TAU);ctx.fill();
   if(b?.player.shield>0){ctx.strokeStyle='#9bbceb70';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-20,29,39,0,0,TAU);ctx.stroke();}
@@ -124,34 +211,60 @@ export class Renderer{
   sprite(ctx,this.art.heroes[frame],p.x,p.y+9+(p.moving?Math.sin(seconds*15)*1.8:0),b?60:175,p.invuln>0&&Math.floor(seconds*15)%2===0?.55:1);
   ctx.restore();
   ctx.strokeStyle='#c8e5cd70';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y+9,14,4,0,0,TAU);ctx.stroke();
-  const swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
-  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){ctx.strokeStyle=b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
-   ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=this.art.heroes[7],height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
+  const weaponArt=this.art.weapons[weaponCellFor(b?.options||{},this.art.weaponSkin)]||this.art.weapons[0],swords=b?.swords||Array.from({length:18},(_,i)=>{const a=i*TAU/18+seconds*.24;return {x:955+Math.cos(a)*145,y:488+Math.sin(a)*110,a:a+Math.PI/2,px:955+Math.cos(a-.1)*145,py:488+Math.sin(a-.1)*110};});
+  // 阵图编成 is legible only if the wings are distinguishable, so each sword's trail takes its
+  // 阵位角色 colour. Without the array marker this is null and the trail keeps its original colours.
+  const roleColors=b&&arrayDeclared(b.options)?swords.map((_,i)=>roleById(roleFor(b.arrayPreset,i,swords.length)).color):null;
+  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){// 2.3: 尾迹下面再垫一层更宽的加色辉光，飞剑才有拖尾的光晕而不只是一条线。
+    if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.3;ctx.strokeStyle=roleColors?roleColors[i]:b?.stats.metaSwordPierce&&i%3===2?'#eadd9c':'#8fd0a0';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.restore();}
+    ctx.strokeStyle=roleColors?roleColors[i]+'99':b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
+    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=weaponArt,height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
   }
+  // 御剑笔画: the recorded polyline plus the sweep head, so the player can see what the array is
+  // currently flying.
+  if(b?.sweep){const pts=b.sweep.points,head=strokePointAt(pts,b.sweep.dist);ctx.save();ctx.lineCap='round';const path=()=>{ctx.moveTo(pts[0].x,pts[0].y);for(const pt of pts)ctx.lineTo(pt.x,pt.y);};
+   // 2.3: 笔迹外再垫一层加色辉光，让「正在飞的那一笔」在战场底色上先被看到。
+   if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.26;ctx.strokeStyle='#d9c2ff';ctx.lineWidth=14;ctx.beginPath();path();ctx.stroke();ctx.restore();}
+   ctx.globalAlpha=.5;ctx.strokeStyle='#e6d6ff';ctx.lineWidth=6;ctx.beginPath();path();ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#fff2ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(head.x,head.y,STROKE.radius,0,TAU);ctx.stroke();if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4;ctx.fillStyle='#f0dcff';ctx.beginPath();ctx.arc(head.x,head.y,13,0,TAU);ctx.fill();ctx.restore();}ctx.fillStyle='#f6eaff';ctx.beginPath();ctx.arc(head.x,head.y,6,0,TAU);ctx.fill();ctx.restore();}
+  // 剑意·合体: one blade sweeping a ring around Han Li.
+  if(b?.fusion){const p2=b.player;ctx.save();ctx.translate(p2.x,p2.y);ctx.rotate(b.fusion.angle);
+   // 2.3: 合体是全屏最重的一次动作，弧线加一层加色外发光，剑气才有「劈开」的亮度。
+   if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.3;ctx.strokeStyle='#cfe6ff';ctx.lineWidth=26;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.restore();}
+   ctx.globalAlpha=.42;ctx.strokeStyle='#d6ecff';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.globalAlpha=.85;ctx.fillStyle='#eaf6ff';ctx.beginPath();ctx.moveTo(0,-FUSION.radius-26);ctx.lineTo(11,0);ctx.lineTo(0,FUSION.radius+26);ctx.lineTo(-11,0);ctx.closePath();ctx.fill();ctx.restore();}
   if(b?.input.focus&&b.input.aim){const a=b.input.aim,r=16/scale,arm=22/scale;ctx.strokeStyle='#f1e5b5';ctx.lineWidth=2/scale;ctx.beginPath();ctx.arc(a.x,a.y,r,0,TAU);ctx.stroke();ctx.beginPath();ctx.moveTo(a.x-arm,a.y);ctx.lineTo(a.x+arm,a.y);ctx.moveTo(a.x,a.y-arm);ctx.lineTo(a.x,a.y+arm);ctx.stroke();}
   if(b)for(const f of b.fx){
-   const alpha=Math.max(0,f.ttl/f.max);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=f.color||'#f4daa0';ctx.fillStyle=f.color||'#e5d4a3';
-   if(f.kind==='ring'){ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1-alpha*.6),0,TAU);ctx.stroke();}
+   const alpha=Math.max(0,f.ttl/f.max),glow=glowFor(f.kind);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=f.color||'#f4daa0';ctx.fillStyle=f.color||'#e5d4a3';
+   if(f.kind==='ring'){const r=f.r*(1-alpha*.6);glowStroke(ctx,glow?.outer,glowAlpha('ring',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();}
    if(f.kind==='incoming'){ctx.translate(f.x,f.y-12);ctx.rotate(f.angle);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(43,-9);ctx.lineTo(34,0);ctx.lineTo(43,9);ctx.stroke();}
    if(f.kind==='practice-warning'){const p=b.player,progress=1-alpha;ctx.globalAlpha=.55+progress*.45;ctx.strokeStyle='#ffb39c';ctx.lineWidth=3;ctx.setLineDash([9,6]);ctx.beginPath();ctx.moveTo(f.fromX,f.fromY);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,110-progress*70,0,TAU);ctx.stroke();ctx.fillStyle='#ffd7c4';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('来袭 '+Math.max(0,f.ttl).toFixed(1)+' 秒',p.x,p.y-52);}
-   if(f.kind==='sigilBurst'){ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-alpha*.35),0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}}
-   if(f.kind==='number'){ctx.font=f.key?'bold '+Math.max(17,12/scale)+'px sans-serif':'bold '+Math.max(13,11/scale)+'px monospace';ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
-   if(f.kind==='line'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);ctx.stroke();}
-   if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999));ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(f.x,f.y-210);for(let j=1;j<8;j++)ctx.lineTo(f.x+(r()-.5)*28,f.y-210+j*30);ctx.stroke();}
-   if(f.kind==='thunder'){ctx.lineWidth=4;ctx.strokeStyle='#f2dba6';ctx.beginPath();ctx.arc(f.x,f.y,(1-alpha)*900,0,TAU);ctx.stroke();}
+   if(f.kind==='carveBurst'){const r=f.r*(1.15-alpha*.3);glowStroke(ctx,glow?.outer,glowAlpha('carveBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();ctx.setLineDash([]);glowSparks(ctx,f,alpha,settings,'#e9d7a6',allow('sparks'));}
+   if(f.kind==='fusionSlash'){glowStroke(ctx,glow?.outer,glowAlpha('fusionSlash',alpha,settings),()=>ctx.arc(f.x,f.y,f.r,0,TAU));ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();glowSparks(ctx,f,alpha,settings,'#e6f3ff',allow('sparks'));}
+   if(f.kind==='sigilBurst'){const r=f.r*(1.1-alpha*.35);glowStroke(ctx,glow?.outer,glowAlpha('sigilBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}glowSparks(ctx,f,alpha,settings,'#ffd9ab',allow('sparks'));}
+   // 2.4: 出现瞬间放大回弹、上浮先快后慢，数字才有「打出来」的感觉；原来是一条线性上浮的固定字号。
+   // 2.5: 减少动效时去掉弹出与上浮，数字原地静态显示，仍然看得见伤害。
+   if(f.kind==='number'){const progress=1-alpha,emphasis=damageNumberEmphasis(f.total,f.critical),base=f.key?Math.max(17,12/scale):Math.max(13,11/scale),pop=allow('pop'),size=Math.round(base*emphasis*(pop?numberPop(progress):1));ctx.font='bold '+size+'px '+(f.key?'sans-serif':'monospace');ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(pop?numberRise(progress):0));}
+   if(f.kind==='line'){const path=()=>{ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);};glowStroke(ctx,glow?.outer,glowAlpha('line',alpha,settings),path);ctx.lineWidth=2;ctx.beginPath();path();ctx.stroke();}
+   // 闪电折线先算成点列再描两遍：seeded 的取数顺序与次数与 2.2 完全相同，所以折线形状逐点一致。
+   if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999)),pts=[[f.x,f.y-210]];for(let j=1;j<8;j++)pts.push([f.x+(r()-.5)*28,f.y-210+j*30]);const path=()=>{ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);};glowStroke(ctx,glow?.outer,glowAlpha('bolt',alpha,settings),path);ctx.lineWidth=3;ctx.beginPath();path();ctx.stroke();}
+   if(f.kind==='thunder'){ctx.lineWidth=4;ctx.strokeStyle='#f2dba6';const r=(1-alpha)*900;glowStroke(ctx,glow?.outer,glowAlpha('thunder',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();}
    ctx.restore();
   }
   ctx.restore();
   const vignette=ctx.createRadialGradient(w/2,h/2,h*.2,w/2,h/2,w*.65);vignette.addColorStop(0,'#030c1000');vignette.addColorStop(1,b?'#030c1099':'#030c1044');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+  // 2.4 受击红晕：屏幕四边泛红，强度取「刚受到的伤害」与「低血量呼吸」的较大值。
+  // 与受击震动共用同一个「受击反馈」开关——关掉之后这一层一笔都不画。
+  // 2.5：减少动效只去掉「呼吸脉动」这一半，掉血的红晕是静态提示，保留。
+  if(b){const pulse=allow('pulse')?lowHealthPulse(p.hp,p.maxHp,seconds):0,edge=vignetteAlpha(this.hurt,pulse,!!settings.shake);
+   if(edge>0){const glow=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.32,w/2,h/2,Math.max(w,h)*.62);glow.addColorStop(0,'#7d1a0f00');glow.addColorStop(1,'#7d1a0f');ctx.save();ctx.globalAlpha=edge;ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);ctx.restore();}}
   if(b){
    const x=Math.max(24,Math.min(w-24,ox+p.x*scale+sx)),y=Math.max(view.top+8,Math.min(view.bottom-9,oy+p.y*scale+sy+12)),low=p.hp/p.maxHp<.3;
-   ctx.save();ctx.fillStyle='#051a19';ctx.fillRect(x-22,y-1,44,7);drawHealthBar(ctx,x-20,y,40,4,p.hp,p.maxHp,low?'#ff9b78':'#b1f1c9');
+   ctx.save();ctx.fillStyle='#051a19';ctx.fillRect(x-22,y-1,44,7);drawHealthBar(ctx,x-20,y,40,4,p.hp,p.maxHp,low?'#ff9b78':'#b1f1c9',lag('player',p.hp,p.maxHp,dt));
    ctx.strokeStyle=p.dashCD>0?'#8298a3':'#d8fff0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-12,8,-Math.PI/2,p.dashCD>0?Math.PI/2:Math.PI*1.5);ctx.stroke();if(low){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#ffd4bf';ctx.fillText('!',x+29,y+4);}ctx.restore();
    if(b.practice?.goal){const g=b.practice.goal;ctx.save();ctx.strokeStyle='#a5f5d3';ctx.lineWidth=3;ctx.beginPath();ctx.arc(ox+g.x*scale,oy+g.y*scale,g.r*scale,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e1ffee';ctx.fillText('移动到这里',ox+g.x*scale,oy+g.y*scale-10);ctx.restore();}
   }
   this.bossDirection=b?offscreenDirection(this.camera,b.boss?.hp>0?b.boss:null,this.hudAvoid||[]):null;
   if(this.bossDirection){const m=this.bossDirection;ctx.save();ctx.translate(m.x,m.y);ctx.fillStyle='#10221fee';ctx.beginPath();ctx.arc(0,0,21,0,TAU);ctx.fill();ctx.strokeStyle='#f0ce92';ctx.lineWidth=2;ctx.stroke();ctx.rotate(m.angle);ctx.fillStyle='#f0ce92';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-6,-8);ctx.lineTo(-6,8);ctx.closePath();ctx.fill();ctx.restore();ctx.save();ctx.font='bold 12px sans-serif';const labelLeft=m.x>(this.camera.left+this.camera.right)/2;ctx.textAlign=labelLeft?'right':'left';ctx.fillStyle='#10221fee';ctx.fillRect(m.x+(labelLeft?-58:26),m.y-10,32,20);ctx.fillStyle='#ffe3ac';ctx.fillText('首领',m.x+(labelLeft?-29:29),m.y+4);ctx.restore();}
-  this.drawBossDefeat();
-  if(b&&settings.flash&&b.time-b.thunderTime<.12){ctx.fillStyle='#f7e9b82a';ctx.fillRect(0,0,w,h);}
+  this.drawBossDefeat(settings);
+  if(b&&settings.flash&&allow('flash')&&b.time-b.thunderTime<.12){ctx.fillStyle='#f7e9b82a';ctx.fillRect(0,0,w,h);}
  }
 }

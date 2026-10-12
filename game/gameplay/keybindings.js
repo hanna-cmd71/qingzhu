@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only
  * Copyright (C) 2026 bilibili@卡布奇诺ultra
  */
-export const DEFAULT_KEYS = Object.freeze({dash:'Space',thunder:'KeyE',formation:'KeyQ',item1:'Digit1',item2:'Digit2'});
+export const DEFAULT_KEYS = Object.freeze({dash:'Space',thunder:'KeyE',formation:'KeyQ',stroke:'KeyR',fuse:'KeyF',skill:'KeyG',item1:'Digit1',item2:'Digit2'});
 const RESERVED = new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight']);
 const MODIFIERS = new Set(['ControlLeft','ControlRight','AltLeft','AltRight','MetaLeft','MetaRight']);
 

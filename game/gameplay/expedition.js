@@ -20,7 +20,9 @@ import {INPUT_VERSION} from './battle-input.js';
 import {beginPracticeStep,updatePractice} from './practice.js';
 import {sigilFuse} from './sigil-metrics.js';
 import {BALANCE_VERSION,reserveRestoration,phase3Balance,puppetReady,sigilPairFuse,enemyDamageScale} from './balance.js';
+import {WEAPON_VERSION,DEFAULT_WEAPON,weaponIds,weaponById,weaponDeclared} from './weapons.js';
 import {shieldReward,restoreFeedback,recordHit} from './combat-feedback.js';
+import {nextGuide,tipsEnabled} from './guide.js';
 import {validateCommonSnapshot,validateWorldSnapshot} from './snapshot-validation.js';
 import {validateEncounterState} from './encounter-validation.js';
 import {validateSnapshotRelations} from './snapshot-relations.js';
@@ -34,6 +36,8 @@ export const EQUIPMENT=[...RELICS,...CORES];
 const segmentDistance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);return Math.hypot(p.x-a.x-dx*t,p.y-a.y-dy*t);};
 export class Expedition extends Battle{
  constructor(options={},emit=()=>{}){
+  // Weapon fields are opted in, never defaulted: writing a new key into every snapshot would break
+  // the byte-for-byte comparison against the frozen engines that predate it.
   super({...options,segmentVersion:options.segmentVersion??SEGMENT_VERSION,challengeVersion:options.challengeVersion??(options.mode==='endless'?CHALLENGE_VERSION:0),rulesVersion:3,metaRulesVersion:options.metaRulesVersion??CULTIVATION_VERSION,balanceVersion:options.balanceVersion??BALANCE_VERSION,contentVersion:options.contentVersion??CONTENT_VERSION,focusVersion:options.focusVersion??FOCUS_VERSION,inputVersion:options.inputVersion??INPUT_VERSION,growthVersion:options.growthVersion??GROWTH_VERSION,economyVersion:options.economyVersion??ECONOMY_VERSION,recordVersion:options.recordVersion??RECORD_VERSION,storyVersion:options.storyVersion??STORY_VERSION,encounterVersion:options.encounterVersion??ENCOUNTER_VERSION},emit);this.isExpedition=true;if(supportsTouchLock(this)){this.options.touchLockEnabled=options.touchLockEnabled??(options.settings?.touchLock===true);this.options.touchLockUsed=options.touchLockUsed??this.options.touchLockEnabled;}this.touchLockId=null;this.recordState=rankedRun(this)?initialRecordState(this):null;this.runId=options.runId||'run-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);this.revision=0;
   if(segmented(this))this.chapterSplits=[];if(challenged(this)){this.challenges=[];prepareChallenge(this);}
   this.contentRng=seeded(hashSeed(this.seed+':expedition'));this.routes=createRoutes(this.options,this.seed,this.contentRng);
@@ -81,6 +85,12 @@ export class Expedition extends Battle{
   if(this.chapter===0&&this.wave===0&&this.mode!=='training')for(let i=0;i<3;i++)this.spawn(4,{x:440+i*180,y:330,hp:12,...(nodeGrowth(this)?{introReward:true}:{})});
   if(this.mode==='training'&&this.options.guidedPractice)beginPracticeStep(this);
   if(k==='defend'&&!this.notices.has('defend-guide')){this.notices.add('defend-guide');this.cue('defend-guide','阵盘破碎会结束历练；集中处理威胁后，解除集火恢复分守','#ffe2a2',6);}
+  // 2.2 新手引导：每个节点最多发一条尚未看过的机制提示。提示只写进 notices 与战场文案，
+  // 不消费随机数、不改战斗数值；试剑台由分步练习负责，未声明 guideVersion 的旧局不参与。
+  if(this.options.guideVersion>=1&&this.mode!=='training'&&tipsEnabled(this.options.settings)){
+   const guide=nextGuide(this);
+   if(guide){this.notices.add(guide.id);this.cue(guide.id,guide.text,'#cfe3ff',6);}
+  }
   this.toast(this.mode==='training'?'试剑台 · 持续练习，不结算节点；暂停可补满资源':e.name+' · '+e.goal);this.checkpoint();
  }
  clearField(){clearTouchLock(this,true);if(this.directorState)this.directorState.pendingType=null;this.enemies=[];this.shots=[];this.zones=[];this.drops=[];this.fx=[];this.hash.clear();for(const sw of this.swords){sw.target=null;sw.cool=.15;sw.returnReady=false;}}
@@ -137,7 +147,10 @@ export class Expedition extends Battle{
  }
  updateEnvironment(_dt){if(this.practice?.step===6||this.encounter.special)return;if(this.waveTime>=this.nextHazard){this.nextHazard+=this.chapter===2?7:11;const variant=this.encounter.variant;const x=variant===0?this.player.x:variant===1?400:880,y=variant===0?this.player.y:480;this.danger(x,y,55,(8+this.chapter*2)*this.difficulty.damage,1.3,1.3,this.chapter===2?'fire':'blast');}}
  kill(e){
-  if(e.dead)return;if(e.boss)this.bossDefeat(e);const boss=e.boss,mission=e.mission,before=this.drops.length;e.boss=false;super.kill(e);e.boss=boss;
+  if(e.dead)return;if(e.boss)this.bossDefeat(e);const boss=e.boss,mission=e.mission,before=this.drops.length;
+  // The base drop math must treat a boss as an ordinary kill, so the flag is cleared for the call.
+  // bossKill keeps the truth readable inside super.kill() and is removed again immediately.
+  e.boss=false;e.bossKill=boss;super.kill(e);delete e.bossKill;e.boss=boss;
   if(nodeGrowth(this)){for(const d of this.drops.slice(before)){d.gold=0;if(d.value)allocateKillXP(this,e,d);else{d.xpBase=0;d.xpBonus=0;}if(this.chapter===0&&this.wave===0&&this.level<4)d.pull=true;}this.drops=this.drops.filter(d=>d.value>0||d.gold>0||d.heal>0);}
   else {const allowance=this.node.xp*.72,unit=this.node.xp/100*Math.max(1,e.cost)*(e.elite?3:1)*(this.level===1?3:1);for(const d of this.drops.slice(before)){d.gold=0;if(this.chapter===0&&this.wave===0&&this.level<4)d.pull=true;if(d.value){d.value=Math.max(0,Math.min(unit,allowance-this.nodeDropXP));this.nodeDropXP+=d.value;}}}
   if(mission==='marked'){this.recordMarked(e);if(this.modeState!=='battle')return;}
@@ -157,6 +170,7 @@ export class Expedition extends Battle{
   if(last){if(this.chapter!==3&&['story','seed'].includes(this.mode))this.research+=this.chapter===5?2:1;this.emit({type:'chapter',chapter:this.chapter});if(this.chapter===3){this.grantStoryItems();this.storyInventory=[...new Set([...(this.storyInventory||[]),'five-rings','cape'])];}}
   const ending=endingCleanup(this);if(ending)this.gold+=cashReserve;
   this.rest={selectionMode:'draft',...(ending?{ending:true}:{}),eventApplied:ending,coreApplied:false,coreSelection:null,node:n.id,last,event:ending?null:this.makeEvent(),eventDone:ending,cashReserve,...(cashOptionsFor(this,cashReserve)?{cashOptions:cashOptionsFor(this,cashReserve)}:{}),bonus,riskGold,xp:n.xp,coreOffers:last&&[0,2].includes(this.chapter)?this.makeCoreOffers():[],coreDone:!last||![0,2].includes(this.chapter),shop:(!last&&this.wave===1&&this.chapter!==3),routeDone:last||this.routes[this.chapter][this.wave+1].selected!==null};
+  if(weaponDeclared(this.options))this.rest.weaponOffers=this.makeWeaponOffers();
   if(nodeGrowth(this))this.rest.growthReward={base:n.xp,performance:growthPerformance(this.growth.ledger),contract:bonus,total:n.xp+growthPerformance(this.growth.ledger)+bonus};
   this.rest.reserveGain=reserveGain;this.shopRolls=0;this.purchased=[];if(this.rest.shop)this.makeShop();this.showScene('intermission');
   if(last&&this.chapter===0&&!this.cinematicSeen.includes('ruins'))this.playCinematic('ruins');
@@ -233,6 +247,11 @@ export class Expedition extends Battle{
  buySupply(type,quote){if(!quote||quote.type!==type||quote.price!==supplyState(this,type).price||quote.snapshot!==JSON.stringify(this.serialize())){this.toast('补养报价已变化 · 请重新查看本次恢复与机缘');this.emit({type:'update'});return false;}return buySupply(this,type,quote.price);}
 
  makeCoreOffers(){if(revisedEconomy(this))return variedCoreOffers(this);const eligible=CORES.filter(c=>coreEligible(c,this)&&!this.relics.includes(c.id));const preferred=eligible.filter(c=>c.path===this.path),rest=eligible.filter(c=>c.path!==this.path);const result=preferred.slice(0,2);while(result.length<3&&rest.length)result.push(rest.splice(Math.floor(this.contentRng()*rest.length),1)[0]);return result.map(c=>c.id);}
+ // Weapon methods are an optional slot beside the carry slots. A run that never declared the system
+ // gets no offers at all, and every method stays reachable from every other one, so a rest is where
+ // the choice is made and remade. Equipping applies at once, like the shop and the late supply.
+ makeWeaponOffers(){if(!weaponDeclared(this.options))return [];const current=this.options.weapon??DEFAULT_WEAPON;return weaponIds.filter(id=>id!==current);}
+ selectWeapon(id){const r=this.rest;if(this.scene!=='intermission'||!r||!Array.isArray(r.weaponOffers)||!r.weaponOffers.includes(id))return false;if(id===(this.options.weapon??DEFAULT_WEAPON))return false;this.options.weaponVersion=WEAPON_VERSION;this.options.weapon=id;this.recalc();this.syncSwords();r.weaponOffers=this.makeWeaponOffers();this.toast('御剑法门 · '+weaponById(id).name);this.checkpoint();return true;}
  equipCore(id,replace=-1){if(this.rest?.selectionMode==='draft'&&!this.rest.coreApplied)return this.selectCore(id,replace);const c=CORES.find(c=>c.id===id);if(this.scene!=='intermission'||!this.rest?.coreOffers.includes(id)||this.rest.coreDone||!coreEligible(c,this))return false;const existing=this.relics.findIndex(id=>CORES.some(x=>x.id===id&&x.path===c.path));if(existing>=0)replace=existing;const count=this.relics.filter(id=>CORES.some(c=>c.id===id)).length;
   if(count>=2&&(replace<0||!CORES.some(c=>c.id===this.relics[replace])))return 'coreSlots';if(this.relics.length>=6&&replace<0)return 'replace';if(replace>=this.relics.length||replace< -1)return false;
   const hp=this.player.hp/this.player.maxHp,shield=this.player.shield;if(replace>=0){delete this.paidPrices[this.relics[replace]];this.relics.splice(replace,1);}this.relics.push(id);this.recalc();this.player.hp=this.player.maxHp*hp;this.player.shield=shield;this.rest.coreDone=true;this.checkpoint();return true;
@@ -242,7 +261,7 @@ export class Expedition extends Battle{
   if(!this.commitRestSelections())return;
   const result=this.restResultText;this.restResultText=null;if(this.rest.preparation){this.rest=null;this.showScene('intro','intro');this.checkpoint();}else if(this.rest.last)this.nextChapter();else{this.wave++;this.start();}if(result)this.toast(result);
  }
- nextChapter(){if(this.chapter>=5){if(this.mode==='endless'){this.chapter=0;this.wave=0;this.endlessLoop=(this.endlessLoop||0)+1;prepareChallenge(this);this.receipts=[];if(this.growth)this.growth.settlements=[];this.cinematicSeen=[];this.routes.forEach(ch=>ch.forEach(n=>n.selected=n.choices.length===1?0:null));const scale=loopScale(this);this.difficulty={...this.difficulty,hp:this.difficulty.hp*scale.hp,damage:this.difficulty.damage*scale.dmg};}else{this.playCinematic('ending','finish');return;}}else{this.chapter++;this.wave=0;}
+ nextChapter(){if(this.chapter>=5){if(this.mode==='endless'){this.chapter=0;this.wave=0;this.endlessLoop=(this.endlessLoop||0)+1;prepareChallenge(this);this.receipts=[];if(this.skillReceipts)this.skillReceipts=[];if(this.skillCasts!==undefined)this.skillCasts=0;if(this.growth)this.growth.settlements=[];this.cinematicSeen=[];this.routes.forEach(ch=>ch.forEach(n=>n.selected=n.choices.length===1?0:null));const scale=loopScale(this);this.difficulty={...this.difficulty,hp:this.difficulty.hp*scale.hp,damage:this.difficulty.damage*scale.dmg};}else{this.playCinematic('ending','finish');return;}}else{this.chapter++;this.wave=0;}
   this.rest=null;if(this.growth)this.growth.ledger=null;this.directorState=null;this.pursuitState=null;this.player.hp=Math.min(this.player.maxHp,this.player.hp+this.player.maxHp*.3);this.player.reserve=this.player.maxReserve;this.player.revived=false;this.grantStoryItems();if(this.chapter===3){this.rest={selectionMode:'draft',eventApplied:true,coreApplied:true,coreSelection:null,preparation:true,node:'3:prep',last:false,event:null,eventDone:true,cashReserve:0,bonus:0,riskGold:0,xp:0,coreOffers:[],coreDone:true,shop:true,routeDone:true};this.shopRolls=0;this.purchased=[];this.makeShop();this.showScene('intermission');}else this.showScene('intro','intro');this.checkpoint();
  }
  traitChoices(){return revisedGrowth(this)?growthChoices(this):super.traitChoices();}
@@ -274,6 +293,8 @@ export class Expedition extends Battle{
  thunderMultiplier(e){return this.hasCore('K04')?(e.id===this.mainThunderTarget?1.3:.8):1;}
  onThunderCast(){if(this.hasCore('K03')){this.coreArcs=10;this.coreArcUntil=this.time+8;}}
  thunder(){if(challengeBlocks(this,'thunder')){this.toast('本圈挑战：普通节点节雷；首领与三机关可用');return false;}this.mainThunderTarget=this.enemies.filter(e=>e.hp>0&&!e.untargetable).sort((a,b)=>distance(a,this.input.aim||this.player)-distance(b,this.input.aim||this.player))[0]?.id;return super.thunder();}
+ // 引雷 花雷源买的还是同一道神雷，所以节雷挑战要一并管住技能，不能让主动技能绕开圈前挑战。
+ skillGate(skill){if(skill?.id==='callThunder'&&challengeBlocks(this,'thunder'))return '本圈挑战禁用神雷';return '';}
  hit(e,d,source='sword',crit=true,fireKind='other'){if(source==='insect'){if(this.hasCore('K07')&&(this.stats.insects||0)>=4)d*=.88;if(this.hasCore('K08'))d*=e?.elite||e?.boss?1.3:.8;}const hp=e?.hp,result=super.hit(e,d,source,crit,fireKind);if(source==='sword'&&this.hasCore('K03')&&this.coreArcs>0&&this.coreArcUntil>this.time&&e&&hp>e.hp){const next=this.near(e.x,e.y,150).find(x=>x.id!==e.id&&!x.untargetable&&!(x.phaseShield>0));if(next){const before=next.hp;super.hit(next,super.swordDamage(next)*.3,'arc',false);if(next.hp<before){this.coreArcs--;this.fx.push({kind:'line',x:e.x,y:e.y,tx:next.x,ty:next.y,color:'#ffe29c',ttl:.25,max:.25});}}}return result;}
  puppetDamageMultiplier(){return this.hasCore('K05')?.85:this.hasCore('K06')?.9:1;}
  puppetHasteBonus(){if(this.hasCore('K06'))return this.player.moving?.35:0;return this.path===2&&puppetReady(this)?.25:0;}
@@ -311,7 +332,8 @@ export class Expedition extends Battle{
   if(!['intro','battle','choice','rest','pause'].includes(data.modeState)||!['intro','intermission','cinematic','choice','pause',null].includes(data.scene))throw Error('节点状态无效');
   if(ex.rest&&((!ex.receipts.includes(ex.rest.node)&&!(ex.rest.preparation&&ex.rest.node==='3:prep'&&data.chapter===3&&data.wave===0))||!Array.isArray(ex.rest.coreOffers)||ex.rest.coreOffers.some(id=>!CORES.some(c=>c.id===id))||(!ex.rest.preparation&&!ex.rest.ending&&(!ex.rest.event||!['single','chain'].includes(ex.rest.event.type)))))throw Error('结算记录无效');
   if(ex.rest?.ending!==undefined&&(ex.rest.ending!==true||!endingCleanup(b,data.chapter,data.wave)||ex.rest.node!=='5:3'||!ex.rest.last||ex.rest.event!==null||!ex.rest.eventDone||!ex.rest.eventApplied||ex.rest.shop||!ex.rest.routeDone))throw Error('结局整理记录无效');
-  if(ex.rest?.selectionMode!==undefined&&!['draft','committed','applying'].includes(ex.rest.selectionMode))throw Error('整备选择状态无效');
+ if(ex.rest?.selectionMode!==undefined&&!['draft','committed','applying'].includes(ex.rest.selectionMode))throw Error('整备选择状态无效');
+ if(ex.rest?.weaponOffers!==undefined&&(!Array.isArray(ex.rest.weaponOffers)||ex.rest.weaponOffers.length>8||ex.rest.weaponOffers.some(id=>!weaponIds.includes(id))||!weaponDeclared(data.options)))throw Error('御剑法门择选无效');
   if(ex.rest?.selectionMode==='draft'){
    const r=ex.rest,c=r.coreSelection;if(typeof r.eventApplied!=='boolean'||typeof r.coreApplied!=='boolean')throw Error('整备结算标记无效');
    if(r.eventDone&&r.event){const max=r.event.type==='single'?3:r.event.stage==='start'?3:2;if(!Number.isInteger(r.event.choice)||r.event.choice<0||r.event.choice>=max)throw Error('机缘暂选无效');}
@@ -329,7 +351,7 @@ export class Expedition extends Battle{
   for(const z of ex.drops)if(!Number.isFinite(z.value)||z.value<0||!Number.isFinite(z.gold)||z.gold<0)throw Error('掉落记录无效');
   if(ex.objective){const q=ex.objective;if(!['hunt','defend','break','pursuit','escape','treasure','illusion','ice'].includes(q.kind))throw Error('机关目标无效');if(q.kind==='illusion'&&(!Array.isArray(q.gates)||q.gates.length!==3||q.gates.some(g=>!Number.isFinite(g.x)||!Number.isFinite(g.y))||!Number.isInteger(q.trueGate)||q.trueGate<0||q.trueGate>2))throw Error('幻境阵位无效');if(q.kind==='defend'&&(!Number.isFinite(q.hp)||!Number.isFinite(q.maxHp)||q.maxHp<=0))throw Error('阵盘耐久无效');if(q.exit&&(!Number.isFinite(q.exit.x)||!Number.isFinite(q.exit.y)||!Number.isFinite(q.exit.r)||q.exit.r<0))throw Error('退路记录无效');}
   restoreFeedback(b,data);
-  for(const key of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter','scene','modeState'])if(data[key]!==undefined)b[key]=copy(data[key]);
+  for(const key of ['chapter','wave','time','level','xp','totalXP','gold','kills','thunders','hitCount','traits','relics','consumables','rerolls','queuedChoices','damageSources','storyInventory','endlessLoop','layoutOffset','formation','locked','risk','lastSigil','lastCounter','scene','modeState','arrayPreset','swordIntent','skillCasts','skillReceipts'])if(data[key]!==undefined)b[key]=copy(data[key]);
   for(const key of ['chapterSplits','challenges','lastChoice','cinematicHistory','recordState','economy','growth','directorState','pursuitState','revision','receipts','chains','cinematicSeen','cinematic','rest','research','paidPrices','selectedSupply','nodeDropXP','nodeStartXP','nodeStartHits','nodeStartThunder','choiceReturn','choices','waveTime','spawnBudget','nextElite','nextEscort','nextHazard','objective','mechanism','bossEnding','shop','purchased','shopRolls','enemies','shots','drops','zones','insects','puppets','coreArcs','coreArcUntil','corePair','shieldAbsorbed','lastShieldBreak','thunderTime','stillTime','setupUntil'])if(ex[key]!==undefined)b[key]=copy(ex[key]);
   b.insects=copyAllies(b.insects,'insect');b.puppets=copyAllies(b.puppets,'puppet');
   b.shots=b.shots.map(s=>({...s,source:s.source??(s.friendly?'puppet':'enemy')}));

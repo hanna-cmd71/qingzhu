@@ -3,6 +3,9 @@
  */
 import {CONSUMABLES} from './data.js';
 import {WORLD} from './combat-values.js';
+import {swordCountFor} from './balance.js';
+import {weaponSwordCap} from './weapons.js';
+import {arrayDeclared,arrayMaxSwordCool} from './array.js';
 const EPS=1e-6;
 const fail=label=>{throw Error(label+'不一致，原记录未被修改');};
 const bounds=(value,min,max,label)=>{if(!Number.isFinite(value)||value<min-EPS||value>max+EPS)fail(label);};
@@ -15,7 +18,7 @@ const maxInvuln=Math.max(3,...CONSUMABLES.filter(c=>c.effect==='invincible').map
 export function validateSnapshotRelations(data,battle){
  const p=data.player,ex=data.expedition,time=data.time;
  // Structural level relation first: under balance 4 the max HP also derives from the level, so a tampered level is reported as a sword/level mismatch.
- if(ex.swords.length!==Math.min(72,data.level))fail('飞剑数量与等级');
+ if(ex.swords.length!==swordCountFor(data.level,weaponSwordCap(battle.options)))fail('飞剑数量与等级');
  for(const [key,name] of [['maxHp','生命上限'],['maxShield','常驻护盾上限'],['maxReserve','雷源上限']]){
   if(Math.abs(p[key]-battle.player[key])>EPS)fail(name+'与出发配置');
  }
@@ -40,7 +43,7 @@ export function validateSnapshotRelations(data,battle){
   if(e.slows)for(const slow of e.slows)bounds(slow.left,0,6,'减速剩余时间');
   if(e.teleport){coordinate(e.teleport,'闪现目标与战场');bounds(e.teleport.t,-.051,1,'闪现剩余时间');}
  }
- for(const s of ex.swords){coordinate(s,'飞剑位置与战场',['x','y','px','py']);bounds(s.cool,-1e8,1.05,'飞剑出击冷却');bounds(s.life,-1e8,1.4,'飞剑追击计时');}
+ for(const s of ex.swords){coordinate(s,'飞剑位置与战场',['x','y','px','py']);bounds(s.cool,-1e8,arrayDeclared(battle.options)?arrayMaxSwordCool():1.05,'飞剑出击冷却');bounds(s.life,-1e8,1.4,'飞剑追击计时');}
  for(const s of ex.shots)coordinate(s,'弹幕位置与战场',['x','y','px','py']);
  for(const a of [...ex.puppets,...ex.insects]){coordinate(a,'协战位置与战场');bounds(a.cool,-1e8,1,'协战出击冷却');}
  for(const d of ex.drops)coordinate(d,'掉落位置与战场');

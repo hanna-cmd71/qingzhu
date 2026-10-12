@@ -1,8 +1,8 @@
 # 青竹剑阵 · 虚天殿篇
 
-**1.0 正式发布** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
+**2.5** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
 
-制作人：bilibili@卡布奇诺ultra
+制作人：hanner-cmd71
 
 操控韩立走位避险，让青竹蜂云剑自动出击。选择御剑、雷法、傀儡、御虫、符阵或护身起手，通过悟道、核心与途中整备完成六章历练。
 
@@ -12,19 +12,20 @@
 
 ## 下载与游玩
 
-**[下载单文件游戏](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0.html)** · **[下载免安装完整包](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0-player.zip)** · [全部附件与源码](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)
+**[下载单文件游戏](https://github.com/hanna-cmd71/qingzhu/releases/download/v2.5/qingzhu-2.5.html)** · **[下载免安装完整包](https://github.com/hanna-cmd71/qingzhu/releases/download/v2.5/qingzhu-2.5-player.zip)** · [全部附件与源码](https://github.com/hanna-cmd71/qingzhu/releases/tag/v2.5)
+
+2.5 的构建产物是根目录一份离线 HTML（`凡人修仙传_青竹剑阵.html`），用浏览器打开即可离线游玩，无需联网或安装环境；发布附件另含源码包与免安装包，步骤见 [GitHub 发布步骤](docs/publishing.md)。历史 1.0 发布仍保留在原作者仓库 [jindx1020-crypto/qingzhu-sword-array](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)。
 
 | 下载文件 | 用途 |
 |---|---|
-| `qingzhu-1.0.html` | 推荐，下载后用浏览器打开即可离线游玩 |
-| `qingzhu-1.0-player.zip` | 解压后双击「开始游戏.html」，附兼容版、简短说明和对应源码 |
-| `qingzhu-1.0-png.html` | 图片解码有问题时使用，玩法与存档格式相同 |
-| `qingzhu-1.0-source.zip` | 对应的可修改源码、素材、开发说明和构建脚本 |
+| `qingzhu-2.5.html` | 推荐，下载后用浏览器打开即可离线游玩 |
+| `qingzhu-2.5-player.zip` | 解压后双击「开始游戏.html」，附简短说明和对应源码 |
+| `qingzhu-2.5-source.zip` | 对应的可修改源码、素材、开发说明和构建脚本 |
 | `SHA256SUMS.txt` | GitHub 下载附件的 SHA-256 校验清单 |
 
 GitHub 附件使用英文文件名，游戏界面与说明为中文；本地构建仍保留原中文文件名。游玩无需安装 Node.js 或开发环境。源码 checkout 不包含重复的 HTML／ZIP，需要修改或自行构建时再准备下列开发环境。
 
-移动 WASD／方向键，空格闪避，E 神雷，Q 切剑式，1／2 使用物资。触屏使用摇杆和技能按钮，点战场瞄准，点解除恢复分守。首次建议选「初入仙途」并进行分步练习。
+移动 WASD／方向键，空格闪避，E 神雷，Q 切剑式，1／2 使用物资。触屏使用摇杆和技能按钮，点战场瞄准，点解除恢复分守。全新账号在出发页会看到「新手建议」：此行目标、推荐配置与三步上手，可一键按推荐配置出发；进入战斗后每个节点补一条尚未看过的机制提示，可在设置中关闭。
 
 **升级、移动文件或更换浏览器前，请在设置中导出存档。** 存档在浏览器本地，不自动同步。完整操作、玩法与恢复流程见 [游玩说明](青竹剑阵_游玩说明.md)。
 
@@ -34,6 +35,10 @@ GitHub 附件使用英文文件名，游戏界面与说明为中文；本地构�
 - 六种起手、72 项战术强化、12 项联动和12 件战术核心。
 - 自动飞剑与友方协战、触屏控制、独立神雷资源、洞府修持和药园补给。
 - 主篇、定种、章回重温、无尽、自由试招、分步练习及独立对照体验。
+- 新手建议、三步上手与逐节点下发的一次性机制提示，只在全新账号出现，可随时关闭。
+- 战斗特效分层加色辉光与火花，冲刺残影、御剑笔画、剑意合体与首领消散一并变亮；可在设置切「画面特效 · 精简」。
+- 血条掉血后留一条浅色残影慢慢追上，受击时屏幕四边泛红、低血量改为呼吸脉动；「受击反馈」可一键关闭。
+- 「动效」总控三档（跟随系统／完整／减少），一次管住四条表现线的动与闪；设置页分「画面表现」「辅助与提示」两组，并给出表现总览。
 - 本地成绩、章末分段与可导出恢复资料；旧局继续使用各自规则。
 
 ## 开发与构建
@@ -57,14 +62,14 @@ npm run test:browser
 npm run check:release
 ```
 
-发布附件统一生成在 `release/1.0/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
+发布附件统一生成在 `release/2.5/`，包含可直接分发的免安装玩家包；根目录保留一份 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
 
 ## 本地目录导航
 
 | 要做的事 | 位置 |
 |---|---|
-| 直接玩游戏 | 根目录两份 HTML，保留原来的游玩路径 |
-| 发给玩家／上传 GitHub Release | `release/1.0/`：游戏、源码包、免安装包和校验清单 |
+| 直接玩游戏 | 根目录一份 HTML，保留原来的游玩路径 |
+| 发给玩家／上传 GitHub Release | `release/2.5/`：游戏、源码包、免安装包和校验清单 |
 | 录制介绍视频 | `release/video/`：介绍 HTML、口播稿和录制说明 |
 | 修改游戏 | `game/`：源码、素材、脚本和测试 |
 | 查说明与验收 | 根游玩说明、更新日志及 `docs/` |
@@ -78,11 +83,12 @@ npm run check:release
 
 - [玩法说明](青竹剑阵_游玩说明.md) · [更新日志](青竹剑阵_更新日志.md)
 - [开发与构建](docs/development.md) · [维护约定](AGENTS.md) · [兼容规则沿革](docs/compatibility.md)
+- [2.x 迭代线](docs/v2.x-iterations.md) · [v2.0 需求文档](docs/v2.0-requirements.md)
 - [1.0 验收报告](docs/release-1.0.md) · [GitHub 发布步骤](docs/publishing.md)
 - [原著与改编边界](docs/adaptation.md) · [素材来源](docs/assets.md)
 - [贡献说明](CONTRIBUTING.md) · [第三方声明](THIRD_PARTY_NOTICES.md)
 
-自动构建和验证结果见 [GitHub Actions](https://github.com/jindx1020-crypto/qingzhu-sword-array/actions/workflows/ci.yml)。
+自动构建和验证结果见 [GitHub Actions](https://github.com/hanna-cmd71/qingzhu/actions/workflows/ci.yml)。
 
 ## 开源与素材
 

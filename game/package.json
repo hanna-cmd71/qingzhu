@@ -1,6 +1,6 @@
 {
   "name": "fanren-qingzhu",
-  "version": "1.0.0",
+  "version": "2.5.0",
   "private": true,
   "engines": {
     "node": ">=22.13.0"
@@ -20,14 +20,14 @@
     "package:source": "node scripts/package-source.mjs",
     "lint:raw": "oxlint",
     "check": "npm run lint && npm test && tsc --noEmit --incremental false",
-    "build:offline:png": "node scripts/build-compatibility.mjs",
     "docs:tables": "node scripts/update-guide.mjs",
     "build:release": "node scripts/build-release.mjs",
     "check:release": "node scripts/check-release.mjs",
     "test:player": "node scripts/player-package-browser.mjs",
     "build:intro": "node scripts/build-introduction.mjs",
     "test:intro": "node scripts/introduction-browser.mjs",
-    "prepare:github": "node scripts/prepare-github-release.mjs"
+    "prepare:github": "node scripts/prepare-github-release.mjs",
+    "test:balance:matrix": "node scripts/balance-matrix.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

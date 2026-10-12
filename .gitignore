@@ -26,3 +26,5 @@
 /game/.wrangler/
 /game/gameplay/assets.generated.js
 /game/gameplay/docs.generated.js
+/game/.oxlintrc.sandbox.json
+/.workbuddy-ai/
