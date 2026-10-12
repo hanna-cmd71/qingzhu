@@ -84,13 +84,43 @@ void test('更新日志首行是当前版本、次行是上一版，逐版倒序
  assert.ok(seen.has(previous),'更新日志必须保留上一版那一行');
 });
 
+void test('授权页只在前追加：新版本在最上面，已发布版本的原文一字不改',()=>{
+ // docs/licensing.md 是绑定具体发布的法律文档。升版时只能「在最前面追加一段」，
+ // 不能把旧版本的版本号就地改成新版本号——那会把已发布那次的授权声明改掉。
+ const licensing=read('docs/licensing.md');
+ const currentAt=licensing.indexOf(`${GAME_ARC} ${GAME_VERSION}`);
+ const originalAt=licensing.indexOf(`${GAME_ARC} 1.0`);
+ assert.ok(currentAt>=0,'授权页必须有当前版本 '+GAME_VERSION+' 的段落');
+ assert.ok(originalAt>=0,'授权页必须保留 1.0 原始发布的段落');
+ assert.ok(currentAt<originalAt,'新版本必须追加在 1.0 原始段之前（在上面加，不改原来的）');
+ // 1.0 原始发布的每一行都必须原样还在，一个字都不能被改。
+ const frozenOriginal=[
+  `青竹剑阵 · ${GAME_ARC} 1.0`,
+  'Copyright (C) 2026 bilibili@卡布奇诺ultra',
+  '制作人：hanner-cmd71',
+  '原创程序代码依 GNU General Public License version 3 only（GPL-3.0-only）发布。你可以在许可条件下使用、修改和分发代码；本程序不提供担保。许可原文随源码包提供，完整条款见本文后附文本。',
+  '免安装玩家包已经附带「开源资料／青竹剑阵_源码.zip」及 GPLv3 原文，解压即可取得对应源码；游玩入口为包内「开始游戏.html」。',
+  '请在取得本游戏的同一发行页面下载源码附件「qingzhu-1.0-source.zip」（本地文件名为「青竹剑阵_源码.zip」），包含本版可修改源码、构建脚本、依赖锁文件、素材与文档。仓库代码和同版本源码包均是源码入口。重新分发游戏时，应提供该成品对应的完整源码及许可证；修改版须注明修改。安装依赖后可按源码中的开发文档重建两份离线 HTML。',
+  '源码仓库：https://github.com/jindx1020-crypto/qingzhu-sword-array',
+  '1.0 发布页：https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0',
+  '游戏与对应源码在同一个 Release 中提供；免安装玩家包内也包含对应源码。',
+ ];
+ for(const line of frozenOriginal)assert.ok(licensing.includes(line),'1.0 原始发布的这一行被改动了：'+line);
+ // 当前版本那一段自己的标记也要齐。
+ assert.ok(licensing.includes(`qingzhu-${GAME_VERSION}-source.zip`),'当前版本的源码包名');
+ assert.ok(licensing.includes(`releases/tag/v${GAME_VERSION}`),'当前版本的发布页链接');
+ // 文件开头要把「只追加」这条规矩写明白，后来的人才知道不能就地改。
+ assert.ok(/新增版本只在最前面追加/.test(licensing),'授权页开头必须写明只追加、不改原文');
+});
+
 void test('没有任何一处仍把上一版当作当前版本',()=>{
  // 上一版可以作为历史保留（例如「1.0 的续玩在 2.0 中继续可用」），但不能出现在「当前」语义的标记里。
+ // docs/licensing.md 不在这里：它是只追加的法律文档，本来就保留历史版本段（含 1.0）。
+ // 它的规矩由上面那条「只在前追加」的用例单独钉住。
  const stale=[
   ['AGENTS.md',[`当前游戏 **${previous}**`,`发布标签 v${previous}`]],
   ['docs/compatibility.md',[`当前游戏显示版本为 **${previous}**`]],
   ['docs/publishing.md',[`# GitHub 发布步骤 · ${previous}`,`当前版本 ${previous}`,`发布标签 \`v${previous}\``,`release/${previous}/`,`qingzhu-${previous}-`]],
-  ['docs/licensing.md',[`${GAME_ARC} ${previous}`,`qingzhu-${previous}-source.zip`]],
   ['README.md',[`**${previous}** · 离线像素御剑同人游戏`,`\`release/${previous}/\``]],
   ['game/README.md',[`游戏版本 **${previous}**`]],
   ['青竹剑阵_游玩说明.md',[`适用版本：**${previous}**`,`青竹剑阵_${previous}_免安装版.zip`,`显示升级为 ${previous} `,`${previous} 采用自动测试`]],

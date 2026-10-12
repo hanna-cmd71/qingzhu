@@ -16,8 +16,8 @@
   },
   "unit": {
     "presentation": {"file": "game/tests/presentation.test.mjs", "passed": 9, "total": 9},
-    "versionConsistency": {"file": "game/tests/version-consistency.test.mjs", "passed": 6, "total": 6},
-    "suite": {"passed": 672, "total": 673, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
+    "versionConsistency": {"file": "game/tests/version-consistency.test.mjs", "passed": 7, "total": 7},
+    "suite": {"passed": 673, "total": 674, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
   },
   "lint": {"diagnostics": 0, "files": ["gameplay/presentation.js", "gameplay/art.js", "gameplay/Game.jsx", "gameplay/save-store.js", "gameplay/data.js", "tests/presentation.test.mjs", "scripts/presentation-browser.mjs"]},
   "browser": {
@@ -77,8 +77,9 @@
   "versionGuard": {
     "file": "game/tests/version-consistency.test.mjs",
     "reason": "2.2→2.3 漏改过 `青竹剑阵_游玩说明.md` 四处与 `docs/licensing.md`；2.4→2.5 又漏过 `docs/publishing.md` 的四个附件名。这类漏改不会让任何既有用例变红，只会在发布时被人发现。",
-    "covers": ["包版本 = 显示版本 + .0", "锁文件根包两处", "AGENTS.md 的当前版本／包版本／发布标签", "docs/compatibility.md 的当前版本", "docs/publishing.md 的标题、正文版本、发布标签、四个附件名与 release 目录", "docs/licensing.md 的篇名版本、源码包名与发布页链接", "README.md 与 game/README.md 的版本行", "游玩说明的适用版本／免安装包名／显示升级行／验收行", "更新日志首行是当前版本、次行是上一版、相邻两行正好差 0.1 且不重复", "上一版不出现在任何「当前」语义的标记里"]
+    "licensingPolicy": "docs/licensing.md 是绑定具体发布的法律文档：新增版本只在最前面追加一段，已发布版本的原文一字不改，也不把旧版本的版本号就地改成新版本号。2.3 与 2.5 两次升版曾把 1.0 段落就地改成新版本号，属误改；已从 1c19558 取回 1.0 原文逐字保留，并把这条规矩写进文件开头与第 6 个用例。本次修正 git diff --numstat 为 28 增 0 删。",
+    "covers": ["包版本 = 显示版本 + .0", "锁文件根包两处", "AGENTS.md 的当前版本／包版本／发布标签", "docs/compatibility.md 的当前版本", "docs/publishing.md 的标题、正文版本、发布标签、四个附件名与 release 目录", "docs/licensing.md 的篇名版本、源码包名与发布页链接", "README.md 与 game/README.md 的版本行", "游玩说明的适用版本／免安装包名／显示升级行／验收行", "更新日志首行是当前版本、次行是上一版、相邻两行正好差 0.1 且不重复", "授权页只在前追加：新版本在最上面，1.0 原始段的每一行逐字仍在，开头写明这条规矩", "上一版不出现在任何「当前」语义的标记里"]
   },
   "builds": {"webp": "23.64 MB", "compatibilityPng": "39.29 MB"},
-  "boundary": "① 「减少」档目前把血条掉血残影也停掉——它确实是「会动」的一层，且 CSS 侧的 prefers-reduced-motion 从 2.4 起就已经把 DOM 血条的过渡停掉了，画布跟着停才一致；若作者认为残影属于信息性提示而非动效，应把 lag 从取舍表移出并单独说明。② 「动效」这个总闸的名称与三档语义由作者裁定；三档用同一个循环按钮切换，与页面既有的「画面特效」一致。③ 2.4 提出的「红晕与低血量脉冲共用受击反馈开关」在 2.5 只被部分化解：减少动效会停脉冲、保留红晕，但「受击反馈」开关本身仍然同时关掉两者；要彻底拆开需新增账号级设置字段。④ 表现总览是一整段文字，窄屏下较长，是否折进 <details> 待作者看真机再定。⑤ 系统偏好的跟随只在页面加载与媒体 change 事件时重算，浏览器不支持 matchMedia 时按「不减少」处理，绝不把「读不到」当成「要减少」。"
+  "boundary": "① 「减少」档目前把血条掉血残影也停掉——它确实是「会动」的一层，且 CSS 侧的 prefers-reduced-motion 从 2.4 起就已经把 DOM 血条的过渡停掉了，画布跟着停才一致；若作者认为残影属于信息性提示而非动效，应把 lag 从取舍表移出并单独说明。② 「动效」这个总闸的名称与三档语义由作者裁定；三档用同一个循环按钮切换，与页面既有的「画面特效」一致。③ 2.4 提出的「红晕与低血量脉冲共用受击反馈开关」在 2.5 只被部分化解：减少动效会停脉冲、保留红晕，但「受击反馈」开关本身仍然同时关掉两者；要彻底拆开需新增账号级设置字段。④ 表现总览是一整段文字，窄屏下较长，是否折进 <details> 待作者看真机再定。⑤ 系统偏好的跟随只在页面加载与媒体 change 事件时重算，浏览器不支持 matchMedia 时按「不减少」处理，绝不把「读不到」当成「要减少」。⑥ 更新日志首行「2.5 表现总控与整体收口」的标题文本由作者裁定（正文其余行不改）。⑦ 血条掉血残影的追赶速度 LAG_RATE = 0.55 / 秒（约 1.8 秒追上满血条）决定了「掉血有多明显」，这个数值最需要真机裁定。"
 }
