@@ -11,7 +11,7 @@ import {normalizeSave} from '../gameplay/save-store.js';
 import {initialSave} from '../gameplay/data.js';
 import {STARTERS} from '../gameplay/starters.js';
 import {DIFFICULTIES} from '../gameplay/data.js';
-import {GUIDE_VERSION,GOAL_BRIEF,NEWCOMER_SEEN,NEWCOMER_SETUP,STARTER_LEVELS,MECHANIC_GUIDES,guideKey,starterLevel,isNewcomer,recommendedSetup,firstSteps,mechanicBriefs,nextGuide,tipsEnabled} from '../gameplay/guide.js';
+import {GUIDE_VERSION,GOAL_BRIEF,NEWCOMER_SEEN,NEWCOMER_SETUP,STARTER_LEVELS,MECHANIC_GUIDES,TUTORIAL_SEEN,TUTORIAL_SKIP,TUTORIAL_NOTE,guideKey,starterLevel,isNewcomer,recommendedSetup,firstSteps,mechanicBriefs,nextGuide,tipsEnabled,shouldRunTutorial} from '../gameplay/guide.js';
 
 const battle=(options={})=>{const b=new Expedition({seed:'guide',path:0,guideVersion:GUIDE_VERSION,settings:{tips:true},...options});b.start();if(b.cinematic)b.advanceCinematic(true);return b;};
 // Advance one node in place, crossing chapters when a chapter runs out:
@@ -160,4 +160,23 @@ void test('提示 id 与文案都在哨兵长度限制内，且引导常量保�
  assert.equal(NEWCOMER_SEEN,'welcome-v1');
  assert.equal(guideKey('formation'),'guide-formation');
  for(const entry of MECHANIC_GUIDES){assert.ok(entry.id.length>0&&guideKey(entry.id).length<=100);assert.equal(typeof entry.when,'function');assert.equal(typeof entry.text,'function');}
+});
+
+// 开局教程：全新账号第一次「启程」直接进教学局。判据必须窄——只有真正一张白纸的账号才拦。
+void test('开局教程只拦全新账号，且试剑台与待处理资料都不拦',()=>{
+ assert.equal(shouldRunTutorial(initialSave()),true,'全新存档应进入开局教程');
+ assert.equal(shouldRunTutorial(null),false);
+ // 记的键必须和 start() 写进 guidesSeen 的键一致，否则会反复触发。
+ assert.equal(TUTORIAL_SEEN,'practice-v1');
+ assert.equal(shouldRunTutorial({...initialSave(),guidesSeen:[TUTORIAL_SEEN]}),false,'看过的账号不再拦');
+ assert.equal(shouldRunTutorial({...initialSave(),wins:1}),false,'有胜局的老账号不拦');
+ assert.equal(shouldRunTutorial({...initialSave(),runs:1}),false,'开过局的账号不拦');
+ assert.equal(shouldRunTutorial({...initialSave(),kills:3}),false,'有击杀的账号不拦');
+ assert.equal(shouldRunTutorial({...initialSave(),checkpoint:{}}),false,'有续玩的账号不拦');
+ assert.equal(shouldRunTutorial(initialSave(),{skip:true}),false,'试剑台与显式跳过不拦');
+ assert.equal(shouldRunTutorial(initialSave(),{blocked:true}),false,'存在待处理恢复资料时不拦');
+ assert.equal(shouldRunTutorial({...initialSave(),guidesSeen:['practice-v1',NEWCOMER_SEEN]}),false);
+ // 引导常量必须是非空文案，界面直接把它们贴出来。
+ assert.ok(TUTORIAL_SKIP.length>0&&TUTORIAL_NOTE.length>0);
+ assert.equal(typeof shouldRunTutorial(undefined),'boolean','坏入参不能抛异常进战斗循环');
 });

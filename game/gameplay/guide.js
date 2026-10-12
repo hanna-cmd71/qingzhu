@@ -69,6 +69,18 @@ export const MECHANIC_GUIDES=[
  {id:'thunder',when:()=>true,text:()=>'灵力满且雷源够时，辟邪神雷可以施放；雷源有限，先留给成群或弹幕。'}
 ];
 
+// 开局教程：全新账号第一次点「启程」时直接进入分步练习，练完自动开始正式历练，不再先弹询问框。
+// 判据与文案同源；试剑台（skip）与存在待处理恢复资料（blocked）时不拦截。
+// 记的仍是既有的 practice-v1 键：老账号与既有验收脚本据此跳过教程。
+export const TUTORIAL_SEEN='practice-v1';
+export const TUTORIAL_SKIP='跳过教程，直接开始历练';
+export const TUTORIAL_NOTE='开局教程 · 使用正式起手数值，不写入正式进度；随时可跳过';
+export function shouldRunTutorial(save,{skip=false,blocked=false}={}){
+ if(skip||blocked)return false;
+ if(!isNewcomer(save))return false;
+ return !(save.guidesSeen||[]).includes(TUTORIAL_SEEN);
+}
+
 export const guideKey=id=>'guide-'+id;
 
 // 账号级开关：关闭后不再发一次性提示，也不在出发页显示新手建议。

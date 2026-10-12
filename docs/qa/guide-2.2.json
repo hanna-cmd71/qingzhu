@@ -1,12 +1,12 @@
 {
   "version": "2.2",
-  "scope": "新手引导与可读性（出发页新手建议条、按推荐配置、六起手上手难度、引擎内一次性机制提示、账号级开关）",
-  "rulesUntouched": "只发文字：不消费战斗随机数、不改战斗数值与哈希、不改规则分支；发提示对快照的唯一影响是 notices；未声明 guideVersion 的旧局与试剑台不参与",
+  "scope": "新手引导与可读性（开局教程、出发页新手建议条、按推荐配置、六起手上手难度、引擎内一次性机制提示、账号级开关）",
+  "rulesUntouched": "机制提示只发文字：不消费战斗随机数、不改战斗数值与哈希、不改规则分支；发提示对快照的唯一影响是 notices。开局教程复用试剑台的分步练习，同样不写正式续玩。未声明 guideVersion 的旧局与试剑台不参与",
   "unit": {
-    "guide": {"file": "game/tests/guide.test.mjs", "passed": 11, "total": 11},
-    "suite": {"passed": 641, "total": 641}
+    "guide": {"file": "game/tests/guide.test.mjs", "passed": 12, "total": 12},
+    "suite": {"passed": 641, "total": 642, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
   },
-  "lint": {"diagnostics": 0, "files": ["gameplay/guide.js", "gameplay/expedition.js", "gameplay/Game.jsx", "gameplay/data.js", "gameplay/save-store.js", "tests/guide.test.mjs", "scripts/guide-browser.mjs"]},
+  "lint": {"diagnostics": 0, "files": ["gameplay/guide.js", "gameplay/expedition.js", "gameplay/Game.jsx", "gameplay/PracticePanel.jsx", "gameplay/data.js", "gameplay/save-store.js", "tests/guide.test.mjs", "scripts/guide-browser.mjs", "scripts/player-package-browser.mjs"]},
   "browser": {
     "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
     "profiles": ["optimized", "png"],
@@ -17,8 +17,19 @@
       "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
       "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
       "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0},
-      "guide-browser": {"passed": 20, "total": 20, "pageErrors": 0, "external": 0}
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0}
     },
+    "tutorialChecks": [
+      "待触发时出发按钮写明「先学操作」",
+      "全新账号点启程直接进入开局教程（不再先弹询问框，mode=training 且 guidedPractice=true）",
+      "教程局不写正式续玩（localStorage 无 checkpoint）",
+      "教程面板给出跳过入口，且不再出现「返回出发配置」",
+      "跳过教程后直接开始正式历练（mode≠training、practice 清空、checkpoint 落盘）",
+      "跳过即记下 practice-v1，不会重复触发",
+      "走完教程后自动接上正式历练",
+      "看过的账号出发按钮不再写「先学操作」",
+      "看过的账号点启程直接进正式历练，不被教程拦截"
+    ],
     "guideChecks": [
       "全新账号在出发页看到新手建议条",
       "目标条目与数据层同源（GOAL_BRIEF.points）",
@@ -44,5 +55,5 @@
     "unchangedAssertions": {"battleBandShare390x844": 72.6, "joystickBottomGap390x844": 140}
   },
   "builds": {"webp": "23.62 MB", "compatibilityPng": "39.27 MB"},
-  "boundary": "建议条只在完全没有正式进度（无续玩、无胜局、无击杀）时出现，已有存档的玩家看不到；机制提示按节点逐条发，不打断战斗节奏。headless 合成输入不代表真人阅读习惯，提示文案与出现时机仍待作者裁定。"
+  "boundary": "开局教程与建议条都只在完全没有正式进度（无续玩、无胜局、无击杀）时出现，已有存档的玩家看不到；教程复用试剑台的分步练习，因此同样不写正式续玩。机制提示按节点逐条发，不打断战斗节奏。headless 合成输入不代表真人阅读习惯，提示文案与出现时机仍待作者裁定。"
 }

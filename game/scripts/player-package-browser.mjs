@@ -23,7 +23,9 @@ try{
   page.on('pageerror',e=>report.errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))report.externalRequests.push(r.url());});
   await page.goto(pathToFileURL(path.join(temp,folder,entry)).href);
   await page.getByRole('button',{name:/踏入修仙路/}).waitFor();assert.equal(await page.evaluate(()=>typeof window.__FANREN__),'undefined');assert.ok((await page.title()).endsWith(GAME_VERSION));
-  await page.getByRole('button',{name:/踏入修仙路/}).click();await page.locator('.journey-launch .primary-start').click();await page.getByRole('button',{name:'直接出发',exact:true}).click();
+  await page.getByRole('button',{name:/踏入修仙路/}).click();await page.locator('.journey-launch .primary-start').click();
+  // 全新账号点「启程」会直接进入开局教程；这里跳过它，验证跳过之后确实接上正式历练。
+  await page.locator('.practice-panel').waitFor();await page.getByRole('button',{name:'跳过教程，直接开始历练'}).click();
   await page.locator('.scene-intro,.scene-cinematic').first().waitFor();
   for(let i=0;i<6;i++){
    if(await page.locator('.scene-intro').isVisible())await page.locator('.scene-intro .primary-start').click();

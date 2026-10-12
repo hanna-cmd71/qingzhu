@@ -12,7 +12,7 @@ import {launchBrowser,qaOutput,qaFile,htmlPath,variant} from './browser-runtime.
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {GAME_VERSION} from '../gameplay/version.js';
-import {GOAL_BRIEF,MECHANIC_GUIDES,STARTER_LEVELS,NEWCOMER_SEEN,recommendedSetup} from '../gameplay/guide.js';
+import {GOAL_BRIEF,MECHANIC_GUIDES,STARTER_LEVELS,NEWCOMER_SEEN,TUTORIAL_SEEN,TUTORIAL_SKIP,recommendedSetup} from '../gameplay/guide.js';
 import {initialSave} from '../gameplay/data.js';
 const html=process.argv[2]||htmlPath;
 const OUT=qaFile(qaOutput('guide'),'.');fs.mkdirSync(OUT,{recursive:true});
@@ -123,6 +123,57 @@ try{
  const meta=await sp.evaluate(()=>({title:document.title}));
  ok('标题带当前版本',meta.title.endsWith(GAME_VERSION),meta);
  await settings.context.close();
+ // ---------------- 开局教程：全新账号点启程直接进教学局 ----------------
+ const tut=await open(),tp=tut.page;
+ await toJourney(tp);
+ const tutLabel=(await tp.locator('.journey-launch .primary-start').innerText()).trim();
+ ok('待触发时出发按钮写明「先学操作」',/先学操作/.test(tutLabel),{tutLabel});
+ await tp.locator('.journey-launch .primary-start').click();
+ await tp.locator('.practice-panel').waitFor({timeout:20000});
+ const entered=await tp.evaluate(()=>{const b=window.__FANREN__.battle,raw=localStorage.getItem('fanren-qingzhu-v1');return {mode:b.mode,guided:!!b.options.guidedPractice,step:b.practice?.step,offerDialogs:document.querySelectorAll('.practice-offer').length,checkpoint:raw?!!JSON.parse(raw).checkpoint:false};});
+ report.measurements.tutorialEnter=entered;
+ ok('全新账号点启程直接进入开局教程（不再先弹询问框）',entered.mode==='training'&&entered.guided&&entered.step===0&&entered.offerDialogs===0,entered);
+ ok('教程局不写正式续玩',entered.checkpoint===false,entered);
+ const tutButtons=await tp.locator('.practice-panel button').allInnerTexts();
+ ok('教程面板给出跳过入口，且不再出现「返回出发配置」',tutButtons.some(t=>/跳过教程/.test(t))&&!tutButtons.some(t=>/返回出发配置/.test(t)),tutButtons);
+ await tp.screenshot({path:OUT+'tutorial-'+variant+'.png'});
+ // 跳过：直接开始正式历练，不再回出发页点第二次。
+ await tp.getByRole('button',{name:TUTORIAL_SKIP}).click();
+ await tp.waitForFunction(()=>{const b=window.__FANREN__.battle;return b&&b.mode!=='training';},null,{timeout:20000});
+ await tp.waitForTimeout(300);
+ const skipped=await tp.evaluate(()=>{const b=window.__FANREN__.battle,raw=JSON.parse(localStorage.getItem('fanren-qingzhu-v1'));return {mode:b.mode,practice:!!b.practice,checkpoint:!!raw.checkpoint,guides:raw.guidesSeen||[]};});
+ report.measurements.tutorialSkip=skipped;
+ ok('跳过教程后直接开始正式历练',skipped.mode!=='training'&&skipped.practice===false&&skipped.checkpoint===true,skipped);
+ ok('跳过即记下 practice-v1，不会重复触发',skipped.guides.includes(TUTORIAL_SEEN),skipped.guides);
+ await tut.context.close();
+ // ---------------- 走完教程：自动接上正式历练 ----------------
+ const walk=await open(),wp=walk.page;
+ await toJourney(wp);
+ await wp.locator('.journey-launch .primary-start').click();
+ await wp.locator('.practice-panel').waitFor({timeout:20000});
+ for(let i=0;i<12;i++){
+  const at=await wp.evaluate(()=>{const b=window.__FANREN__.battle;if(!b?.practice)return null;const total=b.path===4||b.path===5?6:5;return {step:b.practice.step,last:b.practice.step>=total-1};});
+  if(!at)break;
+  await wp.evaluate(()=>{const b=window.__FANREN__.battle;if(b.practice){b.practice.ready=true;b.emit({type:'update'});}});
+  await wp.locator('.practice-panel button').last().click();
+  await wp.waitForTimeout(200);
+  if(at.last)break;
+ }
+ await wp.waitForFunction(()=>{const b=window.__FANREN__.battle;return b&&b.mode!=='training';},null,{timeout:20000});
+ await wp.waitForTimeout(300);
+ const walked=await wp.evaluate(()=>{const b=window.__FANREN__.battle,raw=JSON.parse(localStorage.getItem('fanren-qingzhu-v1'));return {mode:b.mode,practice:!!b.practice,checkpoint:!!raw.checkpoint};});
+ report.measurements.tutorialWalk=walked;
+ ok('走完教程后自动接上正式历练',walked.mode!=='training'&&walked.practice===false&&walked.checkpoint===true,walked);
+ await walk.context.close();
+ // ---------------- 看过的账号不再被拦 ----------------
+ const seen=await open({...initialSave(),guidesSeen:[TUTORIAL_SEEN]}),kp=seen.page;
+ await toJourney(kp);
+ const seenLabel=(await kp.locator('.journey-launch .primary-start').innerText()).trim();
+ ok('看过的账号出发按钮不再写「先学操作」',!/先学操作/.test(seenLabel),{seenLabel});
+ await kp.locator('.journey-launch .primary-start').click();
+ await kp.waitForFunction(()=>{const b=window.__FANREN__.battle;return b&&b.mode!=='training';},null,{timeout:20000});
+ ok('看过的账号点启程直接进正式历练，不被教程拦截',await kp.evaluate(()=>!!window.__FANREN__.battle.practice)===false,null);
+ await seen.context.close();
  // ---------------- 更新日志首行 ----------------
  const changes=await open(),cp=changes.page;
  await cp.getByRole('button',{name:/更新日志/}).click();
