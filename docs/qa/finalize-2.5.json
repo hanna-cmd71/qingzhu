@@ -1,0 +1,81 @@
+{
+  "version": "2.5",
+  "revision": "2.5 定版收尾（作者 2026-10-12 指定，不升版号、不改更新日志正文）",
+  "why": "作者要求「更新到这版本就停了，先上线这版本」，并指定两份离线 HTML 只保留一份、文档整理成完整版以便上传 Git。",
+  "decisions": {
+    "keepHtml": "WebP 主版 凡人修仙传_青竹剑阵.html（23.65 MB）",
+    "droppedHtml": "凡人修仙传_青竹剑阵_兼容PNG.html（39.30 MB，已删除）",
+    "reason": "现代浏览器均支持 WebP，主版比兼容版小约 40%；定版后不再维护双成品。",
+    "releaseTarget": "origin = https://github.com/hanna-cmd71/qingzhu，分支 codex/v2.0，标签 v2.5",
+    "linkPolicy": "2.5 相关链接改指 hanna-cmd71/qingzhu；1.0 历史段与历史附件描述保留原作者仓库 jindx1020-crypto/qingzhu-sword-array。"
+  },
+  "scope": {
+    "buildScripts": [
+      "game/scripts/build-offline.mjs：固定输出主 HTML，去掉 compatibility 分支",
+      "game/scripts/embed-assets.mjs：恒用编码后 WebP，去掉 PNG 分支",
+      "game/scripts/build-compatibility.mjs：删除",
+      "game/package.json：移除 build:offline:png"
+    ],
+    "browserHarness": [
+      "game/scripts/browser-runtime.mjs：variant 固定 webp，htmlPath 固定主 HTML，offlineURL() 去掉 png 形参",
+      "game/scripts/test-browser.mjs：去掉资源档双跑",
+      "game/scripts/qa-batch1/2/3-browser.mjs：open() 去掉 png 形参；qa-batch3 去掉三处 for(const png of [false,true])"
+    ],
+    "releaseChain": [
+      "game/scripts/build-release.mjs：只构建/复制一份 HTML，产物清单去掉兼容版",
+      "game/scripts/check-release.mjs：玩家包条目 5→4，内嵌资源只校验 WebP",
+      "game/scripts/package-player.mjs：玩家包去掉兼容版入口与【图片兼容】文案",
+      "game/scripts/player-package-browser.mjs：改为单入口双视口（desktop/phone）",
+      "game/scripts/prepare-github-release.mjs：附件去掉 qingzhu-2.5-png.html（六件变五件）"
+    ],
+    "tests": [
+      "game/tests/version-consistency.test.mjs：发布附件名去掉 -png.html"
+    ],
+    "docs": [
+      "README.md：下载区改指 hanna-cmd71/qingzhu 的 v2.5；两份 HTML→一份；Actions 链接改指本仓库",
+      "AGENTS.md：重建/发布约定由「两份 HTML」改为一份",
+      "docs/development.md：标题 1.0→2.5；release/1.0→release/2.5；双离线构建→单成品；去掉 QINGZHU_ASSET_PROFILE=png 说明",
+      "docs/publishing.md：去掉 -png.html 附件；仓库链接改指 hanna-cmd71/qingzhu",
+      "docs/directory-layout.md：目录树去掉兼容版；两份 HTML→一份",
+      "docs/licensing.md：2.5 段仓库与发布页链接改指 hanna-cmd71/qingzhu（1.0 段原文一字未动）",
+      "青竹剑阵_游玩说明.md：去掉兼容版入口与「图片无法解码」说明",
+      ".github/workflows/ci.yml：上传目录 release/1.0→release/2.5",
+      "game/README.md：release/1.0→release/2.5；两个 HTML→一个"
+    ],
+    "docsUntouched": [
+      "docs/release-1.0.md（1.0 验收报告，历史事实）",
+      "docs/v2.0-requirements.md（v2.0 需求原文）",
+      "docs/compatibility.md（兼容沿革）"
+    ],
+    "assetsKept": "game/public/assets 原 PNG 与 encoded/manifest.json 全部保留，仍作素材来源与哈希校验。"
+  },
+  "verification": {
+    "unit": "675 项 / 674 通过（唯一失败仍是 qa-batch1.test.mjs 的 A0，spawnSync EBUSY 环境限制，与改动无关）",
+    "lint": "0 诊断（沙箱 oxlint，218 文件）",
+    "tsc": "tsc --noEmit 通过",
+    "browser": {
+      "qa-batch1-browser": "10 视口 13 检查，0 错误 0 外部请求",
+      "qa-batch2-browser": "通过，0 错误",
+      "qa-batch3-browser": "通过，0 错误 0 外部请求",
+      "release-browser": "7 检查",
+      "release-experience-browser": "24/24，0 页面异常",
+      "home-browser": "29/29",
+      "guide-browser": "29/29，0 页面异常 0 外部请求",
+      "presentation-browser": "22/22，0 页面异常 0 外部请求"
+    },
+    "build": "单一离线成品 WebP 23.65 MB（凡人修仙传_青竹剑阵.html）",
+    "release": {
+      "artifacts": 3,
+      "playerPackageEntries": 4,
+      "files": [
+        {"file": "凡人修仙传_青竹剑阵.html", "bytes": 24795847, "sha256": "c64610cfd3c14af19dcaa402f9e2e08daed010be57d1de1bc0fe044b875cd9a6"},
+        {"file": "青竹剑阵_源码.zip", "bytes": 51750052, "sha256": "4db56507af0362569d1b0721bf419df4e51acd7eab7cdc484868e337c1c8cd2e"},
+        {"file": "青竹剑阵_2.5_免安装版.zip", "bytes": 70268150, "sha256": "7e992d96c2706c5b60003d35dde91c7bc0ddf8b152ccf041a5d3624cc6507714"}
+      ],
+      "checkRelease": "通过（sourceMatchesArchive / manifestMatches / guideMatches / linksAndPrivacy 全 true）",
+      "testPlayer": "从实际玩家 ZIP 解压，desktop 1440x900 与 phone 390x844 双视口离线开局、移动、闪避、暂停、刷新续玩全部通过，0 页面异常 0 外部请求",
+      "prepareGithub": "生成 5 件英文附件：qingzhu-2.5.html / qingzhu-2.5-source.zip / qingzhu-2.5-player.zip / SHA256SUMS.txt / release-manifest.json"
+    }
+  },
+  "boundary": "① 只保留 WebP 意味着不支持 WebP 解码的极老浏览器无法游玩，作者已知悉并确认。② 原 PNG 素材与编码清单仍保留，将来恢复兼容版只需重加构建分支。③ 历史文档中的兼容版描述不再更新，与当前实况的差异以 docs/v2.x-iterations.md 为准。④ v2.5 标签与 Release 由作者在 hanna-cmd71/qingzhu 创建，本流程只生成逐字节一致的附件。"
+}

@@ -12,16 +12,15 @@
 
 ## 下载与游玩
 
-**[下载单文件游戏](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0.html)** · **[下载免安装完整包](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0-player.zip)** · [全部附件与源码](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)
+**[下载单文件游戏](https://github.com/hanna-cmd71/qingzhu/releases/download/v2.5/qingzhu-2.5.html)** · **[下载免安装完整包](https://github.com/hanna-cmd71/qingzhu/releases/download/v2.5/qingzhu-2.5-player.zip)** · [全部附件与源码](https://github.com/hanna-cmd71/qingzhu/releases/tag/v2.5)
 
-下列附件为最近一次公开发布（**1.0**）；**2.5** 的构建产物是根目录两份离线 HTML，2.x 各版只跑测试与离线构建，不再单独出包，发布步骤见 [GitHub 发布步骤](docs/publishing.md)。
+2.5 的构建产物是根目录一份离线 HTML（`凡人修仙传_青竹剑阵.html`），用浏览器打开即可离线游玩，无需联网或安装环境；发布附件另含源码包与免安装包，步骤见 [GitHub 发布步骤](docs/publishing.md)。历史 1.0 发布仍保留在原作者仓库 [jindx1020-crypto/qingzhu-sword-array](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)。
 
 | 下载文件 | 用途 |
 |---|---|
-| `qingzhu-1.0.html` | 推荐，下载后用浏览器打开即可离线游玩 |
-| `qingzhu-1.0-player.zip` | 解压后双击「开始游戏.html」，附兼容版、简短说明和对应源码 |
-| `qingzhu-1.0-png.html` | 图片解码有问题时使用，玩法与存档格式相同 |
-| `qingzhu-1.0-source.zip` | 对应的可修改源码、素材、开发说明和构建脚本 |
+| `qingzhu-2.5.html` | 推荐，下载后用浏览器打开即可离线游玩 |
+| `qingzhu-2.5-player.zip` | 解压后双击「开始游戏.html」，附简短说明和对应源码 |
+| `qingzhu-2.5-source.zip` | 对应的可修改源码、素材、开发说明和构建脚本 |
 | `SHA256SUMS.txt` | GitHub 下载附件的 SHA-256 校验清单 |
 
 GitHub 附件使用英文文件名，游戏界面与说明为中文；本地构建仍保留原中文文件名。游玩无需安装 Node.js 或开发环境。源码 checkout 不包含重复的 HTML／ZIP，需要修改或自行构建时再准备下列开发环境。
@@ -63,13 +62,13 @@ npm run test:browser
 npm run check:release
 ```
 
-发布附件统一生成在 `release/2.5/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
+发布附件统一生成在 `release/2.5/`，包含可直接分发的免安装玩家包；根目录保留一份 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
 
 ## 本地目录导航
 
 | 要做的事 | 位置 |
 |---|---|
-| 直接玩游戏 | 根目录两份 HTML，保留原来的游玩路径 |
+| 直接玩游戏 | 根目录一份 HTML，保留原来的游玩路径 |
 | 发给玩家／上传 GitHub Release | `release/2.5/`：游戏、源码包、免安装包和校验清单 |
 | 录制介绍视频 | `release/video/`：介绍 HTML、口播稿和录制说明 |
 | 修改游戏 | `game/`：源码、素材、脚本和测试 |
@@ -89,7 +88,7 @@ npm run check:release
 - [原著与改编边界](docs/adaptation.md) · [素材来源](docs/assets.md)
 - [贡献说明](CONTRIBUTING.md) · [第三方声明](THIRD_PARTY_NOTICES.md)
 
-自动构建和验证结果见 [GitHub Actions](https://github.com/jindx1020-crypto/qingzhu-sword-array/actions/workflows/ci.yml)。
+自动构建和验证结果见 [GitHub Actions](https://github.com/hanna-cmd71/qingzhu/actions/workflows/ci.yml)。
 
 ## 开源与素材
 

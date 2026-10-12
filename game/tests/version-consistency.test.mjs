@@ -44,7 +44,7 @@ void test('AGENTS.md 与 docs 的当前版本标记都指向 GAME_VERSION',()=>{
  assert.ok(publishing.includes(`# GitHub 发布步骤 · ${GAME_VERSION}`),'发布步骤标题');
  assert.ok(publishing.includes(`当前版本 ${GAME_VERSION}`),'发布步骤正文版本');
  assert.ok(publishing.includes(`发布标签 \`v${GAME_VERSION}\``),'发布标签');
- for(const name of [`qingzhu-${GAME_VERSION}.html`,`qingzhu-${GAME_VERSION}-png.html`,`qingzhu-${GAME_VERSION}-source.zip`,`qingzhu-${GAME_VERSION}-player.zip`])assert.ok(publishing.includes(name),'发布附件名 '+name);
+ for(const name of [`qingzhu-${GAME_VERSION}.html`,`qingzhu-${GAME_VERSION}-source.zip`,`qingzhu-${GAME_VERSION}-player.zip`])assert.ok(publishing.includes(name),'发布附件名 '+name);
  assert.ok(publishing.includes(`release/${GAME_VERSION}/`),'发布目录 release/'+GAME_VERSION+'/');
 
  const licensing=read('docs/licensing.md');

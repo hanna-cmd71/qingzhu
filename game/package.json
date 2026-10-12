@@ -20,7 +20,6 @@
     "package:source": "node scripts/package-source.mjs",
     "lint:raw": "oxlint",
     "check": "npm run lint && npm test && tsc --noEmit --incremental false",
-    "build:offline:png": "node scripts/build-compatibility.mjs",
     "docs:tables": "node scripts/update-guide.mjs",
     "build:release": "node scripts/build-release.mjs",
     "check:release": "node scripts/check-release.mjs",

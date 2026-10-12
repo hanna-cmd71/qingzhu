@@ -26,12 +26,9 @@ WASD／方向键：移动；空格：闪避；E：神雷；Q：切换剑式；1�
 触屏使用摇杆和技能按钮；点按战场瞄准，点「解除」恢复分守。
 首次建议选择「初入仙途」，可先进行分步练习。完整玩法说明在游戏首页内。
 
-【图片兼容】
-如果推荐入口的图片显示异常，可打开「兼容版／开始游戏_PNG.html」。两份玩法相同。
-
 【保存进度】
 进度保存在当前浏览器本地，不会自动同步。
-升级、更换浏览器、移动文件夹或改用兼容版前，请先从游戏设置「导出存档」；需要时在新入口导入。
+升级、更换浏览器或移动文件夹前，请先从游戏设置「导出存档」；需要时在新入口导入。
 不要依赖聊天软件临时预览、隐私模式或浏览器自动清理保留进度。
 
 【附带的开源资料】
@@ -44,7 +41,6 @@ WASD／方向键：移动；空格：闪避；E：神雷；Q：切换剑式；1�
 const files={
  '开始游戏.html':fs.readFileSync(path.join(root,'凡人修仙传_青竹剑阵.html')),
  '先读我.txt':Buffer.from(readme.replaceAll('\n','\r\n')),
- '兼容版/开始游戏_PNG.html':fs.readFileSync(path.join(root,'凡人修仙传_青竹剑阵_兼容PNG.html')),
  '开源资料/LICENSE.txt':fs.readFileSync(path.join(root,'LICENSE')),
  '开源资料/青竹剑阵_源码.zip':fs.readFileSync(artifactPath('青竹剑阵_源码.zip'))
 };

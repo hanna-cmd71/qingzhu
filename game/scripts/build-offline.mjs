@@ -22,9 +22,9 @@ html=html.replace(/<link\b[^>]*rel="modulepreload"[^>]*>/g,'');
 const notices=[];for(const p of [...packages.values()].sort((a,b)=>a.name.localeCompare(b.name))){const texts=fs.readdirSync(p.folder).filter(f=>/^(licen[cs]e|copying|notice)([.-]|$)/i.test(f)&&fs.statSync(path.join(p.folder,f)).isFile()).map(f=>fs.readFileSync(path.join(p.folder,f),'utf8'));if(!texts.length)throw Error('Bundled package is missing license text: '+p.name);notices.push(p.name+'@'+p.version+' ('+p.license+')\n'+texts.join('\n'));}
 html=html.replace('</body>','<script type="application/json" id="third-party-notices">'+JSON.stringify(notices.join('\n\n')).replace(/</g,'\\u003c')+'</script></body>');
 fs.writeFileSync(path.join(out,'bundled-packages.json'),JSON.stringify([...packages.values()].map(({folder:_folder,...p})=>p),null,2)+'\n');
-const compatibility=process.env.QINGZHU_ASSET_PROFILE==='png';
-const dest=path.join(root,'..',compatibility?'凡人修仙传_青竹剑阵_兼容PNG.html':'凡人修仙传_青竹剑阵.html');fs.writeFileSync(dest,html);
+// 单一离线成品（2026-10-12 作者定版）：只出 WebP 优化版一份，不再出 PNG 兼容版。
+const dest=path.join(root,'..','凡人修仙传_青竹剑阵.html');fs.writeFileSync(dest,html);
 console.log('Offline HTML saved: '+dest+' ('+(Buffer.byteLength(html)/1024/1024).toFixed(2)+' MB)');
 
 const digest=createHash('sha256').update(html).digest('hex');
-fs.writeFileSync(path.join(out,'delivery.json'),JSON.stringify({version:GAME_VERSION,profile:compatibility?'png':'webp',file:path.basename(dest),bytes:Buffer.byteLength(html),sha256:digest},null,2)+'\n');
+fs.writeFileSync(path.join(out,'delivery.json'),JSON.stringify({version:GAME_VERSION,profile:'webp',file:path.basename(dest),bytes:Buffer.byteLength(html),sha256:digest},null,2)+'\n');

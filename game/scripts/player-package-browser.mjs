@@ -18,10 +18,10 @@ for(const [name,bytes]of Object.entries(files)){const target=path.resolve(temp,n
 const out=path.join(root,'game/qa/release/player-package');fs.mkdirSync(out,{recursive:true});
 const report={version:GAME_VERSION,archive:folder+'.zip',method:'Extract actual player ZIP; launch file URLs in offline Chromium with fresh browser contexts, normal UI and no debug API.',checks:[],errors:[],externalRequests:[]},browser=await launchBrowser();
 try{
- for(const [entry,width,height]of [['开始游戏.html',1440,900],['兼容版/开始游戏_PNG.html',390,844]]){
+ for(const [label,width,height]of [['desktop',1440,900],['phone',390,844]]){
   const context=await browser.newContext({offline:true,viewport:{width,height},hasTouch:true}),page=await context.newPage();
   page.on('pageerror',e=>report.errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))report.externalRequests.push(r.url());});
-  await page.goto(pathToFileURL(path.join(temp,folder,entry)).href);
+  await page.goto(pathToFileURL(path.join(temp,folder,'开始游戏.html')).href);
   await page.getByRole('button',{name:/踏入修仙路/}).waitFor();assert.equal(await page.evaluate(()=>typeof window.__FANREN__),'undefined');assert.ok((await page.title()).endsWith(GAME_VERSION));
   await page.getByRole('button',{name:/踏入修仙路/}).click();await page.locator('.journey-launch .primary-start').click();
   // 全新账号点「启程」会直接进入开局教程；这里跳过它，验证跳过之后确实接上正式历练。
@@ -34,10 +34,10 @@ try{
   }
   assert.equal(await page.locator('.scene-intro,.scene-cinematic').count(),0);await page.locator('.dash-button').waitFor();
   await page.keyboard.down('d');await page.waitForTimeout(300);await page.keyboard.press('Space');await page.keyboard.up('d');await waitForText(page.locator('.dash-button'),/s|已闪避|冷却/);
-  await page.screenshot({path:path.join(out,entry.includes('PNG')?'png-battle.png':'webp-battle.png')});await page.keyboard.press('Escape');await page.locator('.scene-pause').waitFor();
+  await page.screenshot({path:path.join(out,label+'-battle.png')});await page.keyboard.press('Escape');await page.locator('.scene-pause').waitFor();
   const raw=await page.evaluate(()=>localStorage.getItem('fanren-qingzhu-v1'));assert.ok(raw&&JSON.parse(raw).checkpoint);
   await page.reload();await page.getByRole('button',{name:/^继续历练/}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('fanren-qingzhu-v1')),raw);
-  report.checks.push({entry,width,height,offline:true,normalLaunch:true,movementAndDash:true,pause:true,saveSurvivesReload:true});await context.close();
+  report.checks.push({entry:'开始游戏.html',viewport:label,width,height,offline:true,normalLaunch:true,movementAndDash:true,pause:true,saveSurvivesReload:true});await context.close();
  }
  assert.deepEqual(report.errors,[]);assert.deepEqual(report.externalRequests,[]);
 }catch(error){report.failure=String(error.stack);throw error;}finally{fs.writeFileSync(path.join(out,'browser.json'),JSON.stringify(report,null,2)+'\n');await browser.close();}

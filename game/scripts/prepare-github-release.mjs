@@ -13,7 +13,6 @@ fs.mkdirSync(folder,{recursive:true});
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const mapping=[
  ['凡人修仙传_青竹剑阵.html','qingzhu-'+GAME_VERSION+'.html','单文件游戏 · 浏览器直接打开'],
- ['凡人修仙传_青竹剑阵_兼容PNG.html','qingzhu-'+GAME_VERSION+'-png.html','PNG 兼容版 · 浏览器直接打开'],
  ['青竹剑阵_源码.zip','qingzhu-'+GAME_VERSION+'-source.zip','完整源码与开发说明 · GPLv3'],
  ['青竹剑阵_'+GAME_VERSION+'_免安装版.zip','qingzhu-'+GAME_VERSION+'-player.zip','免安装完整包 · 含对应源码']
 ];
