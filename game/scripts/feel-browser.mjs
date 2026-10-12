@@ -35,6 +35,10 @@ const openSettings=async page=>{
 };
 const killOne=page=>page.evaluate(()=>{
  const b=window.__FANREN__.battle;
+ // 先清掉顿帧限流。虫潮里玩家挨打（hurt .05）与击杀（kill .045）都低于 FREEZE_HEAVY，
+ // 所以挨打后 0.12 秒内的击杀会被限流正确地拒绝——那时测到的 0 是限流生效，不是击杀没请求。
+ // 这里只想量「一次击杀」本身，所以先把限流窗口清零；限流本身由 feel.test.mjs 的纯函数用例覆盖。
+ const f=window.__FANREN__.freeze;f.left=0;f.gap=0;
  const e=b.spawn(0,{hp:1,x:b.player.x+40,y:b.player.y,speed:0});
  b.rebuildHash();
  b.hit(e,999,'sword',false);

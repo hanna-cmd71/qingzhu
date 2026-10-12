@@ -1,0 +1,79 @@
+{
+  "version": "2.4",
+  "scope": "打击反馈与界面动效（表现层：血条掉血滞后残影、受击屏幕红晕与低血量呼吸、伤害数字弹出上浮、场景对话框与提示条淡入；设置页「受击震动」扩为「受击反馈」）",
+  "rulesUntouched": "不消费战斗随机数、不进快照、不改任何规则分支；所有改动都在渲染器与 DOM 层。血条残影与红晕是渲染器私有状态（this.hpLag / this.hurt），不进 serialize()、不在 snapshot-fields.js / snapshot-validation.js；meters.js 新增的 lag 参数不传时与 2.3 逐像素相同。",
+  "singleSource": {
+    "file": "game/gameplay/impact.js",
+    "exports": ["IMPACT_VERSION", "LAG_RATE", "lagStep", "HURT_GAIN", "HURT_DECAY", "HURT_MAX", "hurtGain", "hurtDecay", "LOW_HEALTH", "PULSE_HZ", "lowHealthPulse", "VIGNETTE_MAX", "vignetteAlpha", "NUMBER_POP", "NUMBER_RISE", "numberPop", "numberRise", "impactSummary"],
+    "note": "滞后速度、红晕累积/衰减、低血量阈值与呼吸频率、红晕上限、数字弹出与上浮曲线都出自这个模块；设置页「受击反馈」说明里的低血量百分比由 impactSummary().lowHealth 生成，界面文案不会和实际判据脱节。"
+  },
+  "constants": {
+    "lagRate": 0.55,
+    "hurtGain": 2.4,
+    "hurtDecay": 1.7,
+    "lowHealth": 0.3,
+    "pulseHz": 0.62,
+    "vignetteMax": 0.5,
+    "numberPop": 0.5,
+    "numberRise": 26
+  },
+  "unit": {
+    "impact": {"file": "game/tests/impact.test.mjs", "passed": 9, "total": 9},
+    "suite": {"passed": 657, "total": 658, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/impact.js", "gameplay/meters.js", "gameplay/art.js", "gameplay/Game.jsx", "tests/impact.test.mjs", "scripts/impact-browser.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"views": 8, "checks": 4, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch3-browser": {"checks": 11, "fails": 0, "errors": 0, "external": 0},
+      "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "introduction-browser": {"slides": 8, "errors": 0, "externalRequests": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0, "scriptPath": "game/qa/skill-ui-browser.mjs"},
+      "feel-browser": {"passed": 8, "total": 8, "pageErrors": 0},
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0},
+      "home-browser": {"passed": 16, "total": 16, "pageErrors": 0, "external": 0},
+      "effects-browser": {"passed": 10, "total": 10, "pageErrors": 0, "external": 0},
+      "impact-browser": {"passed": 15, "total": 15, "pageErrors": 0, "external": 0}
+    },
+    "notApplicable": {
+      "player-package-browser": "本版打包范围只含测试与离线 HTML，不产出 release/2.4 目录与玩家 ZIP，脚本按设计 ENOENT 退出；与改动无关。"
+    },
+    "impactChecks": [
+      "玩家血条有滞后残影层",
+      "残影与真实血条同宽，所以只靠过渡速度拉开差距",
+      "残影过渡明显慢于真实血条（0.72s vs 0.1s）",
+      "掉血后画布血条画出滞后残影（lagFills 0 → 1）",
+      "追平后残影消失（lagFills 1 → 0）",
+      "掉血真的多画一层受击红晕（gradients 1 → 2）",
+      "低血量呼吸也能单独撑起红晕层",
+      "设置页有「受击反馈」开关",
+      "受击反馈说明与数据同源（读到低血量 30%）",
+      "关掉受击反馈后写入存档（live = false 且 localStorage = false，按钮文案 开启 → 关闭）",
+      "关掉后掉血不再画红晕（gradients 回到 1）",
+      "重载后仍保持关闭",
+      "标题带当前版本",
+      "红晕上限不会盖住战场（VIGNETTE_MAX = 0.5）",
+      "更新日志首行是当前版本"
+    ],
+    "measurements": {
+      "bar": {"lag": {"duration": 0.62, "delay": 0.1, "width": "86.2069%"}, "fill": {"duration": 0.1, "delay": 0, "width": "86.2069%"}},
+      "canvasLag": {"before": {"lagFills": 0, "gradients": 1}, "dropped": {"lagFills": 1, "gradients": 2}, "caught": {"lagFills": 0, "gradients": 1}, "hp": 52.2, "maxHp": 116},
+      "hurt": {"calm": {"lagFills": 0, "gradients": 1}, "hurt": {"lagFills": 1, "gradients": 2}, "low": {"lagFills": 1, "gradients": 2}},
+      "probeNote": "页面侧在同一个同步调用里清零计数并重画一帧，所以测到的正好是这一次 draw。lagFills 认的是 fillStyle 等于 meters.LAG_COLOR 的矩形；gradients 认的是 createRadialGradient 次数——屏边红晕是唯一一层径向渐变，所以 1 是基线、2 就是红晕叠上去了。"
+    },
+    "unchangedAssertions": {"battleBandShare390x844": "≥59%（相机与触屏布局代码未改动）", "joystickBottomGap390x844": "≤180px（实测 79px，未破）"}
+  },
+  "testStabilityFix": {
+    "file": "game/scripts/feel-browser.mjs",
+    "symptom": "「击杀真的请求了一次顿帧」在 optimized 档偶发失败，读到 freeze = 0。",
+    "cause": "既有 2.1 用例没有先清顿帧限流。虫潮里玩家挨打（hurt .05）与击杀（kill .045）都低于 FREEZE_HEAVY（.08），所以挨打后 0.12 秒内的击杀会被 FREEZE_MIN_GAP 正确拒绝。诊断实测到 before {left:0, gap:0.0535} → after {left:0, gap:0.0535}，即限流生效，不是击杀没请求。与 2.4 无关（feel.js 与事件路径未改动）。",
+    "fix": "killOne 在 spawn 之前把限流窗口清零，只量「一次击杀」本身；限流逻辑本身由 feel.test.mjs 的纯函数用例覆盖（freezeDecision({left:0,gap:.1},HITSTOP.kill,true).granted === false）。",
+    "verification": "连跑 5 次 optimized 全部 8/8，freeze 恒为 0.045（= HITSTOP.kill）。"
+  },
+  "builds": {"webp": "23.63 MB", "compatibilityPng": "39.28 MB"},
+  "boundary": "屏幕红晕与低血量脉冲共用「受击反馈」开关，关掉震动的同时也会关掉红晕——若作者希望两者独立，需要新增一个账号级设置字段。血条残影是纯显示、不挂在任何开关下；它的追赶速度（0.55 / 秒，约 1.8 秒追满）决定了「掉血有多明显」，这个数值最需要真机裁定。中心缩放的对话框淡入（scale(.985)，中心点不变）与提示条淡入在 prefers-reduced-motion 下完全关闭；提示条只动透明度，因为窄屏有 transform:none 覆盖规则，用关键帧写死 translateX(-50%) 会把窄屏提示条推偏。headless 合成画面不能替代真机观感。"
+}

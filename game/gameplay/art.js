@@ -17,6 +17,7 @@ import {layoutFor} from './encounters.js';
 import {seeded} from './data.js';
 import {shakeDecay,impactFlashAlpha,damageNumberEmphasis} from './feel.js';
 import {additiveEnabled,glowFor,glowAlpha,sparkCount,sparkAt} from './effects.js';
+import {lagStep,hurtGain,hurtDecay,lowHealthPulse,vignetteAlpha,numberPop,numberRise} from './impact.js';
 export {ASSETS};
 const TAU=Math.PI*2;
 // 2.3 表现层：一层加色混合的宽描边叠在 2.2 原有细描边下面，让特效在暗底上有体积感。
@@ -98,7 +99,16 @@ export function sprite(ctx,img,x,y,height,alpha=1,flip=false){
  if(!img)return;const w=height*img.width/img.height;ctx.save();ctx.globalAlpha*=alpha;ctx.translate(Math.round(x),Math.round(y));if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-height,w,height);ctx.restore();
 }
 export class Renderer{
- constructor(canvas,art){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.art=art;this.shake=0;this.camera={x:0,y:0,scale:1};this.resize();}
+ constructor(canvas,art){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.art=art;this.shake=0;this.camera={x:0,y:0,scale:1};
+  // 2.4 打击反馈的私有状态：血条残影按单位 key 记一条，受击红晕按帧累积衰减。
+  // 全部只活在渲染器里，不进快照、也不进引擎。
+  this.hpLag=new Map();this.lagBattle=null;this.lastHp=null;this.hurt=0;this.resize();}
+ // 血条滞后：换局清空残影，之后每个单位按 key 记一条，慢慢追真实血量。
+ lagFor(key,hp,maxHp,dt){
+  const ratio=Math.max(0,Math.min(1,maxHp>0?hp/maxHp:0)),next=lagStep(this.hpLag.get(key)??ratio,ratio,dt);
+  if(this.hpLag.size>240)this.hpLag.clear();
+  this.hpLag.set(key,next);return next;
+ }
  showFormationReady(battle){if(battle)this.formationMoment={battle,started:null};}
  drawFormationMoment(b,seconds,settings={}){const moment=this.formationMoment;if(!moment)return;if(moment.battle!==b){this.formationMoment=null;return;}if(b.modeState!=='battle')return;if(moment.started===null)moment.started=seconds;const t=(seconds-moment.started)/2.4;if(t>=1){this.formationMoment=null;return;}const ctx=this.ctx,p=b.player;
   // 2.3: 布阵瞬间先铺一层加色柔光，剑环才像是「亮起来」的。
@@ -111,7 +121,7 @@ export class Renderer{
   if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(1-t)*.34;ctx.lineWidth=16;ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();ctx.restore();}
   ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();sprite(ctx,this.art.foes[f.sprite],f.x,f.y+10-t*22,110*(1-t*.18),(1-t)*.65);for(let i=0;i<18;i++){const a=i*2.39996,d=24+t*(55+i%4*15),size=Math.max(1,5*(1-t));ctx.fillRect(f.x+Math.cos(a)*d-size/2,f.y-35+Math.sin(a)*d-size/2-t*20,size,size);}ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(f.name+' · 消散',f.x,f.y-120-t*15);ctx.restore();}
  drawObjective(b,_time){const q=b.objective,ctx=this.ctx;if(!q)return;ctx.save();ctx.textAlign='center';ctx.font='bold 17px sans-serif';ctx.lineWidth=3;
-  if(q.kind==='defend'){sprite(ctx,this.art.props[0],q.x,q.y+20,110);drawHealthBar(ctx,q.x-55,q.y-112,110,8,q.hp,q.maxHp,'#a2e7c3');ctx.fillStyle='#a2e7c3';ctx.fillText('护持阵盘',q.x,q.y-130);}
+  if(q.kind==='defend'){sprite(ctx,this.art.props[0],q.x,q.y+20,110);drawHealthBar(ctx,q.x-55,q.y-112,110,8,q.hp,q.maxHp,'#a2e7c3',this.lagFor('objective',q.hp,q.maxHp,this.lastDt??0));ctx.fillStyle='#a2e7c3';ctx.fillText('护持阵盘',q.x,q.y-130);}
   if(q.kind==='illusion')q.gates.forEach((g,i)=>{const real=i===q.trueGate,open=b.waveTime>=q.next;sprite(ctx,this.art.props[open?2:1],g.x,g.y+40,125,real?1:.6);ctx.strokeStyle=real?'#dfd3a2':'#91a5b0';ctx.beginPath();ctx.arc(g.x,g.y,72,0,TAU);ctx.stroke();if(real){ctx.beginPath();ctx.arc(g.x,g.y,79,0,TAU);ctx.stroke();}ctx.fillStyle=real?'#ffe4aa':'#b5c1c5';ctx.fillText(real?(open?'真 · 可通行':'真 · '+Math.max(0,Math.ceil(q.next-b.waveTime))+'秒后通行'):'幻 · 勿入',g.x,g.y-103);});
   if(q.kind==='ice'){ctx.fillStyle='#a2c8ed44';ctx.strokeStyle='#dcecff';ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#dbedff';ctx.fillText('乾蓝冰焰 · 后撤',q.x,q.y-15);}
   if(q.exit){const open=q.kind==='ice'?b.waveTime>=40:q.done>=q.total;sprite(ctx,this.art.props[open?2:1],q.exit.x,q.exit.y+35,125);ctx.strokeStyle=open?'#a4edc7':'#9dada7';ctx.beginPath();ctx.arc(q.exit.x,q.exit.y,q.exit.r,0,TAU);ctx.stroke();ctx.fillStyle='#e9e1b8';ctx.fillText(open?'退路已开 · 靠近离场':'退路待开',q.exit.x,q.exit.y-106);}
@@ -129,7 +139,12 @@ export class Renderer{
   scale=view.scale;const ox=view.x,oy=view.y;
   this.camera=view;
   // 按时间衰减而不是按帧，高刷新率屏幕上震动时长才和 60Hz 一致。
-  this.shake=shakeDecay(this.shake,seconds-(this.lastSeconds??seconds));this.lastSeconds=seconds;
+  const dt=seconds-(this.lastSeconds??seconds);this.shake=shakeDecay(this.shake,dt);this.lastSeconds=seconds;this.lastDt=dt;
+  // 2.4: 换局就清空血条残影与受击红晕，上一局的单位 id 不会漏到这一局。
+  if(this.lagBattle!==b){this.lagBattle=b;this.hpLag.clear();this.lastHp=null;this.hurt=0;}
+  // 受击红晕只在真的掉血时累积；掉多少看比例，所以擦伤和重击的差别一眼可辨。
+  if(b){if(this.lastHp!==null&&p.hp<this.lastHp)this.hurt=Math.min(1,this.hurt+hurtGain(this.lastHp-p.hp,p.maxHp));this.lastHp=p.hp;}
+  this.hurt=hurtDecay(this.hurt,dt);
   const sx=settings.shake?Math.sin(seconds*83)*this.shake:0,sy=settings.shake?Math.cos(seconds*109)*this.shake:0;
   this.camera={...view,x:ox+sx,y:oy+sy};ctx.save();ctx.translate(ox+sx,oy+sy);ctx.scale(scale,scale);
   ctx.drawImage(b?this.art.grounds[layoutFor(b).map]:this.art.menu,0,0,WORLD.w,WORLD.h);
@@ -161,12 +176,12 @@ export class Renderer{
     if(e.boss){ctx.save();ctx.strokeStyle=e.bossType==='xuangu'?'#b9e3c6':'#f0ce92';ctx.lineWidth=3/scale;ctx.beginPath();ctx.ellipse(e.x,e.y+7,e.r+16,13,0,0,TAU);ctx.stroke();ctx.translate(e.x,e.y-height-22);ctx.beginPath();ctx.moveTo(-9,4);ctx.lineTo(-11,-6);ctx.lineTo(-4,-1);ctx.lineTo(0,-10);ctx.lineTo(4,-1);ctx.lineTo(11,-6);ctx.lineTo(9,4);ctx.closePath();ctx.stroke();ctx.restore();}
     if(b.touchLockId===e.id){ctx.save();ctx.strokeStyle='#a5f4d6';ctx.lineWidth=2/scale;ctx.setLineDash([6/scale,3/scale]);ctx.strokeRect(e.x-e.r-8,e.y-e.r-8,(e.r+8)*2,(e.r+8)*2);ctx.restore();}
     if(e.spawn>0){ctx.strokeStyle='#d1987855';ctx.beginPath();ctx.arc(e.x,e.y,20,0,TAU);ctx.stroke();}
-    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582');}else{const flip=e.a>Math.PI/2||e.a<-Math.PI/2;if(e.flash>0){sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,1,flip);sprite(ctx,(this.art.foesWhite||this.art.foes)[e.sprite],e.x,e.y+10+bob,height,impactFlashAlpha(e.flash)*.8,flip);}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:1,flip);}
+    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582',this.lagFor('rune:'+e.id,e.hp,e.maxHp,dt));}else{const flip=e.a>Math.PI/2||e.a<-Math.PI/2;if(e.flash>0){sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,1,flip);sprite(ctx,(this.art.foesWhite||this.art.foes)[e.sprite],e.x,e.y+10+bob,height,impactFlashAlpha(e.flash)*.8,flip);}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:1,flip);}
     if(b.practice?.step===2&&e.practiceAnchor){ctx.save();ctx.font='bold 22px sans-serif';ctx.fillStyle=e.name.startsWith('B')?'#ffdf90':'#a8e6eb';ctx.textAlign='center';ctx.fillText(e.name[0],e.x,e.y-height-28);ctx.restore();}
-    if(['marked','carrier'].includes(e.mission)){ctx.save();ctx.strokeStyle=e.untargetable?'#91a6b4':'#ffdfa0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,32,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.fillStyle='#ffdfa0';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-height-30);drawHealthBar(ctx,e.x-40,e.y-height-19,80,7,e.hp,e.maxHp,e.untargetable?'#91a6b4':'#dcaa5a');ctx.font='12px sans-serif';ctx.fillText(e.untargetable?'护卫未清 · 暂不可伤':Math.ceil(Math.max(0,e.hp))+' / '+Math.ceil(e.maxHp)+' 生命',e.x,e.y-height+5);ctx.restore();}
+    if(['marked','carrier'].includes(e.mission)){ctx.save();ctx.strokeStyle=e.untargetable?'#91a6b4':'#ffdfa0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,32,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.fillStyle='#ffdfa0';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-height-30);drawHealthBar(ctx,e.x-40,e.y-height-19,80,7,e.hp,e.maxHp,e.untargetable?'#91a6b4':'#dcaa5a',this.lagFor('mark:'+e.id,e.hp,e.maxHp,dt));ctx.font='12px sans-serif';ctx.fillText(e.untargetable?'护卫未清 · 暂不可伤':Math.ceil(Math.max(0,e.hp))+' / '+Math.ceil(e.maxHp)+' 生命',e.x,e.y-height+5);ctx.restore();}
     const role=ENEMY_ROLES[e.index];if(role&&!e.boss){ctx.save();ctx.fillStyle='#0a172bdd';const font=Math.max(12,10/scale);ctx.fillRect(e.x-font*1.5,e.y-height-font-4,font*3,font+3);ctx.fillStyle=role.color;ctx.font='bold '+font+'px sans-serif';ctx.textAlign='center';ctx.fillText(role.label,e.x,e.y-height-4);if(e.ai==='bulwark'&&e.timer>1.6){ctx.strokeStyle=role.color;ctx.lineWidth=5;ctx.beginPath();ctx.arc(e.x,e.y-12,29,e.a-1,e.a+1);ctx.stroke();}ctx.restore();}
     if(e.phaseShield>0){ctx.strokeStyle='#ebcf9bbc';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(e.x,e.y-38,54,70,0,0,TAU);ctx.stroke();}
-    if(e.elite&&!['marked','carrier','rune'].includes(e.mission))drawHealthBar(ctx,e.x-24,e.y-height+7,48,5,e.hp,e.maxHp);
+    if(e.elite&&!['marked','carrier','rune'].includes(e.mission))drawHealthBar(ctx,e.x-24,e.y-height+7,48,5,e.hp,e.maxHp,'#dcaa5a',this.lagFor('elite:'+e.id,e.hp,e.maxHp,dt));
     if(b.path===0&&e.focusHits>0&&e.focusUntil>seconds){ctx.save();ctx.strokeStyle='#c6f9e1';ctx.lineWidth=3/scale;ctx.beginPath();ctx.arc(e.x,e.y,e.r+10,-Math.PI/2,-Math.PI/2+TAU*e.focusHits/4);ctx.stroke();ctx.restore();}
     if(gnawSelected.has(e.id)){ctx.save();ctx.strokeStyle='#d5a5f2';ctx.lineWidth=Math.max(2,1.5/scale);ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(e.x,e.y+7,e.r+9,8,0,0,TAU);ctx.stroke();ctx.fillStyle='#e3b9fc';ctx.font='bold '+Math.max(12,10/scale)+'px sans-serif';ctx.textAlign='center';ctx.fillText(gnawSelected.get(e.id),e.x,e.y-height-20);ctx.restore();}
     if(e.gnawUntil>seconds){ctx.save();ctx.strokeStyle='#d5a5f2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(e.x+18,e.y-height-8);ctx.lineTo(e.x+27,e.y-height-5);ctx.lineTo(e.x+25,e.y-height+3);ctx.lineTo(e.x+18,e.y-height+9);ctx.lineTo(e.x+13,e.y-height+3);ctx.stroke();ctx.beginPath();ctx.moveTo(e.x+20,e.y-height-5);ctx.lineTo(e.x+16,e.y-height);ctx.lineTo(e.x+21,e.y-height+2);ctx.stroke();ctx.fillStyle='#d5a5f2';ctx.fillRect(e.x+12,e.y-height+12,18*(e.gnaw/.12),3);ctx.restore();}
@@ -218,7 +233,8 @@ export class Renderer{
    if(f.kind==='carveBurst'){const r=f.r*(1.15-alpha*.3);glowStroke(ctx,glow?.outer,glowAlpha('carveBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();ctx.setLineDash([]);glowSparks(ctx,f,alpha,settings,'#e9d7a6');}
    if(f.kind==='fusionSlash'){glowStroke(ctx,glow?.outer,glowAlpha('fusionSlash',alpha,settings),()=>ctx.arc(f.x,f.y,f.r,0,TAU));ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();glowSparks(ctx,f,alpha,settings,'#e6f3ff');}
    if(f.kind==='sigilBurst'){const r=f.r*(1.1-alpha*.35);glowStroke(ctx,glow?.outer,glowAlpha('sigilBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}glowSparks(ctx,f,alpha,settings,'#ffd9ab');}
-   if(f.kind==='number'){const emphasis=damageNumberEmphasis(f.total,f.critical),base=f.key?Math.max(17,12/scale):Math.max(13,11/scale);ctx.font='bold '+Math.round(base*emphasis)+'px '+(f.key?'sans-serif':'monospace');ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
+   // 2.4: 出现瞬间放大回弹、上浮先快后慢，数字才有「打出来」的感觉；原来是一条线性上浮的固定字号。
+   if(f.kind==='number'){const progress=1-alpha,emphasis=damageNumberEmphasis(f.total,f.critical),base=f.key?Math.max(17,12/scale):Math.max(13,11/scale);ctx.font='bold '+Math.round(base*emphasis*numberPop(progress))+'px '+(f.key?'sans-serif':'monospace');ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-numberRise(progress));}
    if(f.kind==='line'){const path=()=>{ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);};glowStroke(ctx,glow?.outer,glowAlpha('line',alpha,settings),path);ctx.lineWidth=2;ctx.beginPath();path();ctx.stroke();}
    // 闪电折线先算成点列再描两遍：seeded 的取数顺序与次数与 2.2 完全相同，所以折线形状逐点一致。
    if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999)),pts=[[f.x,f.y-210]];for(let j=1;j<8;j++)pts.push([f.x+(r()-.5)*28,f.y-210+j*30]);const path=()=>{ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);};glowStroke(ctx,glow?.outer,glowAlpha('bolt',alpha,settings),path);ctx.lineWidth=3;ctx.beginPath();path();ctx.stroke();}
@@ -227,9 +243,13 @@ export class Renderer{
   }
   ctx.restore();
   const vignette=ctx.createRadialGradient(w/2,h/2,h*.2,w/2,h/2,w*.65);vignette.addColorStop(0,'#030c1000');vignette.addColorStop(1,b?'#030c1099':'#030c1044');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+  // 2.4 受击红晕：屏幕四边泛红，强度取「刚受到的伤害」与「低血量呼吸」的较大值。
+  // 与受击震动共用同一个「受击反馈」开关——关掉之后这一层一笔都不画。
+  if(b){const edge=vignetteAlpha(this.hurt,lowHealthPulse(p.hp,p.maxHp,seconds),!!settings.shake);
+   if(edge>0){const glow=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.32,w/2,h/2,Math.max(w,h)*.62);glow.addColorStop(0,'#7d1a0f00');glow.addColorStop(1,'#7d1a0f');ctx.save();ctx.globalAlpha=edge;ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);ctx.restore();}}
   if(b){
    const x=Math.max(24,Math.min(w-24,ox+p.x*scale+sx)),y=Math.max(view.top+8,Math.min(view.bottom-9,oy+p.y*scale+sy+12)),low=p.hp/p.maxHp<.3;
-   ctx.save();ctx.fillStyle='#051a19';ctx.fillRect(x-22,y-1,44,7);drawHealthBar(ctx,x-20,y,40,4,p.hp,p.maxHp,low?'#ff9b78':'#b1f1c9');
+   ctx.save();ctx.fillStyle='#051a19';ctx.fillRect(x-22,y-1,44,7);drawHealthBar(ctx,x-20,y,40,4,p.hp,p.maxHp,low?'#ff9b78':'#b1f1c9',this.lagFor('player',p.hp,p.maxHp,dt));
    ctx.strokeStyle=p.dashCD>0?'#8298a3':'#d8fff0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-12,8,-Math.PI/2,p.dashCD>0?Math.PI/2:Math.PI*1.5);ctx.stroke();if(low){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#ffd4bf';ctx.fillText('!',x+29,y+4);}ctx.restore();
    if(b.practice?.goal){const g=b.practice.goal;ctx.save();ctx.strokeStyle='#a5f5d3';ctx.lineWidth=3;ctx.beginPath();ctx.arc(ox+g.x*scale,oy+g.y*scale,g.r*scale,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillStyle='#e1ffee';ctx.fillText('移动到这里',ox+g.x*scale,oy+g.y*scale-10);ctx.restore();}
   }
