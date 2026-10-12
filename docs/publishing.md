@@ -1,6 +1,6 @@
-# GitHub 发布步骤 · 2.4
+# GitHub 发布步骤 · 2.5
 
-公开仓库：[jindx1020-crypto/qingzhu-sword-array](https://github.com/jindx1020-crypto/qingzhu-sword-array)。当前版本 2.4，发布标签 `v2.4`，标题为 **2.4 打击反馈与界面动效**；历史 1.0 标签为 `v1.0`（[Release 入口](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)）。
+公开仓库：[jindx1020-crypto/qingzhu-sword-array](https://github.com/jindx1020-crypto/qingzhu-sword-array)。当前版本 2.5，发布标签 `v2.5`，标题为 **2.5 表现总控与整体收口**；历史 1.0 标签为 `v1.0`（[Release 入口](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)）。
 
 本页保留构建、验证和上传步骤供后续维护。
 
@@ -19,16 +19,16 @@
 
 ## 创建 Release
 
-检查 GitHub Actions 完成后，为同一提交创建 `v2.4` 标签与正式 Release。标题和正文均可用 **2.4 打击反馈与界面动效**。
+检查 GitHub Actions 完成后，为同一提交创建 `v2.5` 标签与正式 Release。标题和正文均可用 **2.5 表现总控与整体收口**。
 
 在 game 目录执行 `npm run build:release`、`npm run check:release` 后，再执行 `npm run prepare:github`。
 
-GitHub 会规范化附件中的非英文字符，因此上传 `release/2.4/github/` 内的六个文件：
+GitHub 会规范化附件中的非英文字符，因此上传 `release/2.5/github/` 内的六个文件：
 
-- qingzhu-2.4.html
-- qingzhu-2.4-png.html
-- qingzhu-2.4-source.zip
-- qingzhu-2.4-player.zip
+- qingzhu-2.5.html
+- qingzhu-2.5-png.html
+- qingzhu-2.5-source.zip
+- qingzhu-2.5-player.zip
 - SHA256SUMS.txt
 - release-manifest.json
 

@@ -1,6 +1,6 @@
 # 青竹剑阵 · 虚天殿篇
 
-**2.4** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
+**2.5** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
 
 制作人：hanner-cmd71
 
@@ -14,7 +14,7 @@
 
 **[下载单文件游戏](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0.html)** · **[下载免安装完整包](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0-player.zip)** · [全部附件与源码](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)
 
-下列附件为最近一次公开发布（**1.0**）；**2.4** 的构建产物是根目录两份离线 HTML，2.x 各版只跑测试与离线构建，不再单独出包，发布步骤见 [GitHub 发布步骤](docs/publishing.md)。
+下列附件为最近一次公开发布（**1.0**）；**2.5** 的构建产物是根目录两份离线 HTML，2.x 各版只跑测试与离线构建，不再单独出包，发布步骤见 [GitHub 发布步骤](docs/publishing.md)。
 
 | 下载文件 | 用途 |
 |---|---|
@@ -39,6 +39,7 @@ GitHub 附件使用英文文件名，游戏界面与说明为中文；本地构�
 - 新手建议、三步上手与逐节点下发的一次性机制提示，只在全新账号出现，可随时关闭。
 - 战斗特效分层加色辉光与火花，冲刺残影、御剑笔画、剑意合体与首领消散一并变亮；可在设置切「画面特效 · 精简」。
 - 血条掉血后留一条浅色残影慢慢追上，受击时屏幕四边泛红、低血量改为呼吸脉动；「受击反馈」可一键关闭。
+- 「动效」总控三档（跟随系统／完整／减少），一次管住四条表现线的动与闪；设置页分「画面表现」「辅助与提示」两组，并给出表现总览。
 - 本地成绩、章末分段与可导出恢复资料；旧局继续使用各自规则。
 
 ## 开发与构建
@@ -62,14 +63,14 @@ npm run test:browser
 npm run check:release
 ```
 
-发布附件统一生成在 `release/2.4/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
+发布附件统一生成在 `release/2.5/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
 
 ## 本地目录导航
 
 | 要做的事 | 位置 |
 |---|---|
 | 直接玩游戏 | 根目录两份 HTML，保留原来的游玩路径 |
-| 发给玩家／上传 GitHub Release | `release/2.4/`：游戏、源码包、免安装包和校验清单 |
+| 发给玩家／上传 GitHub Release | `release/2.5/`：游戏、源码包、免安装包和校验清单 |
 | 录制介绍视频 | `release/video/`：介绍 HTML、口播稿和录制说明 |
 | 修改游戏 | `game/`：源码、素材、脚本和测试 |
 | 查说明与验收 | 根游玩说明、更新日志及 `docs/` |

@@ -1,0 +1,84 @@
+{
+  "version": "2.5",
+  "scope": "表现总控与整体收口（把 2.1 手感、2.2 引导、2.3 特效、2.4 打击反馈四条表现线的开关收在一个判据下：新增「动效」三档总闸与取舍表、CSS 与画布同源、设置页分「画面表现／辅助与提示」两组并给出表现总览；另补一道版本标记一致性守卫）",
+  "rulesUntouched": "不消费战斗随机数、不进快照、不改任何规则分支。动效档是账号设置（settings.motion），不是战斗快照字段；所有判据都是 settings 与媒体状态的纯函数，没有隐藏状态。",
+  "singleSource": {
+    "file": "game/gameplay/presentation.js",
+    "exports": ["PRESENTATION_VERSION", "FOLLOW", "MOTION_FULL", "MOTION_REDUCED", "MOTION_MODES", "MOTION_LABELS", "motionMode", "motionLabel", "nextMotionMode", "systemReducedMotion", "motionQuery", "reducedMotion", "MOTION_POLICY", "motionKept", "droppedByMotion", "motionAttribute", "presentationLedger", "presentationSummary"],
+    "note": "三档与坏值回落、系统偏好判据、取舍表、总账与设置页文案都出自这个模块；总账里的数字分别来自 feel/effects/impact/guide 各自的 summary，不在总控里抄一遍。"
+  },
+  "motionPolicy": {
+    "modes": ["follow", "full", "reduced"],
+    "labels": {"follow": "跟随系统", "full": "完整", "reduced": "减少"},
+    "default": "follow",
+    "droppedWhenReduced": ["shake", "hitstop", "flash", "pop", "pulse", "sparks", "lag", "css"],
+    "keptWhenReduced": ["加色辉光（静态亮度）", "受击红晕（静态提示，只是不再呼吸）", "伤害数字本身（只是不再弹出与上浮）", "来袭预警与提示文字"]
+  },
+  "unit": {
+    "presentation": {"file": "game/tests/presentation.test.mjs", "passed": 9, "total": 9},
+    "versionConsistency": {"file": "game/tests/version-consistency.test.mjs", "passed": 6, "total": 6},
+    "suite": {"passed": 672, "total": 673, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/presentation.js", "gameplay/art.js", "gameplay/Game.jsx", "gameplay/save-store.js", "gameplay/data.js", "tests/presentation.test.mjs", "scripts/presentation-browser.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"views": 8, "checks": 4, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch3-browser": {"checks": 11, "fails": 0, "errors": 0, "external": 0},
+      "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "introduction-browser": {"slides": 8, "errors": 0, "externalRequests": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0, "scriptPath": "game/qa/skill-ui-browser.mjs"},
+      "feel-browser": {"passed": 8, "total": 8, "pageErrors": 0},
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0},
+      "home-browser": {"passed": 16, "total": 16, "pageErrors": 0, "external": 0},
+      "effects-browser": {"passed": 10, "total": 10, "pageErrors": 0, "external": 0},
+      "impact-browser": {"passed": 15, "total": 15, "pageErrors": 0, "external": 0},
+      "presentation-browser": {"passed": 22, "total": 22, "pageErrors": 0, "external": 0}
+    },
+    "notApplicable": {
+      "player-package-browser": "本版打包范围只含测试与离线 HTML，不产出 release/2.5 目录与玩家 ZIP，脚本按设计 ENOENT 退出；与改动无关。"
+    },
+    "presentationChecks": [
+      "完整档下击杀请求顿帧（0.045）",
+      "完整档下掉血画出残影（lagFills 0 → 1）",
+      "完整档下 <html data-motion> 是 full",
+      "完整档下 CSS 过渡照常（5s）",
+      "设置页有「动效」控件",
+      "动效默认跟随系统",
+      "设置页把开关分成「画面表现」与「辅助与提示」两组",
+      "设置页有独立的「动效与表现总览」分区",
+      "表现总览与四个模块同源（读到 30%／7 类／8 项）",
+      "切到「完整」后 <html data-motion> 是 full",
+      "切到「减少」后写进存档与 <html data-motion>（live 与 localStorage 都是 reduced）",
+      "减少档下 CSS 过渡也被同一条规则停掉（0s）",
+      "减少档下击杀不再请求顿帧（0）",
+      "减少档下血条不再留残影（lagFills 0）",
+      "减少档下掉血仍画红晕（gradients 1 → 2，静态提示保留）",
+      "三档循环回到跟随系统",
+      "绕一圈后重新停在「减少」",
+      "重载后仍保持「减少」且判据已重算",
+      "重载后减少档仍然不请求顿帧",
+      "重载后减少档仍然不留残影",
+      "标题带当前版本",
+      "更新日志首行是当前版本"
+    ],
+    "measurements": {
+      "full": {"kill": {"freeze": 0.045, "dead": true}, "drop": {"before": {"lagFills": 0, "gradients": 1}, "dropped": {"lagFills": 1, "gradients": 2}, "caught": {"lagFills": 0, "gradients": 1}}, "css": "5s", "attr": "full"},
+      "reduced": {"kill": {"freeze": 0, "dead": true}, "drop": {"before": {"lagFills": 0, "gradients": 1}, "dropped": {"lagFills": 0, "gradients": 2}, "caught": {"lagFills": 0, "gradients": 1}}, "hurt": {"calm": {"lagFills": 0, "gradients": 1}, "hurt": {"lagFills": 0, "gradients": 2}, "hp": 69.6, "maxHp": 116}, "attr": "reduced"},
+      "cssGateNote": "CSS 探针在页面里临时插一个带 transition:width 5s 的元素：完整档读到 5s，减少档读到 0s，说明 html[data-motion=reduced] *{transition:none!important} 真的生效，画布与 CSS 用的是同一个判据。",
+      "groups": {"groups": ["画面表现", "辅助与提示"], "headings": ["声音与画面", "动效与表现总览", "操作键位", "本地存档"]},
+      "probeNote": "画布探针在同一个同步调用里清零计数并重画一帧；lagFills 认的是 fillStyle 等于 meters.LAG_COLOR 的矩形，gradients 认的是 createRadialGradient 次数（基础暗角 1，受击红晕叠上去是 2）。击杀探针先清掉顿帧限流，只量「一次击杀」本身。"
+    },
+    "unchangedAssertions": {"battleBandShare390x844": "≥59%（实测 59.3%，相机与触屏布局代码未改动）", "joystickBottomGap390x844": "≤180px（实测 79px，未破）"}
+  },
+  "versionGuard": {
+    "file": "game/tests/version-consistency.test.mjs",
+    "reason": "2.2→2.3 漏改过 `青竹剑阵_游玩说明.md` 四处与 `docs/licensing.md`；2.4→2.5 又漏过 `docs/publishing.md` 的四个附件名。这类漏改不会让任何既有用例变红，只会在发布时被人发现。",
+    "covers": ["包版本 = 显示版本 + .0", "锁文件根包两处", "AGENTS.md 的当前版本／包版本／发布标签", "docs/compatibility.md 的当前版本", "docs/publishing.md 的标题、正文版本、发布标签、四个附件名与 release 目录", "docs/licensing.md 的篇名版本、源码包名与发布页链接", "README.md 与 game/README.md 的版本行", "游玩说明的适用版本／免安装包名／显示升级行／验收行", "更新日志首行是当前版本、次行是上一版、相邻两行正好差 0.1 且不重复", "上一版不出现在任何「当前」语义的标记里"]
+  },
+  "builds": {"webp": "23.64 MB", "compatibilityPng": "39.29 MB"},
+  "boundary": "① 「减少」档目前把血条掉血残影也停掉——它确实是「会动」的一层，且 CSS 侧的 prefers-reduced-motion 从 2.4 起就已经把 DOM 血条的过渡停掉了，画布跟着停才一致；若作者认为残影属于信息性提示而非动效，应把 lag 从取舍表移出并单独说明。② 「动效」这个总闸的名称与三档语义由作者裁定；三档用同一个循环按钮切换，与页面既有的「画面特效」一致。③ 2.4 提出的「红晕与低血量脉冲共用受击反馈开关」在 2.5 只被部分化解：减少动效会停脉冲、保留红晕，但「受击反馈」开关本身仍然同时关掉两者；要彻底拆开需新增账号级设置字段。④ 表现总览是一整段文字，窄屏下较长，是否折进 <details> 待作者看真机再定。⑤ 系统偏好的跟随只在页面加载与媒体 change 事件时重算，浏览器不支持 matchMedia 时按「不减少」处理，绝不把「读不到」当成「要减少」。"
+}
