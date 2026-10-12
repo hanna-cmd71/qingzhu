@@ -1,0 +1,49 @@
+{
+  "version": "2.5",
+  "revision": "山门重制与新手入口（作者 2026-10-12 验收反馈后的追加修订；不升版号，更新日志正文仍由作者指定）",
+  "why": "作者验收 2.5 时指出两件事：① 首页跟原来一模一样；② 找不到新手教程。核实结果：2.2 的「山门重制」只动了 34 行 CSS、加了 .home-glow 与 .page-home 两个选择器，布局一个字没动（怕碰坏 qa-batch1 的 10 视口坐标约束而缩手）；教程确实存在，但触发判据是 isNewcomer（全新账号），有进度的玩家永远看不到，入口又埋在出发页底部的小按钮里。",
+  "scope": "只动表现层与引导入口：首页 JSX 结构、game.css、guide.js 的入口判据、home-browser.mjs 的断言。不消费战斗随机数、不进快照、不改任何规则分支与战斗哈希。",
+  "homeRedesign": {
+    "direction": "章节地图前置：六章从底部细栏搬进左栏，做成竖向秘境图；大标题收成一行让位给地图。",
+    "whyLeftColumn": "menu-backdrop.png 左三分之一是暗色岩壁、右侧是云海与立绘，内容收进左栏不会压住角色立绘。",
+    "structure": "新增 .home-column 包住 .title-panel 与 .chapter-deck；.chapter-tile 内部改为 .chapter-node（圆形印章）+ .chapter-body（状态行 + 章名）+ .chapter-status。",
+    "nodeStates": ["cleared（已通关 · 可重温）", "active（当前历练）", "locked（未历之境）"],
+    "path": ".chapter-rail 是一条竖向金色路线：:before 是暗底轨，:after 用 --deck-progress 做亮起的高度，节点是盖在路线上的圆形印章。",
+    "title": "青竹剑阵 单行，font-size clamp(32px,3.4vw,44px)，h1 span 由 display:block 改回 inline。",
+    "shortViewport": "视口高度 ≤790px 时秘境图退化为两列三行（去掉路线），避免地图被推到折线以下；≤760px 收窄节点与左边距。",
+    "measurements": {
+      "1280x800": {"scrollHeight": 800, "clientHeight": 800, "fits": true, "primaryStart": [216, 269], "mapRail": [468, 739]},
+      "1440x1000": {"scrollHeight": 1000, "clientHeight": 1000, "fits": true},
+      "1024x768": {"scrollHeight": 768, "clientHeight": 768, "fits": true, "mapLayout": "两列三行"},
+      "820x560": {"scrollHeight": 645, "clientHeight": 560, "fits": false, "mapLayout": "两列三行"},
+      "390x844": {"scrollHeight": 844, "clientHeight": 844, "fits": true, "mapLayout": "竖排路线"}
+    }
+  },
+  "tutorialEntry": {
+    "problem": "practice-v1 在每次正式启程时都会被写下（Game.jsx 的 launch 里 guidesSeen:[...,'practice-v1']），它其实是「别再用开局教程拦我」，不等于「这个人真的练过」。拿它当判据，凡开过局的账号都会被误判成已学过。",
+    "fix": "另立 TUTORIAL_DONE='tutorial-v1'，只有真的走完或跳过教程才写；山门上的入口一直在，只有没练过才加「推荐先学」。",
+    "entry": "首页 .start-actions 里的 .tutorial-entry，点它直接进分步练习（不经出发简介），练完或跳过回山门。",
+    "autoRunUnchanged": "启程时的自动拦截仍只对 isNewcomer 生效——作者说的是「提示」不是「强制」，有进度的玩家不该被硬拉进教学。"
+  },
+  "unit": {
+    "guide": {"file": "game/tests/guide.test.mjs", "passed": 13, "total": 13, "added": "山门教程入口只按 tutorial-v1 判断，不受启程写入的 practice-v1 影响"},
+    "suite": {"passed": 674, "total": 675, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关"}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/Game.jsx", "gameplay/guide.js", "scripts/home-browser.mjs", "tests/guide.test.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "home": {"passed": 29, "total": 29, "was": "16 / 16", "added": ["秘境图有六个章节节点", "节点状态跟随存档（4 可进 · 2 未解锁）", "秘境图竖排成一张地图", "大标题收成一行，让位给地图", "点章节直达出发页并预选该章", "未解锁的秘境点了只提示，不跳转", "山门有新手教程入口", "没练过时带「推荐先学」", "点教程直接进分步练习（不经出发简介）", "教程态标为开局教程", "跳过教程后回到山门", "练过之后不再显示「推荐先学」", "练过之后写下 tutorial-v1"]},
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"errors": 0, "external": 0},
+      "qa-batch3-browser": {"errors": 0, "external": 0},
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0},
+      "release-browser": {"checks": 7, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0}
+    },
+    "keptHooks": ".start-actions .primary-start（qa-batch1 的 10 个视口仍按坐标点它）、.journey-launch、.title-panel、.title-mark、.title-rule i、.home-glow、.chapter-deck .deck-head span:last-child、--deck-progress、.creator-credit 全部保留。"
+  },
+  "builds": {"webp": "23.65 MB", "compatibilityPng": "39.30 MB"},
+  "boundary": "① 秘境图在 ≤790px 高的视口退化为两列三行，路线被去掉；若作者希望短屏也保留路线，需要再压掉标题区或导航。② 820×560 仍要滚动约 85px 才能看到页脚。③ 「新手教程」入口在练过之后仍然保留（文案变「重看一遍」），如果作者希望它彻底消失，改 tutorialOffer 即可。④ 2.2 的「不再显示新手建议」开关只管出发页的建议条，不管山门上的教程入口。⑤ 本次按「2.5 追加修订」处理，没有升版号、没有改更新日志正文——若作者要单独记一版，需要同时改 GAME_VERSION 与更新日志首行。"
+}

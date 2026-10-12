@@ -81,6 +81,22 @@ export function shouldRunTutorial(save,{skip=false,blocked=false}={}){
  return !(save.guidesSeen||[]).includes(TUTORIAL_SEEN);
 }
 
+// 山门教程入口（2.5 追加修订）：2.2 的判据是「全新账号」，于是有进度的玩家永远看不到教程，
+// 入口又埋在出发页底部——作者验收时反馈「找不到教程」。放宽后山门始终给出入口：
+// 没真正走完过的标「推荐先学」，走完的留作可重看的普通入口。
+// 为什么另立一个标记而不是复用 practice-v1：practice-v1 在**每次正式启程**时都会被写下
+// （Game.jsx 的 launch 里 `guidesSeen:[...,'practice-v1']`），它其实是「别再用开局教程拦我」，
+// 不等于「这个人真的练过」。用它当判据，凡开过局的账号都会被误判成已学过。
+export const TUTORIAL_DONE='tutorial-v1';
+export const TUTORIAL_ENTRY='新手教程 · 七步上手';
+export const TUTORIAL_REPLAY='新手教程 · 重看一遍';
+export const TUTORIAL_BADGE='推荐先学';
+export const TUTORIAL_BRIEF='七步：移动 · 闪避 · 集火 · 神雷 · 分守 · 留符 · 挡招。用正式起手数值，不写正式进度。';
+export function tutorialDone(save){return !!save&&(save.guidesSeen||[]).includes(TUTORIAL_DONE);}
+// 山门上的入口一直在；只有「从没真正练过」才加推荐标记。
+export function tutorialOffer(save){return !tutorialDone(save);}
+export function tutorialEntryLabel(save){return tutorialOffer(save)?TUTORIAL_ENTRY:TUTORIAL_REPLAY;}
+
 export const guideKey=id=>'guide-'+id;
 
 // 账号级开关：关闭后不再发一次性提示，也不在出发页显示新手建议。

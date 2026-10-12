@@ -475,3 +475,109 @@ html[data-motion=reduced] *{transition:none!important;animation:none!important}
 /* 设置页分组小标题：把「画面表现」与「辅助与提示」分开，开关归属一眼可辨。 */
 .settings-group{margin:26px 0 4px;padding-bottom:6px;border-bottom:1px solid #81986444;font-size:11px;font-weight:400;letter-spacing:2px;color:#9fb08c}
 .settings-grid section>h3+.settings-group{margin-top:22px}
+
+/* ===== 2.5 追加修订：山门重制（六章秘境图前置 + 新手教程入口）===== */
+/* 背景左三分之一是暗色岩壁、右侧是云海与立绘，所以内容收进左栏不会压住角色。
+   六章从底部细栏搬到这里做成竖向秘境图，标题收成一行，把视觉重量让给地图。 */
+.page-home .home-column{position:relative;z-index:2;flex-shrink:0;display:flex;flex-direction:column;gap:20px;width:min(436px,92%);margin:clamp(12px,3.2vh,44px) 4.5% 20px 6.2%}
+.page-home .title-panel,.page-home .title-panel.has-checkpoint,.page-home .title-panel:has(.recovery-alert){position:relative;inset:auto;flex-shrink:0;width:auto;max-width:none;margin:0;overflow:visible}
+.page-home .title-panel h1{font-size:46px;letter-spacing:11px;line-height:1.12;text-shadow:0 3px 1px #05100a,0 0 40px #ccbb7426}
+.page-home .title-panel h1 span{display:inline;color:#cdb980}
+.page-home .title-panel .eyebrow{margin-bottom:12px;letter-spacing:4px}
+.page-home .title-rule{width:150px;margin:15px 0}
+.page-home .opening{font-size:13px;line-height:1.85;margin:0 0 18px}
+.page-home .home-stats{margin-top:16px;gap:34px}
+.page-home .quick-nav{margin-top:12px}
+
+/* 新手教程入口：山门上一直在；从没真正练过时加「推荐先学」，练过之后留作可重看。 */
+.page-home .tutorial-entry{width:100%;min-height:48px!important;justify-content:flex-start!important;gap:10px;padding:0 16px!important;font-size:14px!important;letter-spacing:1px;border:1px solid #a9bd7d5c!important;background:#0d2a2199!important;color:#dfe6c8!important}
+.page-home .tutorial-entry:hover,.page-home .tutorial-entry:focus-visible{background:#153726cc!important;border-color:#c5ba7d9c!important;color:#f2edd2!important}
+.page-home .tutorial-entry .tutorial-label{flex:1;text-align:left}
+.page-home .tutorial-entry .tutorial-arrow{color:#9caa80}
+.page-home .tutorial-entry .tutorial-tag{flex:0 0 auto;padding:3px 7px;border-radius:2px;font-size:10px;letter-spacing:1px;background:linear-gradient(100deg,#d1be8b,#b3aa72);color:#10261d}
+.page-home .tutorial-entry.is-fresh{border-color:#d3bf8580!important;box-shadow:inset 0 0 0 1px #d3bf8524}
+.page-home .tutorial-note{margin:2px 0 0;font-size:11px;line-height:1.6;color:#7d927f;letter-spacing:.4px}
+
+/* 秘境图：六章节点竖排，一条金色路线串起来，走到的部分亮着。 */
+.page-home .chapter-deck{position:relative;z-index:2;flex-shrink:0;display:flex;flex-direction:column;gap:0;margin:0;padding:16px 0 0;border-top:1px solid #9eac6d2e}
+.page-home .chapter-deck .deck-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 2px;font-size:11px;letter-spacing:2px;color:#8ba98f}
+.page-home .chapter-deck .deck-head span:first-child{color:#cdc69c;letter-spacing:3px}
+.page-home .chapter-deck .deck-head span:last-child{color:#c8bb8c;font-variant-numeric:tabular-nums;white-space:nowrap}
+.page-home .chapter-deck .chapter-rail{display:flex;flex-direction:column;gap:2px;position:relative;inset:auto;margin:10px 0 0;padding:0;grid-template-columns:none;border:0;border-radius:0;background:transparent;backdrop-filter:none}
+.page-home .chapter-deck .chapter-rail:before{content:"";position:absolute;left:23px;top:0;bottom:0;width:1px;height:auto;background:#c9b7791c;box-shadow:none;transition:none}
+.page-home .chapter-deck .chapter-rail:after{content:"";position:absolute;left:23px;top:0;width:1px;height:var(--deck-progress,0);background:linear-gradient(180deg,#8ea75d,#d3bf85);box-shadow:0 0 8px #b6c47a59;transition:height .6s cubic-bezier(.2,.7,.3,1)}
+.page-home .chapter-tile{display:flex;align-items:center;gap:14px;width:100%;min-width:0;min-height:50px;padding:3px 10px 3px 0;border:0;border-radius:0;background:transparent;color:#b9c4aa;text-align:left;position:relative;z-index:1;transition:background .18s,color .18s}
+.page-home .chapter-tile:hover,.page-home .chapter-tile:focus-visible{background:#acc67d12;color:#e8e3c6}
+.page-home .chapter-tile.active:before{display:none}
+.page-home .chapter-tile.locked{opacity:.5}
+.page-home .chapter-tile.locked:hover{opacity:.66}
+.page-home .chapter-node{flex:0 0 48px;height:48px;display:grid;place-items:center;border-radius:50%;font-family:'Songti SC','STSong','SimSun',serif;font-size:20px;line-height:1;color:var(--chapter-color);border:1px solid #9eac6d33;background:radial-gradient(circle at 50% 36%,#1b3d31,#081d16 74%);box-shadow:0 0 0 3px #06141099,inset 0 0 14px #00000059;transition:border-color .18s,box-shadow .18s}
+.page-home .chapter-tile.cleared .chapter-node{border-color:#a9bd7d7a;box-shadow:0 0 0 3px #06141099,0 0 14px #b6c47a2e,inset 0 0 14px #00000059}
+.page-home .chapter-tile.active .chapter-node{border-color:#d9c68a;box-shadow:0 0 0 3px #06141099,0 0 22px #d9c68a52,inset 0 0 14px #00000059}
+.page-home .chapter-tile.locked .chapter-node{color:#6d7f70}
+.page-home .chapter-body{min-width:0;display:grid;gap:3px}
+.page-home .chapter-body small{font-size:10px;letter-spacing:1.4px;color:#718b76}
+.page-home .chapter-tile.cleared .chapter-body small{color:#93ac86}
+.page-home .chapter-body strong{font-size:15px;font-family:'Songti SC','STSong','SimSun',serif;font-weight:400;letter-spacing:2px;color:#d8ddc0;overflow-wrap:anywhere}
+.page-home .chapter-status{margin-left:auto;font-size:14px;color:#a7b98a}
+.page-home .chapter-tile.locked .chapter-status{color:#6d7f70}
+.page-home .deck-hint{margin:10px 0 0;font-size:11px;line-height:1.6;color:#7d927f;letter-spacing:.4px}
+
+@media(max-width:760px){
+ .page-home .home-column{width:min(436px,93%);margin:clamp(10px,2.6vh,30px) 3.5% 18px 5%}
+ .page-home .title-panel h1{font-size:38px;letter-spacing:9px}
+ .page-home .chapter-node{flex-basis:42px;height:42px;font-size:18px}
+ .page-home .chapter-deck .chapter-rail:before,.page-home .chapter-deck .chapter-rail:after{left:20px}
+ .page-home .chapter-tile{min-height:46px;gap:12px}
+}
+
+/* 山门要在一屏里放下标题、教程入口与六章地图，所以每块按最小高度收紧；
+   视口高度不足 700px 时，秘境图改成两列三行，避免地图被推到折线以下。 */
+.page-home .menu-header{padding:14px 4.5% 12px;min-height:0;align-items:center}
+.page-home .home-column{gap:14px;margin:clamp(8px,2vh,26px) 4.5% 16px 6.2%}
+.page-home .title-panel .eyebrow{margin-bottom:6px;font-size:11px;letter-spacing:3px}
+.page-home .title-panel h1{font-size:clamp(32px,3.4vw,44px);letter-spacing:9px;line-height:1.1}
+.page-home .title-rule{width:132px;margin:10px 0}
+.page-home .opening{font-size:12.5px;line-height:1.7;margin:0 0 12px}
+.page-home .start-actions{gap:8px}
+.page-home .tutorial-note{font-size:10.5px;line-height:1.5;margin:0}
+.page-home .quick-nav{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:10px;grid-template-columns:none}
+.page-home .quick-nav .fr-btn{height:auto!important;min-height:28px!important;padding:2px 0!important;border:0!important;font-size:12px!important;letter-spacing:1px}
+.page-home .home-stats{margin-top:10px;gap:24px;align-items:baseline;font-size:10.5px}
+.page-home .home-stats b{display:inline;font-size:15px;margin:0 5px 0 0}
+.page-home .chapter-deck{padding:14px 0 0}
+.page-home .chapter-deck .deck-head{font-size:10.5px}
+.page-home .chapter-deck .chapter-rail{margin:8px 0 0}
+.page-home .chapter-tile{min-height:40px;gap:12px}
+.page-home .chapter-node{flex-basis:40px;height:40px;font-size:17px}
+.page-home .chapter-deck .chapter-rail:before,.page-home .chapter-deck .chapter-rail:after{left:19px}
+.page-home .chapter-body small{font-size:9.5px;letter-spacing:1px}
+.page-home .chapter-body strong{font-size:14px;letter-spacing:1.6px}
+.page-home .deck-hint{font-size:10.5px;margin-top:8px}
+
+@media(max-height:700px){
+ .page-home .chapter-deck .chapter-rail{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+ .page-home .chapter-deck .chapter-rail:before,.page-home .chapter-deck .chapter-rail:after{display:none}
+ .page-home .home-stats{margin-top:8px}
+}
+/* 山门第二遍收紧：导航改三列、去掉说明行、节点再降 2px，让 1280×800 也能一屏放下。 */
+.page-home .quick-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 14px;margin-top:10px}
+.page-home .quick-nav .fr-btn{min-height:26px!important;font-size:11.5px!important}
+.page-home .chapter-tile{min-height:42px}
+.page-home .chapter-node{flex-basis:42px;height:42px;font-size:17px}
+.page-home .chapter-deck{padding:12px 0 0}
+.page-home .chapter-deck .chapter-rail:before,.page-home .chapter-deck .chapter-rail:after{left:20px}
+
+@media(max-height:790px){
+ .page-home .chapter-deck .chapter-rail{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+ .page-home .chapter-deck .chapter-rail:before,.page-home .chapter-deck .chapter-rail:after{display:none}
+}
+/* 第三遍：节点行高之前继承了 24px，白撑出 45px；显式收紧行高与节点直径。 */
+.page-home .chapter-body{line-height:1.25}
+.page-home .chapter-body small,.page-home .chapter-body strong{line-height:1.25}
+.page-home .chapter-tile{min-height:38px;padding:2px 10px 2px 0}
+.page-home .chapter-node{flex-basis:38px;height:38px;font-size:16px}
+.page-home .chapter-deck{padding:10px 0 0}
+.page-home .opening{margin:0 0 10px}
+.page-home .home-stats{margin-top:8px}
+.page-home .menu-header{padding:12px 4.5% 10px}

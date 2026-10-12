@@ -11,7 +11,7 @@ import {normalizeSave} from '../gameplay/save-store.js';
 import {initialSave} from '../gameplay/data.js';
 import {STARTERS} from '../gameplay/starters.js';
 import {DIFFICULTIES} from '../gameplay/data.js';
-import {GUIDE_VERSION,GOAL_BRIEF,NEWCOMER_SEEN,NEWCOMER_SETUP,STARTER_LEVELS,MECHANIC_GUIDES,TUTORIAL_SEEN,TUTORIAL_SKIP,TUTORIAL_NOTE,guideKey,starterLevel,isNewcomer,recommendedSetup,firstSteps,mechanicBriefs,nextGuide,tipsEnabled,shouldRunTutorial} from '../gameplay/guide.js';
+import {GUIDE_VERSION,GOAL_BRIEF,NEWCOMER_SEEN,NEWCOMER_SETUP,STARTER_LEVELS,MECHANIC_GUIDES,TUTORIAL_SEEN,TUTORIAL_SKIP,TUTORIAL_NOTE,TUTORIAL_DONE,TUTORIAL_ENTRY,TUTORIAL_REPLAY,TUTORIAL_BADGE,TUTORIAL_BRIEF,guideKey,starterLevel,isNewcomer,recommendedSetup,firstSteps,mechanicBriefs,nextGuide,tipsEnabled,shouldRunTutorial,tutorialDone,tutorialOffer,tutorialEntryLabel} from '../gameplay/guide.js';
 
 const battle=(options={})=>{const b=new Expedition({seed:'guide',path:0,guideVersion:GUIDE_VERSION,settings:{tips:true},...options});b.start();if(b.cinematic)b.advanceCinematic(true);return b;};
 // Advance one node in place, crossing chapters when a chapter runs out:
@@ -179,4 +179,26 @@ void test('开局教程只拦全新账号，且试剑台与待处理资料都不
  // 引导常量必须是非空文案，界面直接把它们贴出来。
  assert.ok(TUTORIAL_SKIP.length>0&&TUTORIAL_NOTE.length>0);
  assert.equal(typeof shouldRunTutorial(undefined),'boolean','坏入参不能抛异常进战斗循环');
+});
+
+// 山门教程入口：2.2 的判据只认全新账号，有进度的玩家永远看不到教程（作者验收时找不到）。
+// 放宽后山门始终给出入口，只有「从没真正练过」才加推荐标记——判据必须与 practice-v1 分开，
+// 因为 practice-v1 在每次正式启程时都会被写下，拿它当判据会把所有开过局的账号误判成已学过。
+void test('山门教程入口只按 tutorial-v1 判断，不受启程写入的 practice-v1 影响',()=>{
+ assert.equal(TUTORIAL_DONE,'tutorial-v1');
+ assert.notEqual(TUTORIAL_DONE,TUTORIAL_SEEN,'两个标记必须分开，否则开过局就被当成练过');
+ // 开过局（写下了 practice-v1）但没真正练过：仍要给推荐标记。
+ const played={...initialSave(),wins:2,kills:40,guidesSeen:[TUTORIAL_SEEN]};
+ assert.equal(tutorialDone(played),false);
+ assert.equal(tutorialOffer(played),true,'开过局不等于练过');
+ assert.equal(tutorialEntryLabel(played),TUTORIAL_ENTRY);
+ // 真的走完或跳过之后：入口还在，只是不再推荐。
+ const done={...initialSave(),guidesSeen:[TUTORIAL_SEEN,TUTORIAL_DONE]};
+ assert.equal(tutorialDone(done),true);
+ assert.equal(tutorialOffer(done),false);
+ assert.equal(tutorialEntryLabel(done),TUTORIAL_REPLAY);
+ // 坏入参不能抛异常。
+ for(const bad of [null,undefined,{},[]])assert.equal(tutorialOffer(bad),true,String(bad));
+ assert.equal(typeof tutorialEntryLabel(undefined),'string');
+ assert.ok(TUTORIAL_ENTRY.length>0&&TUTORIAL_REPLAY.length>0&&TUTORIAL_BADGE.length>0&&TUTORIAL_BRIEF.length>0);
 });

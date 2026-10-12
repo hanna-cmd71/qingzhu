@@ -4,6 +4,7 @@
 // 2.2 山门重制：核对标题装饰、章节进度、署名与氛围层。只读 DOM，不改存档。
 import {launchBrowser,offlineURL,qaOutput,qaFile} from './browser-runtime.mjs';
 import {initialSave} from '../gameplay/data.js';
+import {TUTORIAL_BADGE,TUTORIAL_DONE} from '../gameplay/guide.js';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
@@ -87,6 +88,53 @@ try{
   await page.waitForSelector('.journey-launch');
   const glow=await page.locator('.home-glow').evaluate(e=>getComputedStyle(e).display);
   check('离开首页后氛围层隐藏',glow==='none',glow);
+  await context.close();
+ }
+
+ // ---------------- 山门重制：秘境图前置 + 新手教程大入口 ----------------
+ {
+  const {page,context}=await open(1280,800,{...initialSave(),unlocked:3,completed:[0,1,2]});
+  const nodes=await page.locator('.chapter-deck .chapter-tile .chapter-node').count();
+  check('秘境图有六个章节节点',nodes===6,String(nodes));
+  const states=await page.locator('.chapter-deck .chapter-tile').evaluateAll(es=>es.map(e=>e.className.replace('chapter-tile','').trim()));
+  check('节点状态跟随存档（4 可进 · 2 未解锁）',states.filter(s=>!s.includes('locked')).length===4&&states.filter(s=>s.includes('locked')).length===2,JSON.stringify(states));
+  const rail=await page.locator('.chapter-deck .chapter-rail').evaluate(e=>getComputedStyle(e).flexDirection);
+  check('秘境图竖排成一张地图',rail==='column',rail);
+  const title=(await page.locator('.title-panel h1').innerText()).trim();
+  check('大标题收成一行，让位给地图',!title.includes('\n')&&title.length>0,JSON.stringify(title));
+
+  // 点已解锁的一章直接进出发页并预选该章；未解锁的只提示。
+  await page.locator('.chapter-deck .chapter-tile').nth(2).click();
+  await page.waitForSelector('.journey-launch');
+  const picked=await page.locator('.mode-row button.selected').allInnerTexts();
+  check('点章节直达出发页并预选该章',picked.some(t=>/冰火险道/.test(t)),JSON.stringify(picked));
+  await page.getByRole('button',{name:/返回山门/}).first().click();
+  await page.waitForSelector('.home-column');
+  await page.locator('.chapter-deck .chapter-tile.locked').first().click();
+  await page.waitForTimeout(200);
+  const toast=await page.locator('.game-toast').count();
+  check('未解锁的秘境点了只提示，不跳转',toast===1&&await page.locator('.home-column').count()===1,String(toast));
+
+  // 教程入口：没真正练过就带「推荐先学」，点进去直接是分步练习。
+  const entry=(await page.locator('.tutorial-entry').innerText()).trim();
+  check('山门有新手教程入口',/新手教程/.test(entry),entry);
+  check('没练过时带「推荐先学」',entry.includes(TUTORIAL_BADGE),entry);
+  await page.locator('.tutorial-entry').click();
+  await page.waitForSelector('.practice-panel',{timeout:20000});
+  const panel=(await page.locator('.practice-panel').innerText()).trim();
+  check('点教程直接进分步练习（不经出发简介）',/1 \/ 5 · 移动避险/.test(panel),panel.slice(0,30));
+  const label=await page.locator('.practice-panel').getAttribute('aria-label');
+  check('教程态标为开局教程',label==='开局教程',String(label));
+
+  // 跳过 -> 回山门，推荐标记消失，并记下 tutorial-v1。
+  await page.getByRole('button',{name:/跳过教程/}).first().click();
+  await page.waitForSelector('.home-column',{timeout:20000});
+  await page.waitForTimeout(400);
+  const after=(await page.locator('.tutorial-entry').innerText()).trim();
+  check('跳过教程后回到山门',await page.locator('.home-column').count()===1,after);
+  check('练过之后不再显示「推荐先学」',!after.includes(TUTORIAL_BADGE),after);
+  const seen=await page.evaluate(()=>JSON.parse(localStorage.getItem('fanren-qingzhu-v1')).guidesSeen);
+  check('练过之后写下 tutorial-v1',seen.includes(TUTORIAL_DONE),JSON.stringify(seen));
   await context.close();
  }
 
