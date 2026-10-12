@@ -1,6 +1,6 @@
 # 青竹剑阵 · 虚天殿篇
 
-**1.0 正式发布** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
+**2.0** · 离线像素御剑同人游戏 · 原创代码 GPL-3.0-only
 
 制作人：bilibili@卡布奇诺ultra
 
@@ -13,6 +13,8 @@
 ## 下载与游玩
 
 **[下载单文件游戏](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0.html)** · **[下载免安装完整包](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/download/v1.0/qingzhu-1.0-player.zip)** · [全部附件与源码](https://github.com/jindx1020-crypto/qingzhu-sword-array/releases/tag/v1.0)
+
+下列附件为最近一次公开发布（**1.0**）；**2.0** 的构建产物见本地 `release/2.0/`，发布步骤见 [GitHub 发布步骤](docs/publishing.md)。
 
 | 下载文件 | 用途 |
 |---|---|
@@ -57,14 +59,14 @@ npm run test:browser
 npm run check:release
 ```
 
-发布附件统一生成在 `release/1.0/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
+发布附件统一生成在 `release/2.0/`，包含可直接分发的免安装玩家包；根目录保留两个 HTML 作为原路径游玩入口。首次安装依赖和浏览器需要网络；生成后的游戏可离线运行。Linux 安装浏览器可能需要 `npx playwright install --with-deps chromium`。
 
 ## 本地目录导航
 
 | 要做的事 | 位置 |
 |---|---|
 | 直接玩游戏 | 根目录两份 HTML，保留原来的游玩路径 |
-| 发给玩家／上传 GitHub Release | `release/1.0/`：游戏、源码包、免安装包和校验清单 |
+| 发给玩家／上传 GitHub Release | `release/2.0/`：游戏、源码包、免安装包和校验清单 |
 | 录制介绍视频 | `release/video/`：介绍 HTML、口播稿和录制说明 |
 | 修改游戏 | `game/`：源码、素材、脚本和测试 |
 | 查说明与验收 | 根游玩说明、更新日志及 `docs/` |
