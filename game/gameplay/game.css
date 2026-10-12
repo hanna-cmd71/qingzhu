@@ -291,6 +291,18 @@ h3{font-size:17px;letter-spacing:1px;font-weight:500;margin:20px 0 14px}.muted{c
 @media(max-width:360px){.battle-header .avatar-frame{display:none}}
 
 .page-journey .journey-frame .journey-grid{overflow:visible;flex:none}.journey-frame>.panel-body-wrap{flex:1;min-height:0}
+/* 2.2 新手建议：只在完全没有正式进度的账号上、且「首次机制提示」开启时出现在出发页正文顶部。 */
+.newcomer-brief{display:flex;flex-direction:column;gap:9px;padding:14px 16px;border:1px solid #8fb0c855;border-left:3px solid #bcd6e8;background:#122b32cc;border-radius:4px;color:#dbe7ee;font-size:14px;line-height:1.7}
+.newcomer-brief .brief-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.newcomer-brief .brief-head strong{font:18px 'Songti SC','SimSun',serif;letter-spacing:2px;color:#eaf6ff}
+.newcomer-brief ul,.newcomer-brief ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.newcomer-brief li{color:#cddce6}
+.newcomer-brief .brief-recommend{margin:0;color:#c9dcea}
+.newcomer-brief .brief-steps li b{margin-right:8px;color:#eaf6ff;font-weight:500}
+.newcomer-brief .brief-mechanics{border-top:1px solid #7fa0b440;padding-top:8px}
+.newcomer-brief .brief-mechanics>summary{cursor:pointer;min-height:32px;display:flex;align-items:center;color:#bcd6e8}
+.newcomer-brief .brief-mechanics ul{margin-top:6px}
+@media(max-width:600px){.newcomer-brief{padding:12px}}
 /* QA batch 2: legible sources, record feedback and explicit reading controls. */
 .result-record{padding:16px;background:#142825;border:1px solid #4b7162;border-radius:10px;margin:16px 0}.result-record h3{margin:0 0 10px}.result-record p{font-size:14px;line-height:1.7;margin:8px 0}.result-record>strong{font-size:18px;color:#cae8b0}.record-save-pending{color:#f1bb86}.record-save-ok{color:#a7d1b9}.record-lock-label{display:inline-block;border:1px solid #597264;padding:2px 7px;border-radius:5px}.record-filters{flex-wrap:wrap}.record-filters label{min-width:140px}.record-history summary,.record-row summary{min-height:44px;padding:10px 0;cursor:pointer}.result-records-dialog{display:flex!important;flex-direction:column;max-height:min(90dvh,900px)}.result-records-dialog>.panel-body-wrap{min-height:0;overflow:auto}
 .stat-ledger{max-width:100%;overflow-x:auto;margin:12px 0}.stat-ledger table{min-width:620px;width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}.stat-ledger td,.stat-ledger th{padding:9px 8px;border:1px solid #39534b;text-align:right}.stat-ledger th:first-child{text-align:left;min-width:132px}.stat-ledger tbody tr:last-child{background:#18382d}.cultivation-anchors{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.cultivation-anchors button{min-height:44px;padding:8px 12px;border:1px solid #49685c;border-radius:6px;background:#142921;color:#c4d7cb}.cultivation-anchors button[aria-pressed=true]{border-color:#b9d79e;background:#264439}.cultivation-grid>section{scroll-margin-top:12px}

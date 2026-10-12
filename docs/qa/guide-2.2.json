@@ -1,0 +1,48 @@
+{
+  "version": "2.2",
+  "scope": "新手引导与可读性（出发页新手建议条、按推荐配置、六起手上手难度、引擎内一次性机制提示、账号级开关）",
+  "rulesUntouched": "只发文字：不消费战斗随机数、不改战斗数值与哈希、不改规则分支；发提示对快照的唯一影响是 notices；未声明 guideVersion 的旧局与试剑台不参与",
+  "unit": {
+    "guide": {"file": "game/tests/guide.test.mjs", "passed": 11, "total": 11},
+    "suite": {"passed": 641, "total": 641}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/guide.js", "gameplay/expedition.js", "gameplay/Game.jsx", "gameplay/data.js", "gameplay/save-store.js", "tests/guide.test.mjs", "scripts/guide-browser.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"checks": 4, "errors": 0, "external": 0},
+      "qa-batch3-browser": {"checks": 11, "fails": 0, "errors": 0, "external": 0},
+      "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0},
+      "guide-browser": {"passed": 20, "total": 20, "pageErrors": 0, "external": 0}
+    },
+    "guideChecks": [
+      "全新账号在出发页看到新手建议条",
+      "目标条目与数据层同源（GOAL_BRIEF.points）",
+      "推荐配置写明起手／难度与理由",
+      "三步上手用当前键位（默认空格／E）",
+      "机制速览列出练习没讲到的系统",
+      "机制速览默认收起，不挤占正文",
+      "六起手都显示上手难度评级（STARTER_LEVELS）",
+      "「按推荐配置」真的改掉起手与难度",
+      "「不再显示」写入存档（live 与 localStorage 均为 welcome-v1）",
+      "重载后不再出现新手建议条",
+      "新局在第一个节点发出且只发一条机制提示（guide-formation）",
+      "提示真的落到战场文案上（combatCues[0].key 与 notices 一致）",
+      "已有胜局的账号不再看到新手建议条",
+      "关闭「首次机制提示」后出发页不显示建议条",
+      "关闭后引擎不再发机制提示",
+      "设置页有「首次机制提示」开关且默认开启",
+      "关闭开关后写入存档（live=false 且 localStorage=false）",
+      "重载后仍保持关闭",
+      "标题带当前版本",
+      "更新日志首行是当前版本"
+    ],
+    "unchangedAssertions": {"battleBandShare390x844": 72.6, "joystickBottomGap390x844": 140}
+  },
+  "builds": {"webp": "23.62 MB", "compatibilityPng": "39.27 MB"},
+  "boundary": "建议条只在完全没有正式进度（无续玩、无胜局、无击杀）时出现，已有存档的玩家看不到；机制提示按节点逐条发，不打断战斗节奏。headless 合成输入不代表真人阅读习惯，提示文案与出现时机仍待作者裁定。"
+}

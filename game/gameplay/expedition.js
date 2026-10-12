@@ -22,6 +22,7 @@ import {sigilFuse} from './sigil-metrics.js';
 import {BALANCE_VERSION,reserveRestoration,phase3Balance,puppetReady,sigilPairFuse,enemyDamageScale} from './balance.js';
 import {WEAPON_VERSION,DEFAULT_WEAPON,weaponIds,weaponById,weaponDeclared} from './weapons.js';
 import {shieldReward,restoreFeedback,recordHit} from './combat-feedback.js';
+import {nextGuide,tipsEnabled} from './guide.js';
 import {validateCommonSnapshot,validateWorldSnapshot} from './snapshot-validation.js';
 import {validateEncounterState} from './encounter-validation.js';
 import {validateSnapshotRelations} from './snapshot-relations.js';
@@ -84,6 +85,12 @@ export class Expedition extends Battle{
   if(this.chapter===0&&this.wave===0&&this.mode!=='training')for(let i=0;i<3;i++)this.spawn(4,{x:440+i*180,y:330,hp:12,...(nodeGrowth(this)?{introReward:true}:{})});
   if(this.mode==='training'&&this.options.guidedPractice)beginPracticeStep(this);
   if(k==='defend'&&!this.notices.has('defend-guide')){this.notices.add('defend-guide');this.cue('defend-guide','阵盘破碎会结束历练；集中处理威胁后，解除集火恢复分守','#ffe2a2',6);}
+  // 2.2 新手引导：每个节点最多发一条尚未看过的机制提示。提示只写进 notices 与战场文案，
+  // 不消费随机数、不改战斗数值；试剑台由分步练习负责，未声明 guideVersion 的旧局不参与。
+  if(this.options.guideVersion>=1&&this.mode!=='training'&&tipsEnabled(this.options.settings)){
+   const guide=nextGuide(this);
+   if(guide){this.notices.add(guide.id);this.cue(guide.id,guide.text,'#cfe3ff',6);}
+  }
   this.toast(this.mode==='training'?'试剑台 · 持续练习，不结算节点；暂停可补满资源':e.name+' · '+e.goal);this.checkpoint();
  }
  clearField(){clearTouchLock(this,true);if(this.directorState)this.directorState.pendingType=null;this.enemies=[];this.shots=[];this.zones=[];this.drops=[];this.fx=[];this.hash.clear();for(const sw of this.swords){sw.target=null;sw.cool=.15;sw.returnReady=false;}}
