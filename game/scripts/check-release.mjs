@@ -11,7 +11,7 @@ import {artifactPath} from './delivery-paths.mjs';
 const read=file=>fs.readFileSync(path.join(root,file)),readArtifact=file=>fs.readFileSync(artifactPath(file));
 const files=releaseFiles(),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const guide=read('青竹剑阵_游玩说明.md').toString();validateGuide(guide);
-const packageJson=JSON.parse(read('game/package.json'));assert.equal(GAME_VERSION,'2.0');assert.equal(packageJson.version,'2.0.0');assert.equal(packageJson.license,'GPL-3.0-only');
+const packageJson=JSON.parse(read('game/package.json'));assert.equal(GAME_VERSION,'2.1');assert.equal(packageJson.version,'2.1.0');assert.equal(packageJson.license,'GPL-3.0-only');
 // 更新日志每版一行、逐版追加，首行即当前版本；正文由作者指定，不擅自升版。
 const changeLines=read('青竹剑阵_更新日志.md').toString().trim().split('\n').map(line=>line.trim()).filter(Boolean);assert.ok(changeLines[0].startsWith(GAME_VERSION+' '),'更新日志首行须是当前版本：'+changeLines[0]);
 const manifest=JSON.parse(readArtifact('release-manifest.json')),archive=unzipSync(readArtifact('青竹剑阵_源码.zip'));

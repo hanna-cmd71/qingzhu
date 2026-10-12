@@ -15,6 +15,7 @@ import {sigilFuse} from './sigil-metrics.js';
 import {WORLD} from './engine.js';
 import {layoutFor} from './encounters.js';
 import {seeded} from './data.js';
+import {shakeDecay,impactFlashAlpha,damageNumberEmphasis} from './feel.js';
 export {ASSETS};
 const TAU=Math.PI*2;
 function load(src){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('素材未能加载'));i.src=src;});}
@@ -43,6 +44,13 @@ const HERO_COLUMNS=4,HERO_ROWS=2,HERO_POSES=7,WEAPON_COLUMNS=4;
 // Every costume sheet is embedded, but only the equipped one is sliced at startup, so a run that
 // never changes costume decodes exactly what it did before costumes existed.
 const heroPoses=image=>Array.from({length:HERO_POSES},(_,i)=>crop(image,(i%HERO_COLUMNS)*image.width/HERO_COLUMNS,Math.floor(i/HERO_COLUMNS)*image.height/HERO_ROWS,image.width/HERO_COLUMNS,image.height/HERO_ROWS,true));
+// 受击白闪：预先烘一张同尺寸白色剪影，命中瞬间叠在普通贴图上，比整体降透明度更像「打中了」。
+// 只用原有像素的轮廓，不引入新素材。
+function whiten(image){
+ const c=canvas(image.width,image.height),ctx=c.getContext('2d');
+ ctx.drawImage(image,0,0);ctx.globalCompositeOperation='source-atop';ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);
+ return c;
+}
 async function ensureSkin(art,skinId,sources){
  const skin=skinById(skinId);
  if(!art.skinPoses[skin.id])art.skinPoses[skin.id]=heroPoses(skin.id===DEFAULT_SKIN?art.skinSheets[DEFAULT_SKIN]:await load(sources[skin.atlas]));
@@ -66,7 +74,7 @@ export async function loadArt(sources=ASSETS){
  const foes=Array.from({length:16},(_,i)=>crop(enemies,(i%4)*enemies.width/4,Math.floor(i/4)*enemies.height/4,enemies.width/4,enemies.height/4));
  const grounds=Array.from({length:6},(_,i)=>crop(maps,(i%3)*maps.width/3,Math.floor(i/3)*maps.height/2,maps.width/3,maps.height/2));
  const grid=(img,cols,rows)=>Array.from({length:cols*rows},(_,i)=>crop(img,i%cols*img.width/cols,Math.floor(i/cols)*img.height/rows,img.width/cols,img.height/rows));
- const art={heroes,weapons,foes,grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
+ const art={heroes,weapons,foes,foesWhite:foes.map(whiten),grounds,hanliPortrait,portraits:grid(portraits,3,2),icons:grid(icons,6,3),props:grid(props,3,3),golden:crop(gold,0,0,gold.width,gold.height,true),menu};
  art.skin=DEFAULT_SKIN;art.skinSheets={[DEFAULT_SKIN]:hero};art.skinPoses={[DEFAULT_SKIN]:heroes};
  return art;
 }
@@ -98,7 +106,9 @@ export class Renderer{
   const view=b&&!settings.preview?battleCamera(w,h,p,{top:this.hudTop||0,bottom:this.hudBottom||0,left:this.hudLeft||0,right:this.hudRight||0}):{x:b?Math.min(0,Math.max(w-WORLD.w*scale,w/2-p.x*scale)):(w-WORLD.w*scale)/2,y:b?Math.min(0,Math.max(h-WORLD.h*scale,h/2-p.y*scale)):(h-WORLD.h*scale)/2,scale};
   scale=view.scale;const ox=view.x,oy=view.y;
   this.camera=view;
-  this.shake*=.85;const sx=settings.shake?Math.sin(seconds*83)*this.shake:0,sy=settings.shake?Math.cos(seconds*109)*this.shake:0;
+  // 按时间衰减而不是按帧，高刷新率屏幕上震动时长才和 60Hz 一致。
+  this.shake=shakeDecay(this.shake,seconds-(this.lastSeconds??seconds));this.lastSeconds=seconds;
+  const sx=settings.shake?Math.sin(seconds*83)*this.shake:0,sy=settings.shake?Math.cos(seconds*109)*this.shake:0;
   this.camera={...view,x:ox+sx,y:oy+sy};ctx.save();ctx.translate(ox+sx,oy+sy);ctx.scale(scale,scale);
   ctx.drawImage(b?this.art.grounds[layoutFor(b).map]:this.art.menu,0,0,WORLD.w,WORLD.h);
   ctx.fillStyle=b?'#05131530':'#07171308';ctx.fillRect(0,0,WORLD.w,WORLD.h);if(b)this.drawFormationMoment(b,seconds);else this.formationMoment=null;
@@ -129,7 +139,7 @@ export class Renderer{
     if(e.boss){ctx.save();ctx.strokeStyle=e.bossType==='xuangu'?'#b9e3c6':'#f0ce92';ctx.lineWidth=3/scale;ctx.beginPath();ctx.ellipse(e.x,e.y+7,e.r+16,13,0,0,TAU);ctx.stroke();ctx.translate(e.x,e.y-height-22);ctx.beginPath();ctx.moveTo(-9,4);ctx.lineTo(-11,-6);ctx.lineTo(-4,-1);ctx.lineTo(0,-10);ctx.lineTo(4,-1);ctx.lineTo(11,-6);ctx.lineTo(9,4);ctx.closePath();ctx.stroke();ctx.restore();}
     if(b.touchLockId===e.id){ctx.save();ctx.strokeStyle='#a5f4d6';ctx.lineWidth=2/scale;ctx.setLineDash([6/scale,3/scale]);ctx.strokeRect(e.x-e.r-8,e.y-e.r-8,(e.r+8)*2,(e.r+8)*2);ctx.restore();}
     if(e.spawn>0){ctx.strokeStyle='#d1987855';ctx.beginPath();ctx.arc(e.x,e.y,20,0,TAU);ctx.stroke();}
-    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582');}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:e.flash>0?.65:1,e.a>Math.PI/2||e.a<-Math.PI/2);
+    if(e.mission==='rune'){sprite(ctx,this.art.props[0],e.x,e.y+10,80,e.untargetable?.4:1);ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillStyle=e.untargetable?'#b1b5b1':'#ffdfa6';ctx.fillText((e.untargetable?'封闭 ':'击破 ')+(e.runeIndex+1)+' · '+Math.ceil(healthFraction(e.hp,e.maxHp)*100)+'%',e.x,e.y-80);drawHealthBar(ctx,e.x-32,e.y-69,64,6,e.hp,e.maxHp,e.untargetable?'#8c9d94':'#e5c582');}else{const flip=e.a>Math.PI/2||e.a<-Math.PI/2;if(e.flash>0){sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,1,flip);sprite(ctx,(this.art.foesWhite||this.art.foes)[e.sprite],e.x,e.y+10+bob,height,impactFlashAlpha(e.flash)*.8,flip);}else sprite(ctx,this.art.foes[e.sprite],e.x,e.y+10+bob,height,e.spawn>0?.5:1,flip);}
     if(b.practice?.step===2&&e.practiceAnchor){ctx.save();ctx.font='bold 22px sans-serif';ctx.fillStyle=e.name.startsWith('B')?'#ffdf90':'#a8e6eb';ctx.textAlign='center';ctx.fillText(e.name[0],e.x,e.y-height-28);ctx.restore();}
     if(['marked','carrier'].includes(e.mission)){ctx.save();ctx.strokeStyle=e.untargetable?'#91a6b4':'#ffdfa0';ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,32,0,TAU);ctx.stroke();ctx.font='bold 14px sans-serif';ctx.fillStyle='#ffdfa0';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y-height-30);drawHealthBar(ctx,e.x-40,e.y-height-19,80,7,e.hp,e.maxHp,e.untargetable?'#91a6b4':'#dcaa5a');ctx.font='12px sans-serif';ctx.fillText(e.untargetable?'护卫未清 · 暂不可伤':Math.ceil(Math.max(0,e.hp))+' / '+Math.ceil(e.maxHp)+' 生命',e.x,e.y-height+5);ctx.restore();}
     const role=ENEMY_ROLES[e.index];if(role&&!e.boss){ctx.save();ctx.fillStyle='#0a172bdd';const font=Math.max(12,10/scale);ctx.fillRect(e.x-font*1.5,e.y-height-font-4,font*3,font+3);ctx.fillStyle=role.color;ctx.font='bold '+font+'px sans-serif';ctx.textAlign='center';ctx.fillText(role.label,e.x,e.y-height-4);if(e.ai==='bulwark'&&e.timer>1.6){ctx.strokeStyle=role.color;ctx.lineWidth=5;ctx.beginPath();ctx.arc(e.x,e.y-12,29,e.a-1,e.a+1);ctx.stroke();}ctx.restore();}
@@ -177,7 +187,7 @@ export class Renderer{
    if(f.kind==='carveBurst'){ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.15-alpha*.3),0,TAU);ctx.stroke();ctx.setLineDash([]);}
    if(f.kind==='fusionSlash'){ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();}
    if(f.kind==='sigilBurst'){ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-alpha*.35),0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}}
-   if(f.kind==='number'){ctx.font=f.key?'bold '+Math.max(17,12/scale)+'px sans-serif':'bold '+Math.max(13,11/scale)+'px monospace';ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
+   if(f.kind==='number'){const emphasis=damageNumberEmphasis(f.total,f.critical),base=f.key?Math.max(17,12/scale):Math.max(13,11/scale);ctx.font='bold '+Math.round(base*emphasis)+'px '+(f.key?'sans-serif':'monospace');ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
    if(f.kind==='line'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);ctx.stroke();}
    if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999));ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(f.x,f.y-210);for(let j=1;j<8;j++)ctx.lineTo(f.x+(r()-.5)*28,f.y-210+j*30);ctx.stroke();}
    if(f.kind==='thunder'){ctx.lineWidth=4;ctx.strokeStyle='#f2dba6';ctx.beginPath();ctx.arc(f.x,f.y,(1-alpha)*900,0,TAU);ctx.stroke();}

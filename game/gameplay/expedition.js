@@ -140,7 +140,10 @@ export class Expedition extends Battle{
  }
  updateEnvironment(_dt){if(this.practice?.step===6||this.encounter.special)return;if(this.waveTime>=this.nextHazard){this.nextHazard+=this.chapter===2?7:11;const variant=this.encounter.variant;const x=variant===0?this.player.x:variant===1?400:880,y=variant===0?this.player.y:480;this.danger(x,y,55,(8+this.chapter*2)*this.difficulty.damage,1.3,1.3,this.chapter===2?'fire':'blast');}}
  kill(e){
-  if(e.dead)return;if(e.boss)this.bossDefeat(e);const boss=e.boss,mission=e.mission,before=this.drops.length;e.boss=false;super.kill(e);e.boss=boss;
+  if(e.dead)return;if(e.boss)this.bossDefeat(e);const boss=e.boss,mission=e.mission,before=this.drops.length;
+  // The base drop math must treat a boss as an ordinary kill, so the flag is cleared for the call.
+  // bossKill keeps the truth readable inside super.kill() and is removed again immediately.
+  e.boss=false;e.bossKill=boss;super.kill(e);delete e.bossKill;e.boss=boss;
   if(nodeGrowth(this)){for(const d of this.drops.slice(before)){d.gold=0;if(d.value)allocateKillXP(this,e,d);else{d.xpBase=0;d.xpBonus=0;}if(this.chapter===0&&this.wave===0&&this.level<4)d.pull=true;}this.drops=this.drops.filter(d=>d.value>0||d.gold>0||d.heal>0);}
   else {const allowance=this.node.xp*.72,unit=this.node.xp/100*Math.max(1,e.cost)*(e.elite?3:1)*(this.level===1?3:1);for(const d of this.drops.slice(before)){d.gold=0;if(this.chapter===0&&this.wave===0&&this.level<4)d.pull=true;if(d.value){d.value=Math.max(0,Math.min(unit,allowance-this.nodeDropXP));this.nodeDropXP+=d.value;}}}
   if(mission==='marked'){this.recordMarked(e);if(this.modeState!=='battle')return;}

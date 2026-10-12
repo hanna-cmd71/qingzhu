@@ -20,6 +20,7 @@ import {feedbackSound} from './presentation-feedback.js';
 import {weaponMods,weaponSwordCap} from './weapons.js';
 import {skillDeclared,skillForPath,skillBlocked,skillReadiness as readSkill,skillPool,skillResourceLabel,SKILL_EMPOWER_WINDOW,SKILL_ALLY_HASTE,SKILL_GUARD_WINDOW,SKILL_GUARD_BONUS,SKILL_GUARD_SHIELD} from './skills.js';
 import {arrayDeclared,normalizeArrayPreset,arrayPresetById,nextArrayPreset,roleFor,ROLE_PARAMS,STROKE,strokeLength,strokeValid,strokePointAt,strokeDamage,INTENT,intentReady,intentLabel,FUSION,fusionDamage,CARVE,carveDamage,carveBlastRadius} from './array.js';
+import {hitstopFor} from './feel.js';
 export {WORLD} from './combat-values.js';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const sumMods=(o,mods)=>{for(const [k,v]of Object.entries(mods))o[k]=(o[k]||0)+v;};
@@ -129,7 +130,7 @@ export class Battle {
   if(!arrayDeclared(this.options)||this.modeState!=='battle'||this.fusion)return false;
   if(!intentReady(this.swordIntent||0)){this.toastLimited('intent-short','剑意未满 · '+intentLabel(this.swordIntent||0));return false;}
   this.swordIntent=0;this.sweep=null;this.stroke=null;this.fusion={until:this.time+FUSION.duration,angle:0,tick:0};
-  this.cue('fusion','剑意合体 · 七十二剑凝为一柄','#d6ecff',2.6);this.toast('剑意合体 · 凝锋横扫');this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:8});
+  this.cue('fusion','剑意合体 · 七十二剑凝为一柄','#d6ecff',2.6);this.toast('剑意合体 · 凝锋横扫');this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:8});this.impact('fusion');
   return true;
  }
  // 御剑笔画: the pointer path is recorded here, then flown at a fixed arc-length speed so the sweep
@@ -289,7 +290,7 @@ export class Battle {
    if(e.burn>0)d*=1+(s.burnThunder||0);if(e.mark)d*=1+Math.min(.6,e.mark*.06);
    this.hit(e,d*(this.thunderMultiplier?.(e)??1),'thunder',false);if(this.modeState!=='battle')break;e.stun=e.boss?.35:1.1;this.fx.push({kind:'bolt',x:e.x,y:e.y,ttl:.45,max:.45,color:'#ffeaae',seed:this.rng()});
   }
-  this.fx.push({kind:'thunder',x:p.x,y:p.y,ttl:.8,max:.8});this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:10});
+  this.fx.push({kind:'thunder',x:p.x,y:p.y,ttl:.8,max:.8});this.emit({type:'sound',name:'thunder'});this.emit({type:'shake',value:10});this.impact('thunder');
  }
  itemReadiness(index){return consumableState(this,index);}
  cue(key,text,color,duration){cue(this,key,text,color,duration);}
@@ -324,7 +325,7 @@ export class Battle {
   const lost=hpBefore-p.hp,revived=p.hp<=0&&!!s.revive&&!p.revived;if(revived){p.revived=true;p.hp=p.maxHp*.25;p.invuln=3;}
   recordHit(this,{...(origin||this.attackOrigin||{name:hazard?'场地危险':'近身来袭'}),kind:origin?.kind||(hazard?'险地':'近身'),shield:absorbed,hp:lost,remaining:p.hp,outcome:revived?'revived':p.hp<=0?'defeated':'hurt',recovered:revived?p.hp:0});
   this.fx.push({kind:'number',x:p.x,y:p.y-36,text:'−'+Math.ceil(d+absorbed),color:'#ffac94',ttl:.8,max:.8});
-  this.emit({type:'sound',name:'hurt'});this.emit({type:'shake',value:4});
+  this.emit({type:'sound',name:'hurt'});this.emit({type:'shake',value:4});this.impact('hurt');
   if(revived)this.toast('守心 · 化解致命伤，恢复 '+Number(p.hp.toFixed(1))+' 生命');else if(p.hp<=0){this.finish(false,'生命耗尽');return;}
   if(s.thorns)this.explode(p.x,p.y,95,25+this.level*1.4,'fire');
  }
@@ -352,6 +353,8 @@ export class Battle {
   this.boss=e;this.toast(ch.boss+' · '+(ch.bossType==='seal'?'破除禁制':'强敌现身'));this.emit({type:'sound',name:'boss'});
  }
  pulse(x,y,color,r=25){if(this.fx.length<250)this.fx.push({kind:'ring',x,y,color,r,ttl:.4,max:.4});}
+ // 2.1 手感：顿帧是纯表现事件，由渲染循环消费。它不写快照、不消费随机数，也不改变任何一次 update() 的结果。
+ impact(name){const value=hitstopFor(name);if(value>0)this.emit({type:'hitstop',impact:name,value});}
  explode(x,y,r,damage,source,fireKind='other'){const phase=this.modeState;this.pulse(x,y,source==='fire'?'#ecb373':'#e9d293',r);for(const e of (phase3Balance(this)&&source==='fire'&&['sigil','echo'].includes(fireKind)?sigilTargets(this,{x,y,r}):this.near(x,y,r))){this.hit(e,damage,source,false,fireKind);if(this.modeState!==phase||this.finished)break;}}
  hit(e,base,source='sword',canCrit=true,fireKind='other'){
   if(source==='fire'&&(!Object.hasOwn(FIRE_LABELS,fireKind)||fireKind==='history'))throw Error('符火来源无效');
@@ -376,13 +379,13 @@ export class Battle {
    if(crit&&this.comboSet.has('swordThunder')&&this.rng()<.25){d+=25+this.level;this.fx.push({kind:'bolt',x:e.x,y:e.y,ttl:.2,max:.2,color:'#eed396',seed:this.rng()});}
   }
   if(e.bossType==='xuangu'&&this.bossEnding>0)d=0;
-  if(e.boss&&!this.bossEnding){const next=e.maxHp*(e.phase===0?.66:e.phase===1?.33:0);if(e.hp-d<=next&&e.phase<2){d=Math.max(0,e.hp-next);e.phase++;e.phaseShield=2.6;e.timer=.15;this.toast(e.name+' · 护势变化，准备避招');}}const effective=this.rulesVersion>=2?Math.min(Math.max(0,e.hp),Math.max(0,d)):d;e.hp-=d;e.flash=.1;this.damageSources[source]=(this.damageSources[source]||0)+effective;if(source==='fire')this.fireBreakdown[fireKind]+=effective;observeSigil(this,e,source,fireKind,Math.min(effective,hpBefore));
+  if(e.boss&&!this.bossEnding){const next=e.maxHp*(e.phase===0?.66:e.phase===1?.33:0);if(e.hp-d<=next&&e.phase<2){d=Math.max(0,e.hp-next);e.phase++;e.phaseShield=2.6;e.timer=.15;this.toast(e.name+' · 护势变化，准备避招');this.impact('bossPhase');}}const effective=this.rulesVersion>=2?Math.min(Math.max(0,e.hp),Math.max(0,d)):d;e.hp-=d;e.flash=.1;this.damageSources[source]=(this.damageSources[source]||0)+effective;if(source==='fire')this.fireBreakdown[fireKind]+=effective;observeSigil(this,e,source,fireKind,Math.min(effective,hpBefore));
   if(effective>0&&source==='insect'&&s.metaInsectAssist)e.lastInsectHit=this.time;
   if(effective>0&&source==='sword')this.onSwordHit(e);
   if(effective>0&&empowered)this.cue('focus',s.metaSwordMomentum?'聚锋触发 · 飞剑攻速 +12%':'四击聚锋','#d8ffe9');
   const key=empowered?'聚锋':source==='fire'&&['sigil','echo','line'].includes(fireKind)?FIRE_LABELS[fireKind]:source==='guard'?'反击':null;
   if(effective>0){const sound=empowered?'focus':source==='guard'?'counter':source==='fire'&&['sigil','echo','line'].includes(fireKind)?fireKind:crit?'critical':null;if(sound)this.feedbackSound(sound);}
-  if(effective>0&&key&&this.fx.length<180&&this.time>=(this.numberTimers[key]??-1)){this.numberTimers[key]=this.time+.3;const offset=this.fx.filter(f=>f.key&&Math.abs(f.x-e.x)<28&&f.ttl>0).length%3;this.fx.push({kind:'number',key:true,x:e.x,y:e.y-34-offset*18,text:key+' '+Math.ceil(effective),color:source==='guard'?'#9edbff':fireKind==='echo'?'#dbb4ff':fireKind==='sigil'?'#ffad78':fireKind==='line'?'#f3a4ce':'#d8ffe9',ttl:.85,max:.85});}
+  if(effective>0&&key&&this.fx.length<180&&this.time>=(this.numberTimers[key]??-1)){this.numberTimers[key]=this.time+.3;const offset=this.fx.filter(f=>f.key&&Math.abs(f.x-e.x)<28&&f.ttl>0).length%3;this.fx.push({kind:'number',key:true,total:effective,x:e.x,y:e.y-34-offset*18,text:key+' '+Math.ceil(effective),color:source==='guard'?'#9edbff':fireKind==='echo'?'#dbb4ff':fireKind==='sigil'?'#ffad78':fireKind==='line'?'#f3a4ce':'#d8ffe9',ttl:.85,max:.85});}
   if(effective>0&&(crit||e.boss||this.options.settings?.numbers)){const group=crit&&this.fx.find(f=>f.critical&&f.targetId===e.id&&this.time-f.createdAt<.08&&f.ttl>0);if(group){group.total+=effective;group.count++;group.text='暴击合计 '+Math.ceil(group.total)+' · '+group.count+'次';}else if(this.fx.length<180){const offset=Math.min(5,this.fx.filter(f=>f.kind==='number'&&Math.abs(f.x-e.x)<30&&f.ttl>0).length);this.fx.push({kind:'number',critical:!!crit,targetId:e.id,createdAt:this.time,total:effective,count:1,x:e.x+(offset%2?12:-12),y:e.y-18-offset*16,text:Math.ceil(effective)+(crit?'!':''),color:crit?'#f8dfa3':'#c6eadc',ttl:.55,max:.55});}}
   if(e.hp<=0){e.lastDamageSource=source;if(e.bossType==='xuangu'){e.hp=1;this.bossEnding=13;this.toast('圣火将失控 · 躲避落焰，寻找脱身窗口');return;}this.kill(e);}
   return {empowered};
@@ -391,6 +394,9 @@ export class Battle {
  kill(e){
   if(e.dead)return;if(e.boss)this.bossDefeat(e);e.dead=true;e.hp=0;this.kills++;this.player.lastKill=this.time;this.feedbackSound('kill',.1);const s=this.stats;
   this.pulse(e.x,e.y,e.family==='阴魂'?'#a791d3':'#afc9a1',e.r);
+  // 首领阵亡由 boss-defeat 事件负责更长的顿帧，这里只给普通击杀，避免同一瞬间叠加两次冻结。
+  // Expedition 在 super.kill() 期间把 e.boss 临时置 false，真实值记在 e.bossKill 上。
+  if(!e.boss&&!e.bossKill)this.impact('kill');
   if(!e.noDrop&&e.mission!=='rune'&&(s.metaInsectRecovery&&e.lastDamageSource==='insect'||s.metaInsectAssist&&Number.isFinite(e.lastInsectHit)&&this.time-e.lastInsectHit<=3)){if(s.metaInsectAssist&&this.player.hp>=this.player.maxHp)this.player.metaInsectKills=0;else this.player.metaInsectKills=(this.player.metaInsectKills||0)+1;if(this.player.metaInsectKills>0&&this.player.metaInsectKills%8===0){const healed=Math.min(3,Math.max(0,this.player.maxHp-this.player.hp));this.player.hp+=healed;if(healed>0)this.cue('recovery','群息回养 · 生命 +'+Number(healed.toFixed(1)),'#bae5b4');if(healed>0)this.fx.push({kind:'number',x:this.player.x,y:this.player.y-38,text:'+'+Number(healed.toFixed(2)),color:'#b2ddae',ttl:.8,max:.8});}}
   if(!e.noDrop){const value=Math.max(1,e.cost)*(.9+.12*(this.time/60)+.015*(this.time/60)**2)*(e.elite?4:1)*(e.boss?3:1)*this.difficulty.xp*.48*(this.level===1?4:1)*(this.time>600?.76:1);
    this.drops.push({x:e.x,y:e.y,value,gold:e.elite?8:1,life:0});
@@ -595,7 +601,8 @@ export class Battle {
   this.shots=this.shots.filter(b=>b.ttl>0&&b.x>-20&&b.y>-20&&b.x<WORLD.w+20&&b.y<WORLD.h+20);
   for(const z of this.zones){z.ttl-=dt;z.warn-=dt;if(z.arming!==undefined){const wasArming=z.arming>0;z.arming=Math.max(0,z.arming-dt);if(!z.twin&&!z.fired&&(wasArming||z.arming===0)){const live=this.sigilLiveTargets(z);if(wasArming&&z.armedTargets!==undefined)z.armedTargets=Math.max(z.armedTargets,live.length);if(z.arming===0){if(live.length)z.warn=0;else if(wasArming&&z.armedTargets>0&&this.kills>z.killsAtArming)z.cleared=true;}}}if(z.warn>0)continue;
    if(z.carve)continue; // 剑气刻痕 is inert until a sword hit detonates it (see resolveCarves)
-   if(z.sigil){if(!z.fired){z.fired=true;this.fx.push({kind:'sigilBurst',x:z.x,y:z.y,r:z.r,color:z.metaEcho?'#d4afff':'#ffbd78',ttl:.65,max:.65});const record=beginSigil(this,z);this.sigilObservation=record;try{this.explode(z.x,z.y,z.r,z.damage,'fire',record.kind);}finally{this.sigilObservation=null;}this.emit({type:'sigil',record:{...record}});if(record.hits||record.blocked){this.cue(record.kind,(z.metaEcho?'复燃回响':'起点符阵')+' · '+(record.hits?'命中 '+record.hits+' · 击杀 '+record.kills:'被护势／不可伤阻挡 '+record.blocked),z.metaEcho?'#d4afff':'#ffbd78');}else if(!z.metaEcho){if(record.cleared)this.cue('sigil-cleared','引敌目标已被清场 · 不计纯落空','#c9c4ae');else if(emptySigilStreak(this.sigilStats)===3)this.cue('sigil-tip','把追兵引入符阵；靠近后向外闪避','#c9c4ae');}if(this.modeState!=='battle')return;this.onSigilDetonate?.(z);z.ttl=.28;}continue;}
+   if(z.sigil){if(!z.fired){z.fired=true;this.fx.push({kind:'sigilBurst',x:z.x,y:z.y,r:z.r,color:z.metaEcho?'#d4afff':'#ffbd78',ttl:.65,max:.65});const record=beginSigil(this,z);this.sigilObservation=record;try{this.explode(z.x,z.y,z.r,z.damage,'fire',record.kind);}finally{this.sigilObservation=null;}this.emit({type:'sigil',record:{...record}});if(record.hits)this.impact('sigil');
+   if(record.hits||record.blocked){this.cue(record.kind,(z.metaEcho?'复燃回响':'起点符阵')+' · '+(record.hits?'命中 '+record.hits+' · 击杀 '+record.kills:'被护势／不可伤阻挡 '+record.blocked),z.metaEcho?'#d4afff':'#ffbd78');}else if(!z.metaEcho){if(record.cleared)this.cue('sigil-cleared','引敌目标已被清场 · 不计纯落空','#c9c4ae');else if(emptySigilStreak(this.sigilStats)===3)this.cue('sigil-tip','把追兵引入符阵；靠近后向外闪避','#c9c4ae');}if(this.modeState!=='battle')return;this.onSigilDetonate?.(z);z.ttl=.28;}continue;}
    if(z.friendly){for(const e of this.near(z.x,z.y,z.r)){if(z.kind==='ward'){applySlow(e,'ward',.5,.4);}else{this.hit(e,z.damage*dt,'fire',false,z.fireKind||'other');if(this.modeState!=='battle')return;if(z.slow){applySlow(e,'ember',z.slow,.4);}}}if(z.kind==='ward'&&dist(z,p)<z.r&&p.shield<p.maxShield)p.shield=Math.min(p.maxShield,p.shield+dt*(s.wardShield||0));}
    else if(dist(z,p)<z.r){if(z.kind==='web'||z.kind==='frost')p.webSlow=.4;else this.hitPlayer(z.damage,true,{...(z.origin||{name:'场地危险'}),x:z.x,y:z.y,kind:'险地'});}
   }

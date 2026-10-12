@@ -1,0 +1,36 @@
+{
+  "version": "2.1",
+  "scope": "手感与战斗打磨（表现层：顿帧、受击白闪、震动按时间衰减、伤害数字分级、音效层次）",
+  "rulesUntouched": "不消费战斗随机数、不进快照、不改任何规则分支；固定策略平衡模拟不经过渲染循环",
+  "unit": {
+    "feel": {"file": "game/tests/feel.test.mjs", "passed": 10, "total": 10},
+    "suite": {"passed": 630, "total": 630}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/feel.js", "gameplay/engine.js", "gameplay/expedition.js", "gameplay/Game.jsx", "gameplay/art.js", "gameplay/audio.js", "gameplay/data.js", "gameplay/save-store.js", "tests/feel.test.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"checks": 4, "errors": 0},
+      "qa-batch3-browser": {"checks": 11, "errors": 0},
+      "release-browser": {"checks": 7, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0},
+      "feel-browser": {"passed": 8, "total": 8, "pageErrors": 0}
+    },
+    "feelChecks": [
+      "击杀真的请求了一次顿帧（freeze.left = 0.045）",
+      "设置页有「命中顿帧」开关",
+      "顿帧说明来自同一张表",
+      "关闭开关后写入存档（live=false 且 localStorage=false）",
+      "重载后仍保持关闭",
+      "关闭后击杀不再请求顿帧（freeze.left = 0）",
+      "标题带当前版本",
+      "更新日志首行是当前版本"
+    ],
+    "unchangedAssertions": {"battleBandShare390x844": 72.6, "joystickBottomGap390x844": 140}
+  },
+  "builds": {"webp": "23.61 MB", "compatibilityPng": "39.27 MB"},
+  "boundary": "顿帧会短暂停止画面推进，这是它的作用；浏览器内每真实秒的战斗推进因此略少于无顿帧时。headless 合成输入与 tap() 不等于真机手感，顿帧长短与音效配比仍待作者裁定。"
+}
