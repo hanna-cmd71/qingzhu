@@ -10,7 +10,7 @@ import {GAME_VERSION} from '../gameplay/version.js';
 import {releaseDir,artifactPath} from './delivery-paths.mjs';
 const folder='青竹剑阵_'+GAME_VERSION+'_免安装版';
 const readme=`青竹剑阵 · 虚天殿篇 ${GAME_VERSION}
-制作人：bilibili@卡布奇诺ultra
+制作人：hanner-cmd71
 
 【开始游戏】
 1. 将整个压缩包解压到一个固定文件夹。

@@ -1,0 +1,44 @@
+{
+  "version": "2.2",
+  "scope": "山门重制（标题卷轴装饰、章节进度、氛围层、主按钮流光、入场淡入）与制作人署名更新为 hanner-cmd71",
+  "rulesUntouched": "改动全部在表现层与文案：不动任何规则分支、不消费战斗随机数、不改快照字段与战斗哈希。首页只读 save 的 unlocked/completed/checkpoint 用于显示。",
+  "credit": {
+    "new": "制作人：hanner-cmd71",
+    "changed": ["game/gameplay/Game.jsx 页脚", "README.md", "青竹剑阵_游玩说明.md", "AGENTS.md", "docs/compatibility.md", "docs/licensing.md", "docs/v2.0-requirements.md", "game/README.md", "game/scripts/package-player.mjs（玩家包说明）", "game/scripts/release-browser.mjs（断言）"],
+    "leftAsIs": ["release/ 下 1.0 历史产物", "docs/presentation/ 视频素材与口播稿", "各文件 SPDX 头与 Copyright 行的原作者声明"],
+    "note": "版权声明（Copyright / SPDX）与制作人署名是两回事，本次只改署名，原作者版权行全部保留。"
+  },
+  "unit": {
+    "suite": {"passed": 641, "total": 642, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/Game.jsx", "gameplay/game.css", "tests/guide.test.mjs", "scripts/qa-batch1-browser.mjs", "scripts/release-browser.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"checks": 4, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch3-browser": {"checks": 11, "fails": 0, "errors": 0, "external": 0},
+      "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0},
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0},
+      "home-browser": {"passed": 16, "total": 16, "pageErrors": 0, "external": 0}
+    },
+    "homeChecks": [
+      "标题块存在且分隔线带菱形节点（实测 9.9×9.9）",
+      "宽屏显示卷轴竖线（display=block，高 494）",
+      "首页显示氛围层",
+      "章节进度文案跟随存档（unlocked=3 → 「已解锁 4 / 6」）",
+      "进度条长度按解锁数计算（67%）",
+      "页脚署名为「制作人：hanner-cmd71」",
+      "全通文案（unlocked=5 → 「全境已通」，进度 100%）",
+      "390×844 与 320×280 隐藏卷轴竖线",
+      "390×844 与 320×280 主按钮仍完整存在（342×53 / 272×53）",
+      "离开首页后氛围层隐藏"
+    ],
+    "unchangedAssertions": {"battleBandShare390x844": 72.6, "joystickBottomGap390x844": 140}
+  },
+  "builds": {"webp": "23.62 MB", "compatibilityPng": "39.28 MB"},
+  "boundary": "入场淡入只用 opacity、不做位移，避免影响验收脚本按坐标点击；并尊重 prefers-reduced-motion。背景图仍是既有 menu-backdrop，未替换美术。真机构图与配色取舍仍待作者裁定。"
+}

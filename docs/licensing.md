@@ -6,7 +6,7 @@
 
 Copyright (C) 2026 bilibili@卡布奇诺ultra
 
-制作人：bilibili@卡布奇诺ultra
+制作人：hanner-cmd71
 
 原创程序代码依 GNU General Public License version 3 only（GPL-3.0-only）发布。你可以在许可条件下使用、修改和分发代码；本程序不提供担保。许可原文随源码包提供，完整条款见本文后附文本。
 

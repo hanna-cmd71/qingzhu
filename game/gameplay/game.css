@@ -266,6 +266,39 @@ h3{font-size:17px;letter-spacing:1px;font-weight:500;margin:20px 0 14px}.muted{c
 }
 @media(max-width:520px){.page-home .chapter-rail{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* 2.2 山门重制：雾光层、卷轴标题、章节进度与入场淡入。全部只改表现，不碰规则、存档与战斗。 */
+.home-glow{display:none}
+.page-home .home-glow{display:block;position:fixed;inset:var(--game-safe-top) var(--game-safe-right) var(--game-safe-bottom) var(--game-safe-left);z-index:1;pointer-events:none;
+ background:radial-gradient(54% 42% at 80% 40%,#f2ca7d26 0%,#f2ca7d0a 46%,transparent 76%),
+            linear-gradient(90deg,#03130e5c 0%,#03130e21 32%,transparent 56%)}
+.page-home .title-panel:before{content:"";position:absolute;inset:-34px -44px -34px -34px;z-index:-1;pointer-events:none;background:radial-gradient(120% 96% at -4% 32%,#071f18b8 0%,#071f1833 54%,transparent 84%)}
+.page-home .title-mark{position:absolute;left:-20px;top:8px;bottom:10px;width:2px;opacity:.6;background:linear-gradient(180deg,transparent,#c9b779 12%,#c9b779 66%,transparent)}
+.page-home .title-mark:before{content:"";position:absolute;left:-2px;top:-2px;width:6px;height:6px;transform:rotate(45deg);background:#d9c68a}
+.page-home .title-rule{position:relative;display:flex;align-items:center;width:196px}
+.page-home .title-rule i{position:absolute;left:0;top:50%;width:7px;height:7px;transform:translate(-50%,-50%) rotate(45deg);background:#d9c68a;box-shadow:0 0 12px #d9c68a73}
+.page-home .title-panel h1{text-shadow:0 3px 1px #05100a,0 0 46px #ccbb742e}
+.page-home .primary-start{position:relative;overflow:hidden}
+.page-home .primary-start:after{content:"";position:absolute;inset:0;pointer-events:none;transform:translateX(-130%);transition:transform .6s ease;background:linear-gradient(104deg,transparent 32%,#ffffff66 49%,transparent 66%)}
+.page-home .primary-start:hover:after,.page-home .primary-start:focus-visible:after{transform:translateX(130%)}
+.page-home .quick-nav .fr-btn{position:relative;transition:color .18s,padding-left .2s}
+.page-home .quick-nav .fr-btn:before{content:"";position:absolute;left:0;top:50%;height:1px;width:0;background:#c4b575;transition:width .2s}
+.page-home .quick-nav .fr-btn:hover,.page-home .quick-nav .fr-btn:focus-visible{color:#e8e1c3}
+.page-home .quick-nav .fr-btn:hover:before,.page-home .quick-nav .fr-btn:focus-visible:before{width:8px}
+.page-home .chapter-deck{position:relative;z-index:2;flex-shrink:0;display:flex;flex-direction:column;gap:9px;margin:auto 4.5% 18px}
+.page-home .deck-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 3px;font-size:11px;letter-spacing:2px;color:#8ba98f}
+.page-home .deck-head span:last-child{color:#c8bb8c;font-variant-numeric:tabular-nums;white-space:nowrap}
+.page-home .chapter-deck .chapter-rail{margin:0;position:relative}
+.page-home .chapter-deck .chapter-rail:before{content:"";position:absolute;left:0;top:-1px;height:2px;width:var(--deck-progress,0%);transition:width .6s cubic-bezier(.2,.7,.3,1);background:linear-gradient(90deg,#8ea75d,#d3bf85);box-shadow:0 0 10px #b6c47a59}
+.page-home .chapter-tile:not(.locked):hover{background:#acc67d12}
+.page-home .footer-version{color:#8aa38c;letter-spacing:2px}
+@keyframes homeFade{from{opacity:0}to{opacity:1}}
+.page-home .title-panel,.page-home .chapter-deck,.page-home .menu-footer,.page-home .scene-caption{animation:homeFade .5s ease both}
+.page-home .title-panel{animation-delay:.05s}.page-home .chapter-deck{animation-delay:.18s}.page-home .menu-footer{animation-delay:.26s}
+@media(min-width:761px){.page-home .home-stats{gap:0}.page-home .home-stats span{padding:0 26px;border-left:1px solid #80977833}.page-home .home-stats span:first-child{padding-left:0;border-left:0}}
+@media(max-width:760px){.page-home .title-mark{display:none}.page-home .title-panel:before{inset:-14px -14px -12px -14px}}
+@media(max-width:520px){.page-home .deck-head{font-size:10px;letter-spacing:1px}}
+@media(prefers-reduced-motion:reduce){.page-home .title-panel,.page-home .chapter-deck,.page-home .menu-footer,.page-home .scene-caption{animation:none}.page-home .primary-start:after{display:none}}
+
 .loading-screen>p{max-width:420px;padding:0 20px;line-height:1.7}.loading-screen>.fr-btn{margin-top:8px}
 
 /* QA batch A: body scroll and action dock share finite space, including small windows. */
