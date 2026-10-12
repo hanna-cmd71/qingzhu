@@ -1,0 +1,60 @@
+{
+  "version": "2.3",
+  "scope": "表现与美术品质（表现层：特效分层加色辉光、冲击火花、飞剑尾迹与御剑笔画辉光、剑意合体外发光、冲刺残影、布阵柔光与首领消散外发光；设置页「飞剑尾迹」档位扩为「画面特效」）",
+  "rulesUntouched": "不消费战斗随机数、不进快照、不改任何规则分支；每个特效的数据形状与几何位置与 2.2 逐字节一致，只有绘制层数变化。固定策略平衡模拟不经过渲染循环。",
+  "singleSource": {
+    "file": "game/gameplay/effects.js",
+    "exports": ["EFFECTS_VERSION", "GLOW", "FULL", "LITE", "effectTier", "additiveEnabled", "glowFor", "glowAlpha", "sparkCount", "sparkAt", "effectsSummary"],
+    "note": "辉光层宽、外发光不透明度、火花数量与画质档判据都出自这张表；设置页说明由 effectsSummary() 生成，界面文案不会和实际画面脱节。"
+  },
+  "glowTable": {
+    "ring": {"outer": 7, "outerAlpha": 0.3, "sparks": 0},
+    "carveBurst": {"outer": 9, "outerAlpha": 0.26, "sparks": 6},
+    "fusionSlash": {"outer": 16, "outerAlpha": 0.28, "sparks": 10},
+    "sigilBurst": {"outer": 10, "outerAlpha": 0.26, "sparks": 8},
+    "thunder": {"outer": 12, "outerAlpha": 0.26, "sparks": 0},
+    "bolt": {"outer": 9, "outerAlpha": 0.24, "sparks": 0},
+    "line": {"outer": 6, "outerAlpha": 0.22, "sparks": 0}
+  },
+  "unit": {
+    "effects": {"file": "game/tests/effects.test.mjs", "passed": 7, "total": 7},
+    "suite": {"passed": 648, "total": 649, "knownEnvironmentFailure": "qa-batch1.test.mjs A0：本会话 spawnSync 对所有可执行文件（含 cmd.exe）返回 EBUSY，属环境限制，与改动无关；该用例与 expedition-simulate.mjs 均未改动"}
+  },
+  "lint": {"diagnostics": 0, "files": ["gameplay/effects.js", "gameplay/art.js", "gameplay/Game.jsx", "tests/effects.test.mjs"]},
+  "browser": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE=<system chrome> QINGZHU_ASSET_PROFILE=<optimized|png> node scripts/<batch>.mjs",
+    "profiles": ["optimized", "png"],
+    "batches": {
+      "qa-batch1-browser": {"views": 10, "checks": 13, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch2-browser": {"checks": 4, "fails": 0, "errors": 0, "external": 0},
+      "qa-batch3-browser": {"checks": 11, "fails": 0, "errors": 0, "external": 0},
+      "release-browser": {"checks": 7, "fails": 0, "errors": 0, "external": 0},
+      "release-experience-browser": {"passed": 24, "total": 24, "pageErrors": 0},
+      "skill-ui-browser": {"passed": 35, "total": 35, "pageErrors": 0},
+      "feel-browser": {"passed": 8, "total": 8, "pageErrors": 0, "external": 0},
+      "guide-browser": {"passed": 29, "total": 29, "pageErrors": 0, "external": 0},
+      "home-browser": {"passed": 16, "total": 16, "pageErrors": 0, "external": 0},
+      "effects-browser": {"passed": 10, "total": 10, "pageErrors": 0, "external": 0}
+    },
+    "effectsChecks": [
+      "完整档下特效真的走了加色混合（lighterStrokes = 7，正好对应表里 7 类特效）",
+      "精简档下同一套特效一笔加色都不画（lighterStrokes = 0，lighterFills = 0）",
+      "精简档只是去掉光晕，特效本身照常描边（描边总数 18 → 11，差额 7 就是光晕层）",
+      "设置页有「画面特效」档位",
+      "画面特效说明与数据同源（读到 7 类）",
+      "切到精简后写入存档（live = 0 且 localStorage = 0，按钮文案 完整 → 精简）",
+      "重载后仍保持精简",
+      "重载后精简档依然不画加色",
+      "标题带当前版本",
+      "更新日志首行是当前版本"
+    ],
+    "measurements": {
+      "fullTier": {"lighterStrokes": 7, "lighterFills": 0, "strokes": 18},
+      "liteTier": {"lighterStrokes": 0, "lighterFills": 0, "strokes": 11},
+      "probeNote": "页面侧在同一个同步调用里清零计数并重画一帧，所以测到的正好是这一次 draw；测试前清空飞剑、御剑笔画与剑意合体，避免它们的尾迹混进计数。"
+    },
+    "unchangedAssertions": {"battleBandShare390x844": "≥59%（相机与触屏布局代码未改动）", "joystickBottomGap390x844": "≤180px（未破）"}
+  },
+  "builds": {"webp": "23.63 MB", "compatibilityPng": "39.28 MB"},
+  "boundary": "「完整」档下比 2.2 每帧多画一层描边（实测 18 笔中 7 笔是光晕），密集场面会略增填充率，因此挂在「画面特效」开关下；选「精简」时像素与 2.2 完全一致。火花数量按特效分级、上限 16，不随伤害量增长。headless 合成画面不能替代真机观感，辉光强度与配色取舍仍待作者裁定。"
+}

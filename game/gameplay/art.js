@@ -16,8 +16,24 @@ import {WORLD} from './engine.js';
 import {layoutFor} from './encounters.js';
 import {seeded} from './data.js';
 import {shakeDecay,impactFlashAlpha,damageNumberEmphasis} from './feel.js';
+import {additiveEnabled,glowFor,glowAlpha,sparkCount,sparkAt} from './effects.js';
 export {ASSETS};
 const TAU=Math.PI*2;
+// 2.3 表现层：一层加色混合的宽描边叠在 2.2 原有细描边下面，让特效在暗底上有体积感。
+// path 只描述几何（moveTo/lineTo/arc），beginPath 与 stroke 由这里统一处理，所以几何与原来逐字节相同。
+// 画质档为「精简」时上层 alpha 算出来是 0，整层直接跳过，像素与 2.2 一致。
+function glowStroke(ctx,width,alpha,path){
+ if(!(width>0)||!(alpha>0))return;
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=alpha;ctx.lineWidth=width;ctx.beginPath();path();ctx.stroke();ctx.restore();
+}
+// 冲击火花的落点由序号与进度算出，不取随机数：表现层不该有自己的隐藏状态，否则重画同一帧会不一样。
+function glowSparks(ctx,f,alpha,settings,color){
+ const count=sparkCount(f.kind,settings);if(!count)return;
+ const progress=1-Math.max(0,Math.min(1,alpha));
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle=color||f.color||'#f4daa0';
+ for(let i=0;i<count;i++){const s=sparkAt(i,count,progress,f.r);ctx.globalAlpha=Math.max(0,alpha)*s.alpha;ctx.fillRect(f.x+s.x-s.size/2,f.y+s.y-s.size/2,s.size,s.size);}
+ ctx.restore();
+}
 function load(src){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(Error('素材未能加载'));i.src=src;});}
 function canvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 // Runtime sprite extraction removes only edge-connected near-white atlas background.
@@ -84,10 +100,16 @@ export function sprite(ctx,img,x,y,height,alpha=1,flip=false){
 export class Renderer{
  constructor(canvas,art){this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.art=art;this.shake=0;this.camera={x:0,y:0,scale:1};this.resize();}
  showFormationReady(battle){if(battle)this.formationMoment={battle,started:null};}
- drawFormationMoment(b,seconds){const moment=this.formationMoment;if(!moment)return;if(moment.battle!==b){this.formationMoment=null;return;}if(b.modeState!=='battle')return;if(moment.started===null)moment.started=seconds;const t=(seconds-moment.started)/2.4;if(t>=1){this.formationMoment=null;return;}const ctx=this.ctx,p=b.player;ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.6;ctx.strokeStyle='#d3e9ac';ctx.lineWidth=1.6;for(let i=0;i<72;i++){const ring=Math.floor(i/24),angle=i%24*TAU/24-Math.PI/2+ring*.06,r=56+ring*18+t*10,x=p.x+Math.cos(angle)*r,y=p.y-12+Math.sin(angle)*r;ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.PI/2);ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(0,-7);ctx.lineTo(-2,-4);ctx.moveTo(0,-7);ctx.lineTo(2,-4);ctx.moveTo(-3,2);ctx.lineTo(3,2);ctx.stroke();ctx.restore();}ctx.restore();}
+ drawFormationMoment(b,seconds,settings={}){const moment=this.formationMoment;if(!moment)return;if(moment.battle!==b){this.formationMoment=null;return;}if(b.modeState!=='battle')return;if(moment.started===null)moment.started=seconds;const t=(seconds-moment.started)/2.4;if(t>=1){this.formationMoment=null;return;}const ctx=this.ctx,p=b.player;
+  // 2.3: 布阵瞬间先铺一层加色柔光，剑环才像是「亮起来」的。
+  if(additiveEnabled(settings)){ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.3;ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(p.x,p.y-12,10,p.x,p.y-12,150+t*20);g.addColorStop(0,'#d3e9ac');g.addColorStop(1,'#d3e9ac00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y-12,150+t*20,0,TAU);ctx.fill();ctx.restore();}
+  ctx.save();ctx.globalAlpha=Math.min(1,(1-t)*3)*.6;ctx.strokeStyle='#d3e9ac';ctx.lineWidth=1.6;for(let i=0;i<72;i++){const ring=Math.floor(i/24),angle=i%24*TAU/24-Math.PI/2+ring*.06,r=56+ring*18+t*10,x=p.x+Math.cos(angle)*r,y=p.y-12+Math.sin(angle)*r;ctx.save();ctx.translate(x,y);ctx.rotate(angle+Math.PI/2);ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(0,-7);ctx.lineTo(-2,-4);ctx.moveTo(0,-7);ctx.lineTo(2,-4);ctx.moveTo(-3,2);ctx.lineTo(3,2);ctx.stroke();ctx.restore();}ctx.restore();}
  showBossDefeat(effect){this.bossDeath={...effect,started:performance.now()};}
  clearBossDefeat(){this.bossDeath=null;}
- drawBossDefeat(){const f=this.bossDeath;if(!f)return;const t=(performance.now()-f.started)/900;if(t>=1){this.bossDeath=null;return;}const ctx=this.ctx,{x,y,scale}=this.camera;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=1-t;ctx.strokeStyle=f.color;ctx.fillStyle=f.color;ctx.lineWidth=3;ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();sprite(ctx,this.art.foes[f.sprite],f.x,f.y+10-t*22,110*(1-t*.18),(1-t)*.65);for(let i=0;i<18;i++){const a=i*2.39996,d=24+t*(55+i%4*15),size=Math.max(1,5*(1-t));ctx.fillRect(f.x+Math.cos(a)*d-size/2,f.y-35+Math.sin(a)*d-size/2-t*20,size,size);}ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(f.name+' · 消散',f.x,f.y-120-t*15);ctx.restore();}
+ drawBossDefeat(settings={}){const f=this.bossDeath;if(!f)return;const t=(performance.now()-f.started)/900;if(t>=1){this.bossDeath=null;return;}const ctx=this.ctx,{x,y,scale}=this.camera;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=1-t;ctx.strokeStyle=f.color;ctx.fillStyle=f.color;ctx.lineWidth=3;
+  // 2.3: 首领消散是全场最重的一次收束，扩散环加一层加色外发光。
+  if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(1-t)*.34;ctx.lineWidth=16;ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();ctx.restore();}
+  ctx.beginPath();ctx.arc(f.x,f.y-24,20+t*100,0,TAU);ctx.stroke();sprite(ctx,this.art.foes[f.sprite],f.x,f.y+10-t*22,110*(1-t*.18),(1-t)*.65);for(let i=0;i<18;i++){const a=i*2.39996,d=24+t*(55+i%4*15),size=Math.max(1,5*(1-t));ctx.fillRect(f.x+Math.cos(a)*d-size/2,f.y-35+Math.sin(a)*d-size/2-t*20,size,size);}ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText(f.name+' · 消散',f.x,f.y-120-t*15);ctx.restore();}
  drawObjective(b,_time){const q=b.objective,ctx=this.ctx;if(!q)return;ctx.save();ctx.textAlign='center';ctx.font='bold 17px sans-serif';ctx.lineWidth=3;
   if(q.kind==='defend'){sprite(ctx,this.art.props[0],q.x,q.y+20,110);drawHealthBar(ctx,q.x-55,q.y-112,110,8,q.hp,q.maxHp,'#a2e7c3');ctx.fillStyle='#a2e7c3';ctx.fillText('护持阵盘',q.x,q.y-130);}
   if(q.kind==='illusion')q.gates.forEach((g,i)=>{const real=i===q.trueGate,open=b.waveTime>=q.next;sprite(ctx,this.art.props[open?2:1],g.x,g.y+40,125,real?1:.6);ctx.strokeStyle=real?'#dfd3a2':'#91a5b0';ctx.beginPath();ctx.arc(g.x,g.y,72,0,TAU);ctx.stroke();if(real){ctx.beginPath();ctx.arc(g.x,g.y,79,0,TAU);ctx.stroke();}ctx.fillStyle=real?'#ffe4aa':'#b5c1c5';ctx.fillText(real?(open?'真 · 可通行':'真 · '+Math.max(0,Math.ceil(q.next-b.waveTime))+'秒后通行'):'幻 · 勿入',g.x,g.y-103);});
@@ -111,7 +133,7 @@ export class Renderer{
   const sx=settings.shake?Math.sin(seconds*83)*this.shake:0,sy=settings.shake?Math.cos(seconds*109)*this.shake:0;
   this.camera={...view,x:ox+sx,y:oy+sy};ctx.save();ctx.translate(ox+sx,oy+sy);ctx.scale(scale,scale);
   ctx.drawImage(b?this.art.grounds[layoutFor(b).map]:this.art.menu,0,0,WORLD.w,WORLD.h);
-  ctx.fillStyle=b?'#05131530':'#07171308';ctx.fillRect(0,0,WORLD.w,WORLD.h);if(b)this.drawFormationMoment(b,seconds);else this.formationMoment=null;
+  ctx.fillStyle=b?'#05131530':'#07171308';ctx.fillRect(0,0,WORLD.w,WORLD.h);if(b)this.drawFormationMoment(b,seconds,settings);else this.formationMoment=null;
   // Arena boundary and faint tactical grid are UI, not decorative artwork.
   ctx.strokeStyle='#86c5ab35';ctx.lineWidth=1;if(b)ctx.strokeRect(27,35,WORLD.w-54,WORLD.h-63);
   if(b){
@@ -157,7 +179,8 @@ export class Renderer{
    for(const [puppetIndex,a] of b.puppets.entries()){ctx.save();ctx.fillStyle='#5acfee44';ctx.strokeStyle='#8eeaff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(a.x,a.y+10,23,9,0,0,TAU);ctx.fill();ctx.stroke();sprite(ctx,this.art.foes[10],a.x,a.y+10,42,1);ctx.strokeStyle='#8eeaff';ctx.beginPath();ctx.moveTo(a.x-21,a.y-21);ctx.lineTo(a.x-21,a.y-35);ctx.lineTo(a.x-10,a.y-35);ctx.moveTo(a.x+21,a.y-21);ctx.lineTo(a.x+21,a.y-35);ctx.lineTo(a.x+10,a.y-35);ctx.stroke();ctx.fillStyle='#092b3a';ctx.fillRect(a.x-11,a.y-55,22,18);ctx.fillStyle='#a9eeff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText('友',a.x,a.y-41);ctx.font='bold '+Math.max(12,10/scale)+'px sans-serif';ctx.fillText(String(puppetIndex+1)+'号',a.x,a.y+24);ctx.restore();}
    for(const bug of b.insects)sprite(ctx,this.art.golden,bug.x,bug.y+7,22,1);
    for(const shot of b.shots){ctx.strokeStyle=shot.color||(shot.friendly?'#bfd3e5':'#e28d72');ctx.lineWidth=shot.friendly?3:5;ctx.beginPath();ctx.moveTo(shot.px,shot.py);ctx.lineTo(shot.x,shot.y);ctx.stroke();ctx.fillStyle='#f1e2c4';ctx.fillRect(shot.x-2,shot.y-2,4,4);}
-   for(const f of b.fx)if(f.kind==='afterimage')sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,f.ttl/f.max*.25);
+   // 冲刺残影：画质档「完整」时用加色混合叠一层，残影才像御剑留下的灵光而不是半透明贴图。
+   for(const f of b.fx)if(f.kind==='afterimage'){const a=f.ttl/f.max*.25;if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,a*.85);ctx.restore();}else sprite(ctx,this.art.heroes[0],f.x,f.y+8,58,a);}
   }
   ctx.fillStyle='#00000060';ctx.beginPath();ctx.ellipse(p.x,p.y+4,18,7,0,0,TAU);ctx.fill();
   if(b?.player.shield>0){ctx.strokeStyle='#9bbceb70';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y-20,29,39,0,0,TAU);ctx.stroke();}
@@ -170,27 +193,36 @@ export class Renderer{
   // 阵图编成 is legible only if the wings are distinguishable, so each sword's trail takes its
   // 阵位角色 colour. Without the array marker this is null and the trail keeps its original colours.
   const roleColors=b&&arrayDeclared(b.options)?swords.map((_,i)=>roleById(roleFor(b.arrayPreset,i,swords.length)).color):null;
-  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){ctx.strokeStyle=roleColors?roleColors[i]+'99':b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
+  for(let i=0;i<swords.length;i++){const s=swords[i];if(afterThunder){ctx.save();ctx.strokeStyle='#91d9ffba';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.fillStyle='#c5efff';ctx.fillRect(s.x-2,s.y-2,4,4);ctx.restore();}if(settings.quality!==0&&(i%2===0||swords.length<24)){// 2.3: 尾迹下面再垫一层更宽的加色辉光，飞剑才有拖尾的光晕而不只是一条线。
+    if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.3;ctx.strokeStyle=roleColors?roleColors[i]:b?.stats.metaSwordPierce&&i%3===2?'#eadd9c':'#8fd0a0';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.restore();}
+    ctx.strokeStyle=roleColors?roleColors[i]+'99':b?.stats.metaSwordPierce&&i%3===2?'#eadd9ca0':'#9ddba744';ctx.lineWidth=b?.stats.metaSwordPierce&&i%3===2?3:2;ctx.beginPath();ctx.moveTo(s.px,s.py);ctx.lineTo(s.x,s.y);ctx.stroke();}
     ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.a+Math.PI/2);const img=weaponArt,height=b?28:34,width=height*img.width/img.height;ctx.drawImage(img,-width/2,-height/2,width,height);ctx.restore();
   }
   // 御剑笔画: the recorded polyline plus the sweep head, so the player can see what the array is
   // currently flying.
-  if(b?.sweep){const pts=b.sweep.points,head=strokePointAt(pts,b.sweep.dist);ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle='#e6d6ff';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(const pt of pts)ctx.lineTo(pt.x,pt.y);ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#fff2ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(head.x,head.y,STROKE.radius,0,TAU);ctx.stroke();ctx.fillStyle='#f6eaff';ctx.beginPath();ctx.arc(head.x,head.y,6,0,TAU);ctx.fill();ctx.restore();}
+  if(b?.sweep){const pts=b.sweep.points,head=strokePointAt(pts,b.sweep.dist);ctx.save();ctx.lineCap='round';const path=()=>{ctx.moveTo(pts[0].x,pts[0].y);for(const pt of pts)ctx.lineTo(pt.x,pt.y);};
+   // 2.3: 笔迹外再垫一层加色辉光，让「正在飞的那一笔」在战场底色上先被看到。
+   if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.26;ctx.strokeStyle='#d9c2ff';ctx.lineWidth=14;ctx.beginPath();path();ctx.stroke();ctx.restore();}
+   ctx.globalAlpha=.5;ctx.strokeStyle='#e6d6ff';ctx.lineWidth=6;ctx.beginPath();path();ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#fff2ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(head.x,head.y,STROKE.radius,0,TAU);ctx.stroke();if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4;ctx.fillStyle='#f0dcff';ctx.beginPath();ctx.arc(head.x,head.y,13,0,TAU);ctx.fill();ctx.restore();}ctx.fillStyle='#f6eaff';ctx.beginPath();ctx.arc(head.x,head.y,6,0,TAU);ctx.fill();ctx.restore();}
   // 剑意·合体: one blade sweeping a ring around Han Li.
-  if(b?.fusion){const p2=b.player;ctx.save();ctx.translate(p2.x,p2.y);ctx.rotate(b.fusion.angle);ctx.globalAlpha=.42;ctx.strokeStyle='#d6ecff';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.globalAlpha=.85;ctx.fillStyle='#eaf6ff';ctx.beginPath();ctx.moveTo(0,-FUSION.radius-26);ctx.lineTo(11,0);ctx.lineTo(0,FUSION.radius+26);ctx.lineTo(-11,0);ctx.closePath();ctx.fill();ctx.restore();}
+  if(b?.fusion){const p2=b.player;ctx.save();ctx.translate(p2.x,p2.y);ctx.rotate(b.fusion.angle);
+   // 2.3: 合体是全屏最重的一次动作，弧线加一层加色外发光，剑气才有「劈开」的亮度。
+   if(additiveEnabled(settings)){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.3;ctx.strokeStyle='#cfe6ff';ctx.lineWidth=26;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.restore();}
+   ctx.globalAlpha=.42;ctx.strokeStyle='#d6ecff';ctx.lineWidth=12;ctx.beginPath();ctx.arc(0,0,FUSION.radius,-1.1,1.1);ctx.stroke();ctx.globalAlpha=.85;ctx.fillStyle='#eaf6ff';ctx.beginPath();ctx.moveTo(0,-FUSION.radius-26);ctx.lineTo(11,0);ctx.lineTo(0,FUSION.radius+26);ctx.lineTo(-11,0);ctx.closePath();ctx.fill();ctx.restore();}
   if(b?.input.focus&&b.input.aim){const a=b.input.aim,r=16/scale,arm=22/scale;ctx.strokeStyle='#f1e5b5';ctx.lineWidth=2/scale;ctx.beginPath();ctx.arc(a.x,a.y,r,0,TAU);ctx.stroke();ctx.beginPath();ctx.moveTo(a.x-arm,a.y);ctx.lineTo(a.x+arm,a.y);ctx.moveTo(a.x,a.y-arm);ctx.lineTo(a.x,a.y+arm);ctx.stroke();}
   if(b)for(const f of b.fx){
-   const alpha=Math.max(0,f.ttl/f.max);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=f.color||'#f4daa0';ctx.fillStyle=f.color||'#e5d4a3';
-   if(f.kind==='ring'){ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1-alpha*.6),0,TAU);ctx.stroke();}
+   const alpha=Math.max(0,f.ttl/f.max),glow=glowFor(f.kind);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=f.color||'#f4daa0';ctx.fillStyle=f.color||'#e5d4a3';
+   if(f.kind==='ring'){const r=f.r*(1-alpha*.6);glowStroke(ctx,glow?.outer,glowAlpha('ring',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();}
    if(f.kind==='incoming'){ctx.translate(f.x,f.y-12);ctx.rotate(f.angle);ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(43,-9);ctx.lineTo(34,0);ctx.lineTo(43,9);ctx.stroke();}
    if(f.kind==='practice-warning'){const p=b.player,progress=1-alpha;ctx.globalAlpha=.55+progress*.45;ctx.strokeStyle='#ffb39c';ctx.lineWidth=3;ctx.setLineDash([9,6]);ctx.beginPath();ctx.moveTo(f.fromX,f.fromY);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,110-progress*70,0,TAU);ctx.stroke();ctx.fillStyle='#ffd7c4';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.fillText('来袭 '+Math.max(0,f.ttl).toFixed(1)+' 秒',p.x,p.y-52);}
-   if(f.kind==='carveBurst'){ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.15-alpha*.3),0,TAU);ctx.stroke();ctx.setLineDash([]);}
-   if(f.kind==='fusionSlash'){ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();}
-   if(f.kind==='sigilBurst'){ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-alpha*.35),0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}}
+   if(f.kind==='carveBurst'){const r=f.r*(1.15-alpha*.3);glowStroke(ctx,glow?.outer,glowAlpha('carveBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();ctx.setLineDash([]);glowSparks(ctx,f,alpha,settings,'#e9d7a6');}
+   if(f.kind==='fusionSlash'){glowStroke(ctx,glow?.outer,glowAlpha('fusionSlash',alpha,settings),()=>ctx.arc(f.x,f.y,f.r,0,TAU));ctx.lineWidth=7;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,TAU);ctx.stroke();glowSparks(ctx,f,alpha,settings,'#e6f3ff');}
+   if(f.kind==='sigilBurst'){const r=f.r*(1.1-alpha*.35);glowStroke(ctx,glow?.outer,glowAlpha('sigilBurst',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.lineWidth=4;ctx.setLineDash([12,7]);ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();for(let i=0;i<8;i++){const a=i*TAU/8;ctx.fillRect(f.x+Math.cos(a)*f.r*(1-alpha*.5)-3,f.y+Math.sin(a)*f.r*(1-alpha*.5)-3,6,6);}glowSparks(ctx,f,alpha,settings,'#ffd9ab');}
    if(f.kind==='number'){const emphasis=damageNumberEmphasis(f.total,f.critical),base=f.key?Math.max(17,12/scale):Math.max(13,11/scale);ctx.font='bold '+Math.round(base*emphasis)+'px '+(f.key?'sans-serif':'monospace');ctx.textAlign='center';ctx.fillText(f.text,f.x,f.y-(1-alpha)*22);}
-   if(f.kind==='line'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);ctx.stroke();}
-   if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999));ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(f.x,f.y-210);for(let j=1;j<8;j++)ctx.lineTo(f.x+(r()-.5)*28,f.y-210+j*30);ctx.stroke();}
-   if(f.kind==='thunder'){ctx.lineWidth=4;ctx.strokeStyle='#f2dba6';ctx.beginPath();ctx.arc(f.x,f.y,(1-alpha)*900,0,TAU);ctx.stroke();}
+   if(f.kind==='line'){const path=()=>{ctx.moveTo(f.x,f.y);ctx.lineTo(f.tx,f.ty);};glowStroke(ctx,glow?.outer,glowAlpha('line',alpha,settings),path);ctx.lineWidth=2;ctx.beginPath();path();ctx.stroke();}
+   // 闪电折线先算成点列再描两遍：seeded 的取数顺序与次数与 2.2 完全相同，所以折线形状逐点一致。
+   if(f.kind==='bolt'){const r=seeded(Math.floor((f.seed||.4)*999999)),pts=[[f.x,f.y-210]];for(let j=1;j<8;j++)pts.push([f.x+(r()-.5)*28,f.y-210+j*30]);const path=()=>{ctx.moveTo(pts[0][0],pts[0][1]);for(let j=1;j<pts.length;j++)ctx.lineTo(pts[j][0],pts[j][1]);};glowStroke(ctx,glow?.outer,glowAlpha('bolt',alpha,settings),path);ctx.lineWidth=3;ctx.beginPath();path();ctx.stroke();}
+   if(f.kind==='thunder'){ctx.lineWidth=4;ctx.strokeStyle='#f2dba6';const r=(1-alpha)*900;glowStroke(ctx,glow?.outer,glowAlpha('thunder',alpha,settings),()=>ctx.arc(f.x,f.y,r,0,TAU));ctx.beginPath();ctx.arc(f.x,f.y,r,0,TAU);ctx.stroke();}
    ctx.restore();
   }
   ctx.restore();
@@ -203,7 +235,7 @@ export class Renderer{
   }
   this.bossDirection=b?offscreenDirection(this.camera,b.boss?.hp>0?b.boss:null,this.hudAvoid||[]):null;
   if(this.bossDirection){const m=this.bossDirection;ctx.save();ctx.translate(m.x,m.y);ctx.fillStyle='#10221fee';ctx.beginPath();ctx.arc(0,0,21,0,TAU);ctx.fill();ctx.strokeStyle='#f0ce92';ctx.lineWidth=2;ctx.stroke();ctx.rotate(m.angle);ctx.fillStyle='#f0ce92';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-6,-8);ctx.lineTo(-6,8);ctx.closePath();ctx.fill();ctx.restore();ctx.save();ctx.font='bold 12px sans-serif';const labelLeft=m.x>(this.camera.left+this.camera.right)/2;ctx.textAlign=labelLeft?'right':'left';ctx.fillStyle='#10221fee';ctx.fillRect(m.x+(labelLeft?-58:26),m.y-10,32,20);ctx.fillStyle='#ffe3ac';ctx.fillText('首领',m.x+(labelLeft?-29:29),m.y+4);ctx.restore();}
-  this.drawBossDefeat();
+  this.drawBossDefeat(settings);
   if(b&&settings.flash&&b.time-b.thunderTime<.12){ctx.fillStyle='#f7e9b82a';ctx.fillRect(0,0,w,h);}
  }
 }
